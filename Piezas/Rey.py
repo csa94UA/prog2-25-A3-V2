@@ -1,4 +1,5 @@
 from Piezas.Pieza import Pieza
+from typing import Union
 
 """
 Modulo para la gestión y uso del rey
@@ -44,7 +45,7 @@ class Rey(Pieza):
         Comprueba si es jaque mate
     """
 
-    def __init__(self, posicion: list[int, int], color: bool) -> None:
+    def __init__(self, posicion: list[int, int], color: bool, enemigo : Union["Jugador",None]=None) -> None:
         """
         Inicializa una instacia de la clase Rey
 
@@ -54,10 +55,14 @@ class Rey(Pieza):
             Posicíon concreta del rey
         color : bool
             Color del rey (1 es blanco y 0 es negro)
+        enemigo : Jugador
+            Es el enemgio del rey. Es necesario para evaluar las posiciones que amenaza
+            el contrincante
         """
         super().__init__(posicion, color)
         self. movido = False
         self.turnos = 50 #Se descuenta cuando solo quede el rey en pie
+        self.enemigo = enemigo
 
     def movimiento_valido(self, tablero : "Tablero") -> list[(int,int)]:
         """
@@ -74,14 +79,50 @@ class Rey(Pieza):
         """
 
         fila, columna = self.posicion
-        movimientos = []
+        movimientos : list = []
 
         for i in range(fila - 1, fila + 2):
             for j in range(columna - 1, columna + 2):
-                if tablero.limite(i,j) and tablero[i][j] == 0:
-                    movimientos.append(tuple[i,j])
 
-        return movimientos
+                if not tablero.limite(i,j) or (i == fila) and (columna == j):
+                    continue
+
+                if tablero[i][j] is not None:
+
+                    if tablero[i][j].pieza.color != self.color:
+                        movimientos.append(tuple[i, j])
+
+                    break
+
+
+                movimientos.append(tuple[i,j])
+
+        return self.filtro_movimientos(movimientos, tablero)
+
+    def filtro_movimientos(self, movimientos : list, tablero : "Tablero") -> list[(int,int)]:
+        """
+        Filtra todos los movimientos invalidos debido a amenazas en esa casilla
+
+        Parametros:
+        -----------
+        mavimientos : list
+            lista de movimientos posibles
+        tablero : Tablero
+            Tablero en sí
+        Retorna:
+        --------
+        list[tuple(int,int)]
+            Retorna una lista de movimientos completamente válidos del rey
+        """
+
+        casillas : list = []
+
+        for fila, columna in movimientos:
+            if tablero.amenazas(self.enemigo,fila,columna) is []:
+                casillas.append((fila,columna))
+
+        return casillas
+
 
     def enroque(self) -> bool:
         """

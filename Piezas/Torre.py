@@ -68,23 +68,55 @@ class Torre(Pieza):
         fila, columna = self.posicion
         movimientos = []
 
-        for i in range(fila - 1, 1, -1):
-            if tablero[i][columna] != 0:
+        for i in count(fila - 1, -1):
+
+            if not tablero.limite(i, columna):
+                break
+
+            if tablero[i][columna].pieza is not None:
+
+                if tablero[i][columna].pieza.color != self.color:
+                    movimientos.append((i, columna))
+
                 break
             movimientos.append((i, columna))
 
-        for i in range(fila + 1, 8):
-            if tablero[i][columna] != 0:
+        for i in count(fila + 1):
+
+            if not tablero.limite(i, columna):
+                break
+
+            if tablero[i][columna].pieza is not None:
+
+                if tablero[i][columna].pieza.color != self.color:
+                    movimientos.append((i, columna))
+
                 break
             movimientos.append((i, columna))
 
-        for j in range(columna - 1, 1, -1):
-            if tablero[fila][j] != 0:
+        for j in count(columna - 1, -1):
+
+            if not tablero.limite(fila, j):
+                break
+
+            if tablero[fila][j].pieza is not None:
+
+                if tablero[fila][j].pieza.color != self.color:
+                    movimientos.append((fila, j))
+
                 break
             movimientos.append((fila, j))
 
-        for j in range(columna + 1, 8):
-            if tablero[fila][j] != 0:
+        for j in count(columna + 1):
+
+            if not tablero.limite(fila, j):
+                break
+
+            if tablero[fila][j].pieza is not None:
+
+                if tablero[fila][j].pieza.color != self.color:
+                    movimientos.append((fila, j))
+
                 break
             movimientos.append((fila, j))
 

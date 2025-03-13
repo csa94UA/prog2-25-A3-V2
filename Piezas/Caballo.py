@@ -50,7 +50,7 @@ class Caballo(Pieza):
         Comprueba todos los movimientos válidos del caballo
         Parametros:
         -----------
-        tabelro : list[list[int]]
+        tabelro : Tablero
             Tablero en sí
         Retorna:
         --------

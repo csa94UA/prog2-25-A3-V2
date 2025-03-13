@@ -75,13 +75,13 @@ class Peon(Pieza):
 
         if tablero[fila+1][columna] == 0:
             movimientos.append((fila + 1,columna))
-            if mover_doble(tablero):
+            if self.mover_doble(tablero):
                 movimientos.append((fila + 2, columna))
 
-        if tablero[fila + 1,columna + 1] != 0 or en_passant(tablero):
+        if tablero[fila + 1,columna + 1] != 0 or self.en_passant(tablero):
             movimientos.append((fila, columna + 1))
 
-        if tablero[fila + 1,columna - 1] != 0 or en_passant(tablero):
+        if tablero[fila + 1,columna - 1] != 0 or self.en_passant(tablero):
             movimientos.append((fila, columna - 1))
 
         return movimientos
@@ -94,8 +94,6 @@ class Peon(Pieza):
         bool
             Retorna un valor booleano marcando su posibilidad de transformarse
         """
-
-        fila, columna = self.posicion
 
         if self.posicion == (1,1) or (8,8):
             return True

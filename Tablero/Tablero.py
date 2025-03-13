@@ -257,11 +257,14 @@ class Tablero:
             de la pieza agresor (fila_m,columna_m)
         """
 
-        fila_p, columna_p = mov
+        #fila_p, columna_p = mov
 
-        caminos_a_eliminar = self.casillas_intermedias(fila,columna,fila_p,columna_p)
+        #Posiblemente este código sea redundante porque el simple hecho de estar en medio de un
+        #camino te hace pertenecer al subconjunto de ese camino
 
-        casillas_tocapelotas[:] = [pos for pos in casillas_tocapelotas if caminos_a_eliminar not in pos]
+        #caminos_a_eliminar = self.casillas_intermedias(fila,columna,fila_p,columna_p)
+
+        casillas_tocapelotas[:] = [pos for pos in casillas_tocapelotas if mov not in pos]
 
         return None
 
@@ -287,25 +290,16 @@ class Tablero:
             Devuelve True si es inevitable y False si se puede evitar
         """
 
-        amenazadores : list = []
+        amenazadores : list = self.amenazas(enemigo,fila,columna)
 
-        for pieza in enemigo.piezas:
-            if (fila,columna) in pieza.movimiento_valido(self):
-                amenazadores.append((pieza.posicion, pieza))
-
-        casillas_tocapelotas : list = []
-
-        for posicion, pieza in amenazadores:
-            fila_p, columna_p = posicion
-            if tablero[fila_p][columna_p].representacion() != 'Nn':
-                casillas_tocapelotas.append(self.casillas_intermedias(fila,columna,posicion[0],posicion[1]))
-            elif tablero[fila_p][columna_p].representacion() == 'Nn':
-                casillas_tocapelotas.append(posicion)
-
+        casillas_tocapelotas : list = self.casillas_amenazadas(amenazadores,fila,columna)
 
         for pieza in jugador.piezas:
+
             fila, columna = pieza.posicion
+
             for mov in pieza.movimiento_valido(self):
+
                 if mov in casillas_tocapelotas:
                     self.quitar_permutaciones(mov,casillas_tocapelotas,fila,columna)
 
@@ -313,6 +307,69 @@ class Tablero:
             return False
 
         return True
+
+    def amenazas(self, enemigo : Jugador, fila : int, columna : int) -> list:
+        """
+        Obtiene todas las piezas que amenazan una casilla junto con su posición
+
+        Parametros:
+        -----------
+        enemigo : Jugador
+            Representa el jugador que ataca la pieza 'victima' con una o más piezas
+        fila : int
+            Fila en la que se encuentra la casilla o pieza 'víctima'
+        columna : int
+            Columna en la que se encuentra la casilla o pieza 'víctima'
+
+        Retorna:
+        --------
+        list
+            Devuelve una lista con la posición de la pieza y la pieza en sí
+        """
+
+        casillas : list = []
+
+        for pieza in enemigo.piezas:
+            if (fila,columna) in pieza.movimiento_valido(self):
+                casillas.append((pieza.posicion, pieza))
+
+        return casillas
+
+    def casillas_amenazadas(self, amenazadores : list, fila : int, columna : int) -> list:
+        """
+        Obtiene todas las casillas amenazadas entre la posición de cada pieza amenazadora
+        y la posición de la pieza víctima
+
+        Parametros:
+        -----------
+        amenazadores : list
+            Lista de posiciones de cada pieza que amenaza a la pieza víctima
+        fila : int
+            Fila en la que se encuentra la casilla o pieza 'víctima'
+        columna : int
+            Columna en la que se encuentra la casilla o pieza 'víctima'
+
+        Retorna:
+        --------
+        list
+            Devuelve una lista con la posición de la pieza y la pieza en sí
+        """
+
+        casillas : list = []
+
+        for posicion, pieza in amenazadores:
+
+            fila_p, columna_p = posicion
+
+            if tablero[fila_p][columna_p].representacion() != 'Nn':
+                casillas.append(self.casillas_intermedias(fila, columna, posicion[0], posicion[1]))
+
+            elif tablero[fila_p][columna_p].representacion() == 'Nn':
+                casillas.append(posicion)
+
+        return casillas
+
+
 
 if __name__ == "__main__":
     tablero = Tablero()
