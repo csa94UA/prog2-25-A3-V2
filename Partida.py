@@ -10,14 +10,16 @@ Funciones:
 
 """
 
-from Piezas import Caballo, Alfil, Rey, Reina, Peon, Torre
+from Piezas import Caballo, Alfil, Rey, Reina, Peon, Torre, Pieza
 from Tablero import Tablero
 from Jugador import Jugador
 from random import randint
+from typing import Union
 from aflabeto_FEN import digitar_movimiento
 
-def partida(jugador1 : Jugador, jugador2 : Jugador):
+def partida(jugador1 : Jugador, jugador2 : Jugador) -> bool:
 
+    #Establecemos un inicio de turno aleatorio
     if randint(0,1000) < 499:
         jugador1.color = 1
         jugador2.color = 0
@@ -25,8 +27,9 @@ def partida(jugador1 : Jugador, jugador2 : Jugador):
         jugador2.color = 1
         jugador1.color = 0
 
-    tablero = Tablero()
+    tablero = Tablero() #Cargamos tablero
 
+    #Insertamos las piezas en el tablero y en el inventario del jugador
     jugador1.piezas = crear_piezas(jugador1.color, tablero)
     jugador2.piezas = crear_piezas(jugador2.color, tablero)
 
@@ -34,11 +37,84 @@ def partida(jugador1 : Jugador, jugador2 : Jugador):
     turno = 1 if jugador1.color else 0
 
     while not game_over:
-        jugador_actual = jugador1 if turno else jugador2
+        jugador_actual : Jugador = jugador1 if turno else jugador2
+        enemigo : Jugador = jugador1 if not turno else jugador2
 
         tablero.mostrar_tablero(jugador_actual.color)
 
-        movimiento = digitar_movimiento(tablero, jugador_actual)
+        movimiento = digitar_movimiento()
+
+        #Busca la pieza en esa posicion. Si no la encuentra, dará un mensaje de error y repetirá el movimiento
+        encontrado : bool = False
+        pieza : Union[Pieza,None] = None
+        for piezas in jugador_actual.piezas:
+            if movimiento[0] == piezas.posicion:
+                pieza = piezas
+                encontrado = True
+                break
+
+        if not encontrado:
+            print("Error. No se ha encontrado ninguna pieza.")
+            continue
+
+        #Comprobamos que dicha pieza puede moverse a esa posición. En caso contrario se regresa al bucle del principio.
+        if not movimiento[1] in pieza.movimiento_valido(tablero):
+            print("Error. LA posición desitno no está dentro de los movimientos validos de la pieza")
+            continue
+
+        #Simulamos que movemos la pieza a la casilla destino y comprobamos primero si se produce un jaque inmediato.
+        #en caso de que se produzca, el movimiento queda inválido. Se debe tener mucho cuidado Y NO AFECTAR AL TABLERO.
+
+        pos_antigua : tuple = pieza.posicion
+        pieza.posicion = movimiento[1]
+        rey = next((rey for rey in jugador_actual.piezas if isinstance(rey,Rey)), None)
+        if tablero.amenazas(enemigo, rey.posicion[0], rey.posicion[1]):
+            print("Error. Tu movimiento provoca o no impide un jaque")
+            pieza.posicion = pos_antigua
+            continue
+
+        #En caso de que sea un peon y se haya digitado una promoción, debemos comprobar si es válida. En caso afirmativo
+        #transformamos ese peon a la pieza deseada
+        if movimiento[2] is not None:
+
+            if not pieza.posicion[0] == 0 and not pieza.posicion[0] == 7:
+                print("Error. No se encuentra en el otro lado del tablero")
+                pieza.posicion = pos_antigua
+                continue
+
+            if not isinstance(pieza,Peon):
+                print("Error. Intento de hacer promoción con una pieza que no es peón")
+                pieza.posicion = pos_antigua
+                continue
+
+            match(movimiento[2]):
+                case 'Q':
+                    pieza = Reina(pieza.posicion, pieza.color)
+
+                case 'R':
+                    pieza = Torre(pieza.posicion, pieza.color)
+                    pieza.movido = True
+
+                case 'B':
+                    pieza = Alfil(pieza.posicion, pieza.color)
+
+                case 'N':
+                    pieza = Caballo(pieza.posicion, pieza.color)
+
+                case _:
+                    print("Error. Se ha intentado promocionar a una pieza invalida")
+                    continue
+
+        #Vemos si produce la pieza un jaque. En caso afirmativo lo guardamos para el jugador del siguiente turno
+        rey = next((rey for rey in enemigo.piezas if isinstance(rey, Rey)), None)
+        if rey.posicion in pieza.movimiento_valido(tablero):
+            jaque : bool = True
+        
+
+
+
+
+
 
 
 
