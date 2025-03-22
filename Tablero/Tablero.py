@@ -369,6 +369,7 @@ class Tablero:
 
         return casillas
 
+    def enroque_corto(self, jugaror : "Jugador") -> bool:
 
 
 if __name__ == "__main__":

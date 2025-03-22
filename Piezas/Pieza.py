@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import Union, TYPE_CHECKING
+from Jugador import Jugador
+from Piezas import Reina, Torre
 
 if TYPE_CHECKING:
     from Tablero import Tablero
@@ -21,7 +23,7 @@ class Pieza(ABC):
 
     Atributos:
     -----------
-    posicion : list[int,int]
+    posicion : tuple[int,int]
         Posicíon concreta de una pieza
     color : bool
         Color de la pieza (1 es blanco y 0 es negro)
@@ -41,7 +43,7 @@ class Pieza(ABC):
         capturar una pieza (con la notación algebráica cobra más sentido)
     """
 
-    def __init__(self, posicion: list[int, int], color: bool) -> None:
+    def __init__(self, posicion: tuple[int, int], color: bool) -> None:
         """
         Inicializa una instacia de la clase Pieza
 
@@ -67,8 +69,10 @@ class Pieza(ABC):
         """
         pass
 
-    def mover(self, destino: list[int, int], tablero: "Tablero"):
+    def mover(self, destino: tuple[int, int], tablero: "Tablero", jugador : "Jugador", enemigo : "Jugador",
+              pos_rey : tuple[int, int]) -> bool:
         from Tablero import Tablero
+        from Jugador import Jugador
         """
         Desplaza la pieza desde su posición hasta el destino.
 
@@ -84,16 +88,24 @@ class Pieza(ABC):
 
         # Recorremos todos los movimientos válidos de la pieza
 
-        self.movimientos = self.movimiento_valido(tablero)
+        if destino is not () and not destino in self.movimiento_valido(tablero):
+            print("Error. La posición desitno no está dentro de los movimientos validos de la pieza")
+            return False
 
-        for movimiento in self.movimientos:
-            x = self.posicion[0] + movimiento[0]
-            y = self.posicion[1] + movimiento[1]
+        x = destino[0]
+        y = destino[1]
 
-            if destino == (x, y) and tablero[x][y].pieza is None and not Jaque(tuple[x, y]):
-                self.posicion[0] = x
-                self.posicion[1] = y
-                return True
+        pos_ant = self.posicion
+        self.posicion = (x, y)
+        tablero[pos_ant[0]][pos_ant[1]].pieza = None
+
+        if tablero.amenazas(enemigo, pos_rey[0], pos_rey[1]):
+            print("Error. Tu movimiento provoca o no impide un jaque")
+            self.posicion = pos_ant
+            tablero[pos_ant[0]][pos_ant[1]].pieza = self
+            return False
+
+
 
         return False
 

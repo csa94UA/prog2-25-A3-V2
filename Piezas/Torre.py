@@ -1,4 +1,6 @@
 from Piezas.Pieza import Pieza
+from itertools import count
+
 
 """
 Modulo para la gestión y uso de una torre
