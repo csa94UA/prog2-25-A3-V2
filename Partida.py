@@ -44,6 +44,8 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> bool:
 
         movimiento = digitar_movimiento()
 
+
+
         #Busca la pieza en esa posicion. Si no la encuentra, dará un mensaje de error y repetirá el movimiento
         encontrado : bool = False
         pieza : Union[Pieza,None] = None
@@ -57,6 +59,10 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> bool:
             print("Error. No se ha encontrado ninguna pieza.")
             continue
 
+        if movimiento[2].isalpha() and not isinstance(pieza, Peon):
+            print("Error. Se ha intentado promocionar con una pieza que no es peon")
+            continue
+
         rey = next((rey for rey in jugador_actual.piezas if isinstance(rey, Rey)), None)
 
         #Comprobamos si quieren hacer enroque. Si es así se simula y se comprueba su validez
@@ -66,58 +72,40 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> bool:
                           and torre.posicion[0] == 7), None)
 
             if torre is None:
-                return False
+                print("No se ha encontrado una torre para hacer enroque")
+                continue
 
             pos_rey = rey.posicion
             pos_torre = torre.posicion
 
-            intento = comprobar_enroque_corto(tablero, jugador_actual, enemigo, rey, torre) if movimiento[2] else \
-                comprobar_enroque_largo(tablero, jugador_actual, enemigo, rey, torre)
+            intento = comprobar_enroque_corto(tablero, enemigo, rey, torre) if movimiento[2] == 1 else \
+                comprobar_enroque_largo(tablero, enemigo, rey, torre)
 
             if not intento:
                 rey.posicion = pos_rey
                 torre.posicion = pos_torre
                 print("No ha sido posible hacer el enroque")
+                continue
 
             else:
                 #Regresa al bucle con todas las demás comprobaciones hechas
 
         pos_antigua = pieza.posicion
 
-        if not pieza.mover(movimiento[1], tablero, jugador_actual, enemigo, rey.posicion):
+        if not pieza.mover(movimiento[1], tablero, jugador_actual, enemigo, rey.posicion, movimiento[2]):
             print("El movimiento es inválido (autojaque, movimiento impromio de la pieza, etc")
 
         #En caso de que sea un peon y se haya digitado una promoción, debemos comprobar si es válida. En caso afirmativo
         #transformamos ese peon a la pieza deseada
-        if movimiento[2] is not None:
 
-            if pieza.posicion[0] not in [0,7]:
-                print("Error. No se encuentra en el otro lado del tablero")
-                pieza.posicion = pos_antigua
+
+        if movimiento[2].isalpha():
+
+            intento : bool = comprobar_promocion(pieza, movimiento[2])
+
+            if not intento:
+                print("Error. No se ha podido realizar la promoción")
                 continue
-
-            if not isinstance(pieza,Peon):
-                print("Error. Intento de hacer promoción con una pieza que no es peón")
-                pieza.posicion = pos_antigua
-                continue
-
-            match(movimiento[2]):
-                case 'Q':
-                    pieza = Reina(pieza.posicion, pieza.color)
-
-                case 'R':
-                    pieza = Torre(pieza.posicion, pieza.color)
-                    pieza.movido = True
-
-                case 'B':
-                    pieza = Alfil(pieza.posicion, pieza.color)
-
-                case 'N':
-                    pieza = Caballo(pieza.posicion, pieza.color)
-
-                case _:
-                    print("Error. Se ha intentado promocionar a una pieza invalida")
-                    continue
 
         #Vemos si produce la pieza un jaque. En caso afirmativo lo guardamos para el jugador del siguiente turno
         rey = next((rey for rey in enemigo.piezas if isinstance(rey, Rey)), None)
@@ -158,7 +146,7 @@ def crear_piezas(color : bool, tablero : Tablero) -> list:
 
     return piezas
 
-def comprobar_enroque_corto(tablero : "Tablero", jugador_actual : "Jugador", enemigo : "Jugador", rey : "Rey",
+def comprobar_enroque_corto(tablero : "Tablero", enemigo : "Jugador", rey : "Rey",
                             torre : "Torre") -> bool:
 
     if not rey.enroque() or not torre.enroque():
@@ -177,13 +165,17 @@ def comprobar_enroque_corto(tablero : "Tablero", jugador_actual : "Jugador", ene
 
     rey.posicion = (fila, 6)
     rey.movido = True
+    tablero[fila][4].pieza = None
+    tablero[fila][6].pieza = rey
 
     torre.posicion = (fila, 5)
     torre.movido = True
+    tablero[fila][7].pieza = None
+    tablero[fila][5].pieza = torre
 
     return True
 
-def comprobar_enroque_largo(tablero : "Tablero", jugador_actual : "Jugador", enemigo : "Jugador", rey : "Rey",
+def comprobar_enroque_largo(tablero : "Tablero", enemigo : "Jugador", rey : "Rey",
                             torre : "Torre") -> bool:
 
     if not rey.enroque() or not torre.enroque():
@@ -202,9 +194,34 @@ def comprobar_enroque_largo(tablero : "Tablero", jugador_actual : "Jugador", ene
 
     rey.posicion = (fila, 2)
     rey.movido = True
+    tablero[fila][4].pieza = None
+    tablero[fila][2].pieza = rey
 
     torre.posicion = (fila, 3)
     torre.movido = True
+    tablero[fila][0].pieza = None
+    tablero[fila][3].pieza = torre
 
     return True
 
+def comprobar_promocion(pieza : "Peon", promocion : Union[str,int], jugador_actual : "Jugador") -> bool:
+
+    match (promocion):
+        case 'Q':
+            pieza = Reina(pieza.posicion, pieza.color)
+
+        case 'R':
+            pieza = Torre(pieza.posicion, pieza.color)
+            pieza.movido = True
+
+        case 'B':
+            pieza = Alfil(pieza.posicion, pieza.color)
+
+        case 'N':
+            pieza = Caballo(pieza.posicion, pieza.color)
+
+        case _:
+            print("Error. Se ha intentado promocionar a una pieza invalida")
+            return False
+
+    return True

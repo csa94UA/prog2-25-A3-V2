@@ -95,7 +95,7 @@ class Peon(Pieza):
             Retorna un valor booleano marcando su posibilidad de transformarse
         """
 
-        if self.posicion == (1,1) or (8,8):
+        if self.posicion[0] in [0,7]:
             return True
 
         return False
