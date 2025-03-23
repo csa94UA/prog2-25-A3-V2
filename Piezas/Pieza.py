@@ -86,7 +86,7 @@ class Pieza(ABC):
             Si la pieza ha logrado llegar a su destino
         """
 
-        if especial.isalpha() and not self.transformacion():
+        if especial.isalpha() and not self.posicion[0] in [1,6]:
             print("Error. No se encuentra en el otro lado del tablero")
             return False
 

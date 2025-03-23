@@ -73,16 +73,18 @@ class Peon(Pieza):
         fila, columna = self.posicion
         movimientos = []
 
-        if tablero[fila+1][columna] == 0:
-            movimientos.append((fila + 1,columna))
+        color : int = 1 if self.color else -1
+
+        if tablero[fila + color][columna] == 0:
+            movimientos.append((fila + color,columna))
             if self.mover_doble(tablero):
-                movimientos.append((fila + 2, columna))
+                movimientos.append((fila + color * 2, columna))
 
-        if tablero[fila + 1,columna + 1] != 0 or self.en_passant(tablero):
-            movimientos.append((fila, columna + 1))
+        if tablero[fila + color][columna + 1] != 0 or self.en_passant(tablero, color):
+            movimientos.append((fila + color, columna + 1))
 
-        if tablero[fila + 1,columna - 1] != 0 or self.en_passant(tablero):
-            movimientos.append((fila, columna - 1))
+        if tablero[fila + color][columna - 1] != 0 or self.en_passant(tablero, color):
+            movimientos.append((fila + color, columna - 1))
 
         return movimientos
 
@@ -95,7 +97,7 @@ class Peon(Pieza):
             Retorna un valor booleano marcando su posibilidad de transformarse
         """
 
-        if self.posicion[0] in [0,7]:
+        if self.posicion[0] in [1,6]:
             return True
 
         return False
@@ -136,7 +138,7 @@ class Peon(Pieza):
 
         return False
 
-    def en_passant(self, tablero : "Tablero") -> bool:
+    def en_passant(self, tablero : "Tablero", color : int) -> bool:
         """
         Comprueba si puede hacer en passant
 
@@ -152,10 +154,12 @@ class Peon(Pieza):
 
         fila, columna = self.posicion
 
-        if tablero.limite(fila+1,columna+1) and tablero[fila+1][columna+1].en_passant:
+        if tablero.limite(fila + color,columna + 1) and tablero[fila + color][columna + 1].en_passant[1] == \
+                (fila + color, columna + 1):
             return True
 
-        if tablero.limite(fila+1,columna-1) and tablero[fila+1][columna-1]:
+        if tablero.limite(fila + color, columna - 1) and tablero[fila + color][columna - 1].en_passant[1] == \
+                (fila + color, columna - 1):
             return True
 
         return False

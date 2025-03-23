@@ -45,7 +45,7 @@ class Tablero:
 
         self.tablero : list[list[Casilla]]= [[Casilla(i,j) for i in range(8)] for j in range(8)]
         self.enroque : Union[list[bool,bool],None] = None
-        self.en_passant : Union[str,None] = None
+        self.en_passant : Union[tuple[str,int],None] = None
         self.contador : int = 0
         self.jugadas : int = 0
         self.turno : int = 1 #Representa el color que tiene el turno (por defecto es el blanco)
@@ -109,7 +109,7 @@ class Tablero:
             Si es False es porque está fuera de los límites.
         """
 
-        if fila < 8 and fila >= 0 and columna < 8 and columna >= 0:
+        if 8 > fila >= 0 and 8 > columna >= 0:
             return True
 
         return False
@@ -185,7 +185,7 @@ class Tablero:
         fen += 'KQ' if enroque_b else ''
         fen += 'kq' if enroque_n else ''
 
-        fen += f' {en_passant} ' if en_passant is not None else ' - '
+        fen += f' {en_passant[0]} ' if en_passant is not None else ' - '
 
         fen += str(contador) + ' '
         fen += str(turno)
@@ -368,8 +368,6 @@ class Tablero:
                 casillas.append(posicion)
 
         return casillas
-
-    def enroque_corto(self, jugaror : "Jugador") -> bool:
 
 
 if __name__ == "__main__":
