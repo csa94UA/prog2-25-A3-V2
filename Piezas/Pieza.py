@@ -70,7 +70,7 @@ class Pieza(ABC):
         pass
 
     def mover(self, destino: tuple[int, int], tablero: "Tablero", jugador : "Jugador", enemigo : "Jugador",
-              pos_rey : tuple[int, int]) -> bool:
+              pos_rey : tuple[int, int], especial : Union[str,int]) -> bool:
         from Tablero import Tablero
         from Jugador import Jugador
         """
@@ -86,9 +86,13 @@ class Pieza(ABC):
             Si la pieza ha logrado llegar a su destino
         """
 
+        if especial.isalpha() and not self.posicion[0] in [1,6]:
+            print("Error. No se encuentra en el otro lado del tablero")
+            return False
+
         # Recorremos todos los movimientos válidos de la pieza
 
-        if destino is not () and not destino in self.movimiento_valido(tablero):
+        if destino is not tuple() and not destino in self.movimiento_valido(tablero):
             print("Error. La posición desitno no está dentro de los movimientos validos de la pieza")
             return False
 
@@ -105,7 +109,11 @@ class Pieza(ABC):
             tablero[pos_ant[0]][pos_ant[1]].pieza = self
             return False
 
+        if tablero[x][y].pieza is not None:
+            enemigo.piezas.remove(tablero[x][y].pieza)
+            tablero[x][y].pieza = None
 
+        tablero[x][y] = self
 
         return False
 
