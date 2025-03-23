@@ -61,7 +61,7 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
 
         #Busca la pieza en esa posicion. Si no la encuentra, dará un mensaje de error y repetirá el movimiento
 
-        pieza : Union["Pieza",None] = encontrar_pieza(jugador_actual, movimiento[0])
+        pieza : Union["Pieza",None] = encontrar_pieza(tablero, jugador_actual, enemigo, movimiento[0])
 
         if pieza is None:
             print("Error. No se ha encontrado ninguna pieza.")
@@ -96,7 +96,7 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
                 continue
 
             else:
-                jaque: bool = comprobar_jaque_enemigo(tablero, enemigo, torre)
+                jaque: bool = comprobar_jaque_enemigo(tablero, jugador_actual, enemigo, torre)
 
                 if tablero.jaque_in(rey.posicion[0], rey.posicion[1], enemigo, jugador_actual):
                     break
@@ -121,7 +121,7 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
                 continue
 
         #Vemos si produce la pieza un jaque. En caso afirmativo lo guardamos para el jugador del siguiente turno
-        jaque : bool = comprobar_jaque_enemigo(tablero, enemigo, pieza)
+        jaque : bool = comprobar_jaque_enemigo(tablero, jugador_actual, enemigo, pieza)
 
         if jaque and tablero.jaque_in(rey.posicion[0], rey.posicion[1], enemigo, jugador_actual):
             break
