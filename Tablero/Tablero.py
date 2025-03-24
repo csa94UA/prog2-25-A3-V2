@@ -371,6 +371,56 @@ class Tablero:
 
         return casillas
 
+    def imagenes_piezas(self, tamano_casilla):
+        piezas = {}
+        nombres_piezas = {"r", "n", "b", "q", "k", "p", "R", "N", "B", "Q", "K", "P"}
+        for nombre in nombres_piezas:
+            pieza = pygame.image.load(os.path.join("..", "piezas", f"{nombre}.png"))
+            pieza = pygame.transform.scale(pieza, (tamano_casilla, tamano_casilla))
+        return piezas
+
+    def crear_tablero(self):
+        tablero = []
+        for i in range(8):
+            fila = []
+            for j in range(8):
+                fila.append("")
+            tablero.append(fila)
+
+        piezas_negras = ["r", "n", "b", "q", "k", "b", "n", "r"]
+        piezas_blancas = ["R", "N", "B", "Q", "K", "B", "N", "R"]
+        for i in range(8):
+            tablero[0][i] = piezas_negras[i]
+            tablero[7][i] = piezas_blancas[i]
+            tablero[1][i] = "p"
+            tablero[6][i] = "P"
+        return tablero
+
+    def dibujar_tablero(self, ventana, filas, columnas, tamano_casilla, color_claro, color_oscuro, color_texto):
+        for fila in range(filas):
+            for columna in range(columnas):
+                if (fila + columna) % 2 == 0:
+                    color = color_claro
+                else:
+                    color = color_oscuro
+
+                pygame.draw.rect(ventana, color,
+                                 (columna * tamano_casilla, fila * tamano_casilla, tamano_casilla, tamano_casilla))
+                columna_letra = chr(65 + columna)
+                fila_numero = filas - fila
+                coordenada = columna_letra + str(fila_numero)
+                fuente = pygame.font.SysFont(None, 24)
+                texto = fuente.render(coordenada, True, color_texto)
+                ventana.blit(texto, (columna * tamano_casilla + 5, fila * tamano_casilla + 5))
+
+    def dibujar_piezas(self, ventana, tablero, piezas, tamano_casilla):
+        for fila in range(8):
+            for columna in range(8):
+                pieza = tablero[fila][columna]
+                if pieza in piezas:
+                    x = columna * tamano_casilla
+                    y = fila * tamano_casilla
+                    ventana.blit(piezas[pieza], (x, y))
 
     def representacion_grafica(self):
         pygame.init()
@@ -381,58 +431,21 @@ class Tablero:
         color_oscuro = (118, 150, 86)
         color_texto = (255, 0, 0)
 
-        piezas = {}
-        nombres_piezas = ["bA", "bR", "bC", "bP", "bD", "bT", "wA", "wR", "wC", "wP", "wD", "wT"]
-        for nombre in nombres_piezas:
-            pieza = pygame.image.load(os.path.join("..", "piezas", f"{nombre}.png"))
-            pieza = pygame.transform.scale(pieza, (tamano_casilla, tamano_casilla))
-            piezas[nombre] = pieza
-
+        piezas = self.imagenes_piezas(tamano_casilla)
+        tablero = self.crear_tablero()
         ventana = pygame.display.set_mode((ancho, alto))
-        pygame.display.set_caption("Tablero de Ajedrez")
 
-        tablero = self.tablero
-
-        def colocar_piezas():
-            piezas_fila = ["bT", "bC", "bA", "bD", "bR", "bA", "bC", "bT"]
-            for i in range(8):
-                tablero[0][i] = piezas_fila[i]
-                tablero[7][i] = piezas_fila[i].replace("b", "w")
-                tablero[1][i] = "bP"
-                tablero[6][i] = "wP"
-
-        def dibujar_tablero():
-            for fila in range(filas):
-                for columna in range(columnas):
-                    if (fila + columna) % 2 == 0:
-                        color = color_claro
-                    else:
-                        color = color_oscuro
-                    columna_letra = chr(65 + columna)
-                    fila_numero = filas - fila
-                    coordenada = columna_letra + str(fila_numero)
-                    fuente = pygame.font.SysFont(None, 24)
-                    texto = fuente.render(coordenada, True, color_texto)
-                    ventana.blit(texto, (columna * tamano_casilla + 5, fila * tamano_casilla + 5))
-
-        def dibujar_piezas():
-            for fila in range(filas):
-                for columna in range(columnas):
-                    pieza = tablero[fila][columna]
-                    if pieza in piezas:
-                        ventana.blit(piezas[pieza], (columna * tamano_casilla, fila * tamano_casilla))
-
-        colocar_piezas()
         inicio = True
         while inicio:
-            for i in pygame.event.get():
-                if i.type == pygame.QUIT:
+            for evento in pygame.event.get():
+                if evento.type == pygame.QUIT:
                     inicio = False
 
             ventana.fill((0, 0, 0))
-            dibujar_tablero()
-            dibujar_piezas()
+            self.dibujar_tablero(ventana, filas, columnas, tamano_casilla, color_claro, color_oscuro, color_texto)
+            self.dibujar_piezas(ventana, tablero, piezas, tamano_casilla)
             pygame.display.flip()
+
         pygame.quit()
 
 
