@@ -1,10 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Union, TYPE_CHECKING
-from Jugador import Jugador
-from Piezas import Reina, Torre
-
-if TYPE_CHECKING:
-    from Tablero import Tablero
+from typing import Union
 
 """
 Modulo para la gestión y uso de una pieza genérica
@@ -43,7 +38,7 @@ class Pieza(ABC):
         capturar una pieza (con la notación algebráica cobra más sentido)
     """
 
-    def __init__(self, posicion: tuple[int, int], color: bool) -> None:
+    def __init__(self, posicion: tuple[int,int], color: int) -> None:
         """
         Inicializa una instacia de la clase Pieza
 

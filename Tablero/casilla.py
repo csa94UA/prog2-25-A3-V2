@@ -99,7 +99,7 @@ class Casilla:
         if isinstance(pieza, Rey):
             return 'K' if pieza.color else 'k'
 
-        return ' '
+        return '·'
 
     def __repr__(self):
         """

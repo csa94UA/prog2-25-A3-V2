@@ -41,7 +41,7 @@ class Torre(Pieza):
         Devuelve True si es posible hacer el enroque.
     """
 
-    def __init__(self, posicion: list[int, int], color: bool) -> None:
+    def __init__(self, posicion: tuple[int,int], color: int) -> None:
         """
         Inicializa una instacia de la clase Torre
         Parámetros:

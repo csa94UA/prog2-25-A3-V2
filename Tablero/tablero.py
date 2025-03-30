@@ -1,8 +1,8 @@
-from Casilla import Casilla
+from .casilla import Casilla
 from Jugador import Jugador
 from typing import Union
 import itertools
-import pygame
+#import pygame
 import os
 
 """
@@ -45,7 +45,7 @@ class Tablero:
         Inicializa una instacia de la clase Casilla
         """
 
-        self.tablero : list[list[Casilla]]= [[Casilla(i,j) for i in range(8)] for j in range(8)]
+        self.tablero : list[list["Casilla"]]= [[Casilla(i,j) for i in range(8)] for j in range(8)]
         self.enroque : Union[list[bool,bool],None] = None
         self.en_passant : Union[tuple[str,int],None] = None
         self.contador : int = 0
@@ -94,7 +94,8 @@ class Tablero:
 
         return self.tablero[8-fila][columna]
 
-    def limite(self, fila : int, columna : int) -> bool:
+    @staticmethod
+    def limite(fila : int, columna : int) -> bool:
         """
         Comprueba si la posición (fila,columna) está dentro de los límites del tablero
 
@@ -131,7 +132,7 @@ class Tablero:
 
         for i in range(8):
             for j in range(8):
-                print(self[fila-i][j].representacion(),end=" ")
+                print(self[abs(fila-i)][j].representacion(),end=" ")
             print()
 
         return None
@@ -197,7 +198,7 @@ class Tablero:
     @staticmethod
     def casillas_intermedias(fila : int, columna : int, fila_m : int, columna_m : int) -> list[(int, int)]:
         """
-        Método estático que calcula las casillas intermedias entre dos piezas (incluyendo la posicion
+        Metodo estático que calcula las casillas intermedias entre dos piezas (incluyendo la posicion
         de la pieza atacante)
 
         Parametros:

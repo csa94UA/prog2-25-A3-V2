@@ -11,10 +11,10 @@ Funciones:
     - simplificacion(mov : str) -> Simplifica el formato LAN de entrada
 """
 
-def digitar_movimiento() -> tuple:
+def digitar_movimiento(color : int) -> tuple:
 
-    traduccion = {'a' : 1, 'b' : 2, 'c' : 3, 'd' : 4,
-                  'e' : 5, 'f' : 6, 'g' : 7, 'h' : 8}
+    traduccion = {'a' : 0, 'b' : 1, 'c' : 2, 'd' : 3,
+                  'e' : 4, 'f' : 5, 'g' : 6, 'h' : 7}
 
     while True:
         mov : str = input("\nDigite movimiento: \n")
@@ -42,18 +42,20 @@ def digitar_movimiento() -> tuple:
             print("\nError. Posicion inicial y final son identicas\n")
             continue
 
-        if not especial is None and (not especial[0] == '=' or len(especial) == 1):
+        if especial is not None and (not especial[0] == '=' or len(especial) == 1):
             print("\nError. Promocion digitado incorrectamente\n")
             continue
 
-        if especial[1] not in 'QRBNqrbn':
+        if especial is not None and especial[1] not in 'QRBNqrbn':
             print("\nError. Intento de promoción fallida por querer trasformar a una pieza no permitida\n")
             continue
 
-        if especial is None:
-            return (8 - int(inicio[1]), traduccion[inicio[0]]), (8 - int(fin[1]), traduccion[fin[0]]), 0
+        if color:
+            return ((8 - int(inicio[1]), traduccion[inicio[0]]), (8 - int(fin[1]), traduccion[fin[0]]),
+                    0 if especial is None else especial[1].upper())
         else:
-            return (8 - int(inicio[1]), traduccion[inicio[0]]), (8 - int(fin[1]), traduccion[fin[0]]), especial[1].upper()
+            return ((int(inicio[1]), traduccion[inicio[0]]), (int(fin[1]), traduccion[fin[0]]),
+                    0 if especial is None else especial[1].upper())
 
 
 
@@ -115,4 +117,4 @@ if __name__ == '__main__':
     for mov in movimientos:
         print(traducción_LAN(mov))
 
-    print(digitar_movimiento())
+    print(digitar_movimiento(0))

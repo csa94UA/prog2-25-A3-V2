@@ -45,7 +45,7 @@ class Rey(Pieza):
         Comprueba si es jaque mate
     """
 
-    def __init__(self, posicion: list[int, int], color: bool, enemigo : Union["Jugador",None]=None) -> None:
+    def __init__(self, posicion: tuple[int,int], color: int, enemigo : Union["Jugador",None]=None) -> None:
         """
         Inicializa una instacia de la clase Rey
 

@@ -37,17 +37,23 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
     turno = 1 if jugador1.color else 0
     jugador_actual : Union["Jugador",None] = None
 
+    print("Inicialización correcta")
+
     while not game_over:
         jugador_actual = jugador1 if turno else jugador2
         enemigo : Jugador = jugador1 if not turno else jugador2
 
         tablero.mostrar_tablero(jugador_actual.color)
 
-        if not comprobar_tablas(tablero, jugador_actual, enemigo):
+        print("Tablero mostrado")
+
+        if comprobar_tablas(tablero, jugador_actual, enemigo):
             jugador_actual = None #Nadie gana
+            print("Nadie gana")
             break
 
-        movimiento = digitar_movimiento()
+        print("Se digita movimiento")
+        movimiento = digitar_movimiento(jugador_actual.color)
 
         if jaque:
             intento : bool = caso_jaque(tablero, jugador_actual, enemigo, movimiento)
@@ -67,7 +73,7 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
             print("Error. No se ha encontrado ninguna pieza.")
             continue
 
-        if movimiento[2].isalpha() and not isinstance(pieza, Peon):
+        if str(movimiento[2]).isalpha() and not isinstance(pieza, Peon):
             print("Error. Se ha intentado promocionar con una pieza que no es peon")
             continue
 
@@ -103,7 +109,7 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
 
         pos_antigua = pieza.posicion
 
-        if not pieza.mover(movimiento[1], tablero, jugador_actual, enemigo, rey.posicion, movimiento[2]):
+        if not pieza.mover(movimiento[1], tablero, jugador_actual, enemigo, rey.posicion, str(movimiento[2])):
             print("El movimiento es inválido (autojaque, movimiento impromio de la pieza, etc")
 
         if isinstance(pieza, Torre) or isinstance(pieza, Rey) or isinstance(pieza, Peon):
@@ -112,7 +118,7 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
         #En caso de que sea un peon y se haya digitado una promoción, debemos comprobar si es válida. En caso afirmativo
         #transformamos ese peon a la pieza deseada
 
-        if movimiento[2].isalpha():
+        if str(movimiento[2]).isalpha():
 
             intento : bool = comprobar_promocion(pieza, movimiento[2], jugador_actual)
 
@@ -132,20 +138,20 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
 
 
 
-def crear_piezas(color : bool, tablero : Tablero) -> list:
+def crear_piezas(color : int, tablero : Tablero) -> list:
 
     piezas = []
 
     fila_p : int = 6 if color else 1
     for j in range(8):
-        peon = Peon([fila_p,j],color)
+        peon = Peon((fila_p,j),color)
         piezas.append(peon)
         tablero[fila_p][j].pieza = peon
 
     fila_r : int = 7 if color else 0
-    piezas_ext = [Torre([fila_r,0],color), Caballo([fila_r,1],color), Alfil([fila_r,2],color),
-                  Reina([fila_r,3],color), Rey([fila_r,4],color),
-                  Torre([fila_r,5],color), Caballo([fila_r,6],color), Alfil([fila_r,7],color)]
+    piezas_ext = [Torre((fila_r,0),color), Caballo((fila_r,1),color), Alfil((fila_r,2),color),
+                  Reina((fila_r,3),color), Rey((fila_r,4),color),
+                  Torre((fila_r,5),color), Caballo((fila_r,6),color), Alfil((fila_r,7),color)]
 
     for pieza in piezas_ext:
         piezas.append(pieza)
@@ -158,8 +164,12 @@ def encontrar_pieza(tablero : "Tablero", jugador : "Jugador", enemgio : "Jugador
                     origen : tuple[int]) -> Union["Pieza",None]:
 
     for piezas in jugador.piezas:
-        if origen == piezas.posicion:
+        if origen == tuple(piezas.posicion):
+            print(piezas.movimiento_valido(tablero))
+            print(piezas.posicion)
             return piezas
+
+    return None
 
 def comprobar_enroque_corto(tablero : "Tablero", enemigo : "Jugador", rey : "Rey",
                             torre : "Torre") -> bool:
@@ -280,7 +290,7 @@ def caso_jaque(tablero : "Tablero", jugador_actual : "Jugador", enemigo : "Jugad
         print("Error. No se ha encontrado el rey")
         return False
 
-    if not pieza.mover(movimiento[1], tablero, jugador_actual, enemigo, rey.posicion, movimiento[2]):
+    if not pieza.mover(movimiento[1], tablero, jugador_actual, enemigo, rey.posicion, str(movimiento[2])):
         print("El movimiento es inválido (autojaque, movimiento impromio de la pieza, etc")
         return False
 
@@ -307,3 +317,8 @@ def comprobar_tablas(tablero : "Tablero", jugador_actual : "Jugador", enemigo : 
             return False
 
     return True
+
+if __name__ == "__main__":
+    jug1 = Jugador("Carlos",1000)
+    jug2 = Jugador("Jorgis",2300)
+    partida(jug1,jug2)

@@ -1,6 +1,6 @@
 from crypt import methods
 from flask import Flask, request
-from flask_jwt_extended import (JWTManager, create_access_token, jwt_required,get_jwt_identity, get_jwt)
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required,get_jwt_identity, get_jwt, hashlib
 
 app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = "ContraseñaSuperSecreta"
@@ -17,7 +17,7 @@ def singup() -> tuple[str,int]:
         users[user] = hashed
         return f"Usuario {user} registrado", 200
 
-@app.route('/singnin', methods=['GET'])
+@app.route('/login', methods=['GET'])
 def login():
     user = request.args.get('user', '')
     contraseña = request.args.get('password', '')

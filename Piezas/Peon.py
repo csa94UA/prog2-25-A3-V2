@@ -44,7 +44,7 @@ class Peon(Pieza):
         Devuelve el conjunto de posiciones validas que puede tener.
     """
 
-    def __init__(self, posicion : list[int,int], color : bool) -> None:
+    def __init__(self, posicion : tuple[int,int], color : int) -> None:
         """
         Inicializa una instacia de la clase Peon
         Parámetros:
