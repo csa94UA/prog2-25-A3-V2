@@ -1,10 +1,3 @@
-from .casilla import Casilla
-from Jugador import Jugador
-from typing import Union
-import itertools
-#import pygame
-import os
-
 """
 Modulo para la gestión y uso de una pieza genérica
 
@@ -14,6 +7,13 @@ y contiene la información más esencial. Posee modulos que permite realizar las
 Clases:
     - Tablero
 """
+
+from .casilla import Casilla
+from Jugador import Jugador
+from typing import Union
+import itertools
+#import pygame
+import os
 
 class Tablero:
     """
@@ -34,10 +34,26 @@ class Tablero:
 
     Métodos:
     -----------
-    conquistado(Pieza) -> None:
-        Actualiza los atributos de la casilla al ser tomada por una pieza
-    representacion() -> str:
-        Representa la pieza que ocupa la casilla según la clase de pieza que sea y su color
+    obtener_casilla(self, fila : int, columna : int) -> Casilla:
+        Devuelve la casilla coherente a la perspectiva del jugador actual
+    limite(fila : int, columna : int) -> bool:
+        Comprueba si se ha digitado una posicion fuera de los limites
+    mostrar_tablero(self, color : bool) -> None:
+        Representa el tablero en función de la persepctiva del jugador actual
+    traduccion_FEN(self, color : int, enroque_n : int, enroque_b : int, en_passant : Union[str,None], contador : int, turno : int) -> str:
+        Devuelve toda la información del tablero en formato FEN. Util para guardar partidas y comunicarse con otras IA
+    casillas_intermedias(fila : int, columna : int, fila_m : int, columna_m : int) -> list[(int, int)]:
+        Retorna las casillas intermedias entre dos piezas. Usado para comprobar las casillas problematicas dentro de un jaque
+    quitar_permutaciones(self, mov : tuple, casillas_tocapelotas : list, fila : int, columna : int) -> None:
+        Elimina las permutaciones que contengan a la posicoin de la pieza. Se usa para eliminar casillas intermedias
+    jaque_in(self, fila : int, columna : int, jugador : Jugador, enemigo : Jugador) -> bool:
+        Comprueba si el jaque es inevitable o no
+    amenazas(self, enemigo : Jugador, fila : int, columna : int) -> list:
+        Revisa las piezas que amenazan una casilla
+    casillas_amenazadas(self, amenazadores : list, fila : int, columna : int) -> list:
+        Obtiene todas las casillas amenazadas entre la posición de cada pieza amenazadora y la posición de la pieza
+        víctima. En ella se emplea la funcion casillas_intermedias (por eso su similitud), pero este tiene en cuenta
+        el caso especial del caballo (que no tiene casillas intermedias)
     """
 
     def __init__(self) -> None:
@@ -71,7 +87,7 @@ class Tablero:
         """
         return self.tablero[indice]
 
-    def obtener_casilla(self, fila : int, columna : int) -> Casilla:
+    def obtener_casilla(self, fila : int, columna : int, color : int) -> Casilla:
         """
         Permite encontrar la casilla concreta. La diferencia se encuentra en que,
         como las matrices comienzan arriba a la izquierda y el tablero de ajedrez
@@ -92,7 +108,7 @@ class Tablero:
             Retorna la casilla correspondiente
         """
 
-        return self.tablero[8-fila][columna]
+        return self.tablero[fila][columna] if color else self.tablero[7-fila][columna]
 
     @staticmethod
     def limite(fila : int, columna : int) -> bool:
@@ -128,16 +144,15 @@ class Tablero:
             Representa el color del jugador para mostrar el tablero desde su perspectiva
         """
 
-        fila = 7 if color else 0
-
         for i in range(8):
             for j in range(8):
-                print(self[abs(fila-i)][j].representacion(),end=" ")
+                #print(self[abs(fila-i)][j].representacion(),end=" ")
+                print(self.obtener_casilla(i, j, color).representacion(), end=' ')
             print()
 
         return None
 
-    def traduccion_FEN(self, color : bool, enroque_n : bool, enroque_b : bool, en_passant : str, contador : int, turno : int) -> str:
+    def traduccion_FEN(self, color : int, enroque_n : int, enroque_b : int, en_passant : Union[str,None], contador : int, turno : int) -> str:
         """
         Traduce la situación del tablero a formato FEN. Muy útil a la hora de guardar partidas,
         tratar con APIs de IA, comprimir la información del ajedrez, etc.

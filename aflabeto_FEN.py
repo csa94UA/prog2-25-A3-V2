@@ -5,10 +5,13 @@ Este modulo proporciona funciones para la traducción del formato LAN simplifica
 simplificación de otros formatos LAN y manejo de errores.
 
 Funciones:
-    - digitar_movimiento() -> tuple: Piede al usuario digitar su movimiento en formato LAN simplificado y devuelve
-    el movimiento correspondiente
-    - separar_datos(mov : str) -> Separa la entrada de datos en sus partes correspondientes
-    - simplificacion(mov : str) -> Simplifica el formato LAN de entrada
+    - digitar_movimiento() -> tuple:
+    Piede al usuario digitar su movimiento en formato LAN simplificado y devuelve el movimiento correspondiente.
+
+    - separar_datos(mov : str) -> tuple:
+    Separa la entrada de datos en sus partes correspondientes
+    - traducción_LAN(mov : str) -> str:
+    Simplifica el formato LAN de entrada a nuestro formato ultrasimplificado.
 """
 
 def digitar_movimiento(color : int) -> tuple:

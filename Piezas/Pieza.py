@@ -31,11 +31,10 @@ class Pieza(ABC):
 
     Métodos:
     -----------
+    movimiento_valido():
+        Es un metodo abstracto. Obtiene todos los movimientos posibles de una pieza.
     mover(tuple(int,int)) -> bool:
         Desplaza la pieza desde su posición hasta el destino.
-    capturar(tuple(int,int)) -> bool:
-        Desplaza la pieza desde su posición hasta el destino para
-        capturar una pieza (con la notación algebráica cobra más sentido)
     """
 
     def __init__(self, posicion: tuple[int,int], color: int) -> None:
@@ -44,7 +43,7 @@ class Pieza(ABC):
 
         Parámetros:
         -----------
-        posicion : list[int,int]
+        posicion : tuple[int,int]
             Posicíon concreta de una pieza
         color : bool
             Color de la pieza (1 es blanco y 0 es negro)

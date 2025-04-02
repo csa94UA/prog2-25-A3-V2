@@ -39,6 +39,8 @@ class Rey(Pieza):
     -----------
     movimiento_valido() -> list[(int,int)]
         Devuelve el conjunto de posiciones validas que puede tener.
+    filtro_movimientos() -> list[(int,int)]
+        Retorna las nuevas posiciones teniendo en cuenta si la casilla era amenazada por una pieza enemiga
     enroque() -> bool
         Devuelve True si es posible hacer el enroque.
     jaque_mate() -> bool
