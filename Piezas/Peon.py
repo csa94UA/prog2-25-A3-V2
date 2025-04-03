@@ -75,15 +75,17 @@ class Peon(Pieza):
 
         color : int = 1 if self.color else -1
 
-        if tablero[fila + color][columna] == 0:
+        if tablero.limite(fila + color, columna) and tablero[fila + color][columna] == 0:
             movimientos.append((fila + color,columna))
-            if self.mover_doble(tablero):
+            if self.mover_doble(tablero,color):
                 movimientos.append((fila + color * 2, columna))
 
-        if tablero[fila + color][columna + 1] != 0 or self.en_passant(tablero, color):
+        if (tablero.limite(fila + color, columna + 1) and tablero[fila + color][columna + 1] != 0 or
+                self.en_passant(tablero, color)):
             movimientos.append((fila + color, columna + 1))
 
-        if tablero[fila + color][columna - 1] != 0 or self.en_passant(tablero, color):
+        if (tablero.limite(fila + color, columna - 1) and tablero[fila + color][columna - 1] != 0 or
+                self.en_passant(tablero, color)):
             movimientos.append((fila + color, columna - 1))
 
         return movimientos
@@ -117,7 +119,7 @@ class Peon(Pieza):
                 f"Movimientos -> {self.movimientos})")
 
 
-    def mover_doble(self, tablero : "Tablero") -> bool:
+    def mover_doble(self, tablero : "Tablero", color : int) -> bool:
         """
         Comprueba si puede dar un segundo paso
 
@@ -133,7 +135,8 @@ class Peon(Pieza):
 
         fila, columna = self.posicion
 
-        if not self.movido and not tablero[fila + 2][columna].pieza is not None:
+        if (not self.movido and tablero.limite(fila + color * 2, columna) and
+                not tablero[fila + color * 2][columna].pieza is not None):
             return True
 
         return False
@@ -154,11 +157,11 @@ class Peon(Pieza):
 
         fila, columna = self.posicion
 
-        if tablero.limite(fila + color,columna + 1) and tablero[fila + color][columna + 1].en_passant[1] == \
+        if tablero.limite(fila + color,columna + 1) and tablero.en_passant is not None and tablero.en_passant[1] == \
                 (fila + color, columna + 1):
             return True
 
-        if tablero.limite(fila + color, columna - 1) and tablero[fila + color][columna - 1].en_passant[1] == \
+        if tablero.limite(fila + color, columna - 1) and tablero.en_passant is not None and tablero.en_passant[1] == \
                 (fila + color, columna - 1):
             return True
 
