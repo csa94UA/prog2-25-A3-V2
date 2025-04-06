@@ -89,15 +89,11 @@ class Rey(Pieza):
                 if not tablero.limite(i,j) or (i == fila) and (columna == j):
                     continue
 
-                if tablero[i][j] is not None:
+                if tablero[i][j].pieza is not None and tablero[i][j].pieza.color != self.color:
+                    movimientos.append((i,j))
 
-                    if tablero[i][j].pieza.color != self.color:
-                        movimientos.append(tuple[i, j])
-
-                    break
-
-
-                movimientos.append(tuple[i,j])
+                if tablero[i][j].pieza is None:
+                    movimientos.append((i,j))
 
         return self.filtro_movimientos(movimientos, tablero)
 
@@ -120,7 +116,7 @@ class Rey(Pieza):
         casillas : list = []
 
         for fila, columna in movimientos:
-            if tablero.amenazas(self.enemigo,fila,columna) is []:
+            if not tablero.amenazas(self.enemigo, fila, columna):
                 casillas.append((fila,columna))
 
         return casillas

@@ -88,6 +88,7 @@ class Pieza(ABC):
 
         if destino is not tuple() and not destino in self.movimiento_valido(tablero):
             print("Error. La posición desitno no está dentro de los movimientos validos de la pieza")
+            print(destino,'\n', self.movimiento_valido(tablero))
             return False
 
         x = destino[0]
@@ -107,9 +108,9 @@ class Pieza(ABC):
             enemigo.piezas.remove(tablero[x][y].pieza)
             tablero[x][y].pieza = None
 
-        tablero[x][y] = self
+        tablero[x][y].pieza = self
 
-        return False
+        return True
 
     def __repr__(self):
         """

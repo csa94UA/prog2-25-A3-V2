@@ -57,7 +57,7 @@ def digitar_movimiento(color : int) -> tuple:
             return ((8 - int(inicio[1]), traduccion[inicio[0]]), (8 - int(fin[1]), traduccion[fin[0]]),
                     0 if especial is None else especial[1].upper())
         else:
-            return ((int(inicio[1]), traduccion[inicio[0]]), (int(fin[1]), traduccion[fin[0]]),
+            return ((int(inicio[1]) - 1, traduccion[inicio[0]]), (int(fin[1]) - 1, traduccion[fin[0]]),
                     0 if especial is None else especial[1].upper())
 
 
@@ -100,6 +100,7 @@ def traducción_LAN(mov : str) -> str:
     return mov
 
 if __name__ == '__main__':
+    """
     movimientos = [
         "e2-e4",  # Movimiento normal de peón (de e2 a e4)
         "d2-d4",  # Movimiento normal de peón (de d2 a d4)
@@ -115,9 +116,9 @@ if __name__ == '__main__':
         "0-0",  # Enroque corto (rey y torre se mueven)
         "0-0-0"  # Enroque largo (rey y torre se mueven)
     ]
-
+    
     # Ejemplo de impresión:
     for mov in movimientos:
         print(traducción_LAN(mov))
-
-    print(digitar_movimiento(0))
+    """
+    print(digitar_movimiento(1))

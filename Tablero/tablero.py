@@ -210,8 +210,8 @@ class Tablero:
 
         return fen
 
-    @staticmethod
-    def casillas_intermedias(fila : int, columna : int, fila_m : int, columna_m : int) -> list[(int, int)]:
+
+    def casillas_intermedias(self, fila : int, columna : int, fila_m : int, columna_m : int) -> list[(int, int)]:
         """
         Metodo estático que calcula las casillas intermedias entre dos piezas (incluyendo la posicion
         de la pieza atacante)
@@ -237,21 +237,24 @@ class Tablero:
         dir_i = 1 if fila > fila_m else -1
         dir_j = 1 if columna > columna_m else -1
 
-        if (fila - fila_m != 0 and abs(fila - fila_m) != abs(columna - columna_m)) and (fila - fila_m == 0):
+        print("Direccion: ", dir_i, dir_j)
+
+        if abs(fila - fila_m) != abs(columna - columna_m) and fila - fila_m != 0 and columna - columna_m != 0:
             return []
 
         generador = ((fila_m + landa * dir_i, columna_m + landa * dir_j) for landa in itertools.count(1))
 
+
         intermedias = [(fila_m,columna_m)]
         for pos in generador:
-            if pos == (fila,columna):
+            if pos == (fila,columna) or not self.limite(*pos):
                 break
             intermedias.append((fila,columna))
 
         return intermedias
 
 
-    def quitar_permutaciones(self, mov : tuple, casillas_tocapelotas : list, fila : int, columna : int) -> None:
+    def quitar_permutaciones(self, mov : tuple, casillas_tocapelotas : list, fila : int, columna : int) -> list[(int,int)]:
         """
         Elimina las casillas peligrosas para la pieza 'victima' mediante la irrupción
         del camino por parte de otra pieza.
@@ -282,9 +285,14 @@ class Tablero:
 
         #caminos_a_eliminar = self.casillas_intermedias(fila,columna,fila_p,columna_p)
 
-        casillas_tocapelotas[:] = [pos for pos in casillas_tocapelotas if mov not in pos]
+        print("Posición que eliminará casillas: ", mov)
 
-        return None
+        casillas_tocapelotas = [pos for pos in casillas_tocapelotas if mov != pos]
+
+        print("Casillas tocapelotas actualizado ",casillas_tocapelotas)
+
+
+        return casillas_tocapelotas
 
 
     def jaque_in(self, fila : int, columna : int, jugador : Jugador, enemigo : Jugador) -> bool:
@@ -310,7 +318,11 @@ class Tablero:
 
         amenazadores : list = self.amenazas(enemigo,fila,columna)
 
+        print(amenazadores)
+
         casillas_tocapelotas : list = self.casillas_amenazadas(amenazadores,fila,columna)
+
+        print(casillas_tocapelotas)
 
         for pieza in jugador.piezas:
 
@@ -319,9 +331,12 @@ class Tablero:
             for mov in pieza.movimiento_valido(self):
 
                 if mov in casillas_tocapelotas:
-                    self.quitar_permutaciones(mov,casillas_tocapelotas,fila,columna)
+                    casillas_tocapelotas = self.quitar_permutaciones(mov,casillas_tocapelotas,fila,columna)
 
-        if casillas_tocapelotas is []:
+        print("Casillas resultantes", casillas_tocapelotas)
+
+        if not casillas_tocapelotas:
+            print("No es inevitable")
             return False
 
         return True
@@ -344,11 +359,16 @@ class Tablero:
         list
             Devuelve una lista con la posición de la pieza y la pieza en sí
         """
+        from Piezas import Rey
 
         casillas : list = []
 
         for pieza in enemigo.piezas:
+            if isinstance(pieza, Rey):
+                print("Es un rey (lo ignoro epicamente)")
+                continue
             if (fila,columna) in pieza.movimiento_valido(self):
+                print("No es un rey (lo inserto epicamente)")
                 casillas.append((pieza.posicion, pieza))
 
         return casillas
@@ -379,10 +399,12 @@ class Tablero:
 
             fila_p, columna_p = posicion
 
-            if tablero[fila_p][columna_p].representacion() != 'Nn':
+            if self[fila_p][columna_p].representacion() not in ['N','n']:
+                print("No es un caballo")
                 casillas.append(self.casillas_intermedias(fila, columna, posicion[0], posicion[1]))
 
-            elif tablero[fila_p][columna_p].representacion() == 'Nn':
+            elif self[fila_p][columna_p].representacion() in ['N','n']:
+                print("Es un caballo")
                 casillas.append(posicion)
 
         return casillas

@@ -57,11 +57,14 @@ class Caballo(Pieza):
         list[tuple(int,int)]
             Retorna una lista de movimientos válidos del caballo
         """
-        movimientos_posibles = [(1,2),(1,-2),(2,1),(2,-1),(-1,2),(-1,-2),(-2,1),(-2,-1)]
+        fila, columna = self.posicion
+
+        movimientos_posibles = [(fila + 1,columna + 2),( fila + 1,columna - 2),(fila + 2,columna + 1),(fila + 2,columna - 1),
+                                (fila - 1,columna + 2),(fila - 1,columna - 2),(fila - 2,columna + 1),(fila - 2,columna - 1)]
         movimientos = []
 
         for fila, columna in movimientos_posibles:
-            if not tablero[fila][columna].ocupado:
+            if tablero.limite(fila, columna) and not tablero[fila][columna].ocupado:
                 movimientos.append((fila,columna))
 
         return movimientos

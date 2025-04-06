@@ -73,19 +73,19 @@ class Peon(Pieza):
         fila, columna = self.posicion
         movimientos = []
 
-        color : int = 1 if self.color else -1
+        color : int = -1 if self.color else 1
 
-        if tablero.limite(fila + color, columna) and tablero[fila + color][columna] == 0:
+        if tablero.limite(fila + color, columna) and tablero[fila + color][columna].pieza is None:
             movimientos.append((fila + color,columna))
             if self.mover_doble(tablero,color):
                 movimientos.append((fila + color * 2, columna))
 
-        if (tablero.limite(fila + color, columna + 1) and tablero[fila + color][columna + 1] != 0 or
-                self.en_passant(tablero, color)):
+        if (tablero.limite(fila + color, columna + 1) and tablero[fila + color][columna + 1].pieza is not None
+                and tablero[fila + color][columna + 1].pieza.color != self.color or self.en_passant(tablero, color)):
             movimientos.append((fila + color, columna + 1))
 
-        if (tablero.limite(fila + color, columna - 1) and tablero[fila + color][columna - 1] != 0 or
-                self.en_passant(tablero, color)):
+        if (tablero.limite(fila + color, columna - 1) and tablero[fila + color][columna - 1].pieza is not None
+                and tablero[fila + color][columna - 1].pieza.color != self.color or self.en_passant(tablero, color)):
             movimientos.append((fila + color, columna - 1))
 
         return movimientos

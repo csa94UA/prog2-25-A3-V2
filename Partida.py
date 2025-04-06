@@ -69,8 +69,8 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
     tablero = Tablero() #Cargamos tablero
 
     #Insertamos las piezas en el tablero y en el inventario del jugador
-    jugador1.piezas = crear_piezas(jugador1.color, tablero)
-    jugador2.piezas = crear_piezas(jugador2.color, tablero)
+    jugador1.piezas = crear_piezas(jugador1.color, tablero, jugador2)
+    jugador2.piezas = crear_piezas(jugador2.color, tablero, jugador1)
 
     game_over : bool = False
     jaque : bool = False
@@ -82,6 +82,9 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
     while not game_over:
         jugador_actual = jugador1 if turno else jugador2
         enemigo : Jugador = jugador1 if not turno else jugador2
+
+        for pieza in jugador_actual.piezas:
+            print(pieza, type(pieza), isinstance(pieza, Rey))
 
         tablero.mostrar_tablero(jugador_actual.color)
 
@@ -167,6 +170,7 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
                 continue
 
         #Vemos si produce la pieza un jaque. En caso afirmativo lo guardamos para el jugador del siguiente turno
+        rey = next((rey for rey in enemigo.piezas if isinstance(rey, Rey)), None)
         jaque : bool = comprobar_jaque_enemigo(tablero, jugador_actual, enemigo, pieza)
 
         if jaque and tablero.jaque_in(rey.posicion[0], rey.posicion[1], enemigo, jugador_actual):
@@ -174,11 +178,13 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
 
         turno = 1 - turno
 
+    print("Ha ganado el jugador", jugador_actual.nombre, ' blanco' if jugador_actual.color else ' negro')
+
     return jugador_actual
 
 
 
-def crear_piezas(color : int, tablero : Tablero) -> list["Pieza"]:
+def crear_piezas(color : int, tablero : Tablero, enemigo : "Jugador") -> list["Pieza"]:
     """
     Función que inicializa las piezas de un jugador al comenzar una partida. Tiene en cuanta el color del jugador para
     colocar las piezas en su lugar.
@@ -205,8 +211,8 @@ def crear_piezas(color : int, tablero : Tablero) -> list["Pieza"]:
 
     fila_r : int = 7 if color else 0
     piezas_ext = [Torre((fila_r,0),color), Caballo((fila_r,1),color), Alfil((fila_r,2),color),
-                  Reina((fila_r,3),color), Rey((fila_r,4),color),
-                  Torre((fila_r,5),color), Caballo((fila_r,6),color), Alfil((fila_r,7),color)]
+                  Reina((fila_r,3),color), Rey((fila_r,4),color, enemigo),
+                  Alfil((fila_r,5),color), Caballo((fila_r,6),color), Torre((fila_r,7),color)]
 
     for pieza in piezas_ext:
         piezas.append(pieza)
@@ -236,6 +242,9 @@ def encontrar_pieza(tablero : "Tablero", jugador : "Jugador", origen : tuple[int
 
     for piezas in jugador.piezas:
         if origen == tuple(piezas.posicion):
+            print("Blanco") if piezas.color else print("Negro")
+            print(type(piezas))
+            print(tablero[piezas.posicion[0]][piezas.posicion[1]].representacion())
             print(piezas.movimiento_valido(tablero))
             print(piezas.posicion)
             return piezas
@@ -439,7 +448,7 @@ def caso_jaque(tablero : "Tablero", jugador_actual : "Jugador", enemigo : "Jugad
         print("Error. No se ha encontrado ninguna pieza.")
         return False
 
-    if movimiento[2].isalpha() and not isinstance(pieza, Peon):
+    if str(movimiento[2]).isalpha() and not isinstance(pieza, Peon):
         print("Error. Se ha intentado promocionar una pieza que no es peón.")
         return False
 
