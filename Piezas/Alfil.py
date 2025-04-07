@@ -1,4 +1,5 @@
 from Piezas.Pieza import Pieza
+from itertools import count
 
 """
 Modulo para la gestión y uso de un alfil
@@ -33,7 +34,7 @@ class Alfil(Pieza):
         Devuelve el conjunto de posiciones validas que puede tener.
     """
 
-    def __init__(self, posicion : list[int,int], color : bool) -> None:
+    def __init__(self, posicion : tuple[int,int], color : int) -> None:
         """
         Inicializa una instacia de la clase Alfil
 
@@ -64,33 +65,62 @@ class Alfil(Pieza):
         movimientos = []
 
         # Estos bucles for acceden solamente a la diagonal que me interesa
-        for k in range(1, min(8 - fila, columna + 1)):
+
+        for k in count(1): #Abajo-izquierda
             i = fila + k
             j = columna - k
-            if tablero[i][j].ocupado:
+            if not tablero.limite(i,j):
                 break
-            movimientos.append(tuple[i,j])
 
-        for k in range(1, min(fila + 1, 8 - columna)):
+            if tablero[i][j].pieza is not None:
+
+                if tablero[i][j].pieza.color != self.color:
+                    movimientos.append((i, j))
+
+                break
+            movimientos.append((i, j))
+
+        for k in count(1): #Arriba-derecha
             i = fila - k
             j = columna + k
-            if tablero[i][j].ocupado:
+            if not tablero.limite(i, j):
                 break
-            movimientos.append(tuple[i,j])
 
-        for k in range(1, min(fila + 1, columna + 1)):
+            if tablero[i][j].pieza is not None:
+
+                if tablero[i][j].pieza.color != self.color:
+                    movimientos.append((i, j))
+
+                break
+            movimientos.append((i, j))
+
+        for k in count(1): #Arriba-izquierda
             i = fila - k
             j = columna - k
-            if tablero[i][j].ocupado:
+            if not tablero.limite(i, j):
                 break
-            movimientos.append(tuple[i,j])
 
-        for k in range(1, min(8 - fila, 8 - columna)):
+            if tablero[i][j].pieza is not None:
+
+                if tablero[i][j].pieza.color != self.color:
+                    movimientos.append((i, j))
+
+                break
+            movimientos.append((i, j))
+
+        for k in count(1): #Abajo-derecha
             i = fila + k
             j = columna + k
-            if tablero[i][j].ocupado:
+            if not tablero.limite(i, j):
                 break
-            movimientos.append(tuple[i,j])
+
+            if tablero[i][j].pieza is not None:
+
+                if tablero[i][j].pieza.color != self.color:
+                    movimientos.append((i, j))
+
+                break
+            movimientos.append((i, j))
 
         return movimientos
 

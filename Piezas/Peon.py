@@ -44,7 +44,7 @@ class Peon(Pieza):
         Devuelve el conjunto de posiciones validas que puede tener.
     """
 
-    def __init__(self, posicion : list[int,int], color : bool) -> None:
+    def __init__(self, posicion : tuple[int,int], color : int) -> None:
         """
         Inicializa una instacia de la clase Peon
         Parámetros:
@@ -73,16 +73,20 @@ class Peon(Pieza):
         fila, columna = self.posicion
         movimientos = []
 
-        if tablero[fila+1][columna] == 0:
-            movimientos.append((fila + 1,columna))
-            if mover_doble(tablero):
-                movimientos.append((fila + 2, columna))
+        color : int = -1 if self.color else 1
 
-        if tablero[fila + 1,columna + 1] != 0 or en_passant(tablero):
-            movimientos.append((fila, columna + 1))
+        if tablero.limite(fila + color, columna) and tablero[fila + color][columna].pieza is None:
+            movimientos.append((fila + color,columna))
+            if self.mover_doble(tablero,color):
+                movimientos.append((fila + color * 2, columna))
 
-        if tablero[fila + 1,columna - 1] != 0 or en_passant(tablero):
-            movimientos.append((fila, columna - 1))
+        if (tablero.limite(fila + color, columna + 1) and tablero[fila + color][columna + 1].pieza is not None
+                and tablero[fila + color][columna + 1].pieza.color != self.color or self.en_passant(tablero, color)):
+            movimientos.append((fila + color, columna + 1))
+
+        if (tablero.limite(fila + color, columna - 1) and tablero[fila + color][columna - 1].pieza is not None
+                and tablero[fila + color][columna - 1].pieza.color != self.color or self.en_passant(tablero, color)):
+            movimientos.append((fila + color, columna - 1))
 
         return movimientos
 
@@ -95,9 +99,7 @@ class Peon(Pieza):
             Retorna un valor booleano marcando su posibilidad de transformarse
         """
 
-        fila, columna = self.posicion
-
-        if self.posicion == (1,1) or (8,8):
+        if self.posicion[0] in [1,6]:
             return True
 
         return False
@@ -117,7 +119,7 @@ class Peon(Pieza):
                 f"Movimientos -> {self.movimientos})")
 
 
-    def mover_doble(self, tablero : "Tablero") -> bool:
+    def mover_doble(self, tablero : "Tablero", color : int) -> bool:
         """
         Comprueba si puede dar un segundo paso
 
@@ -133,12 +135,13 @@ class Peon(Pieza):
 
         fila, columna = self.posicion
 
-        if not self.movido and not tablero[fila + 2][columna].pieza is not None:
+        if (not self.movido and tablero.limite(fila + color * 2, columna) and
+                not tablero[fila + color * 2][columna].pieza is not None):
             return True
 
         return False
 
-    def en_passant(self, tablero : "Tablero") -> bool:
+    def en_passant(self, tablero : "Tablero", color : int) -> bool:
         """
         Comprueba si puede hacer en passant
 
@@ -154,10 +157,12 @@ class Peon(Pieza):
 
         fila, columna = self.posicion
 
-        if tablero.limite(fila+1,columna+1) and tablero[fila+1][columna+1].en_passant:
+        if tablero.limite(fila + color,columna + 1) and tablero.en_passant is not None and tablero.en_passant[1] == \
+                (fila + color, columna + 1):
             return True
 
-        if tablero.limite(fila+1,columna-1) and tablero[fila+1][columna-1]:
+        if tablero.limite(fila + color, columna - 1) and tablero.en_passant is not None and tablero.en_passant[1] == \
+                (fila + color, columna - 1):
             return True
 
         return False

@@ -1,8 +1,3 @@
-from uaclient.util import replace_top_level_logger_name
-
-from Piezas import Caballo, Alfil, Rey, Torre, Reina, Pieza, Peon
-from typing import Union
-
 """
 Modulo para la gestión de un jugador
 
@@ -12,6 +7,9 @@ que estarán dispoonibles cuando esté en partida
 Clases:
     - Jugador
 """
+
+from Piezas import Caballo, Alfil, Rey, Torre, Reina, Pieza, Peon
+from typing import Union
 
 class Jugador:
 

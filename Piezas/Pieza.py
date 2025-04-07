@@ -1,8 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from Tablero import Tablero
+from typing import Union
 
 """
 Modulo para la gestión y uso de una pieza genérica
@@ -21,7 +18,7 @@ class Pieza(ABC):
 
     Atributos:
     -----------
-    posicion : list[int,int]
+    posicion : tuple[int,int]
         Posicíon concreta de una pieza
     color : bool
         Color de la pieza (1 es blanco y 0 es negro)
@@ -34,20 +31,19 @@ class Pieza(ABC):
 
     Métodos:
     -----------
+    movimiento_valido():
+        Es un metodo abstracto. Obtiene todos los movimientos posibles de una pieza.
     mover(tuple(int,int)) -> bool:
         Desplaza la pieza desde su posición hasta el destino.
-    capturar(tuple(int,int)) -> bool:
-        Desplaza la pieza desde su posición hasta el destino para
-        capturar una pieza (con la notación algebráica cobra más sentido)
     """
 
-    def __init__(self, posicion: list[int, int], color: bool) -> None:
+    def __init__(self, posicion: tuple[int,int], color: int) -> None:
         """
         Inicializa una instacia de la clase Pieza
 
         Parámetros:
         -----------
-        posicion : list[int,int]
+        posicion : tuple[int,int]
             Posicíon concreta de una pieza
         color : bool
             Color de la pieza (1 es blanco y 0 es negro)
@@ -67,8 +63,10 @@ class Pieza(ABC):
         """
         pass
 
-    def mover(self, destino: list[int, int], tablero: "Tablero"):
+    def mover(self, destino: tuple[int, int], tablero: "Tablero", jugador : "Jugador", enemigo : "Jugador",
+              pos_rey : tuple[int, int], especial : Union[str,int]) -> bool:
         from Tablero import Tablero
+        from Jugador import Jugador
         """
         Desplaza la pieza desde su posición hasta el destino.
 
@@ -82,20 +80,51 @@ class Pieza(ABC):
             Si la pieza ha logrado llegar a su destino
         """
 
+        if especial.isalpha() and not destino[0] in [0,7]:
+            print("Error. No se encuentra en el otro lado del tablero")
+            return False
+
+        if especial == '0' and tablero[self.posicion[0]][self.posicion[1]].representacion() in ['P','p'] and \
+                destino[0] in [0,7]:
+            print("Error. No has digitado una promoción siendo peón.")
+            return False
+
         # Recorremos todos los movimientos válidos de la pieza
 
-        self.movimientos = self.movimiento_valido(tablero)
+        if destino is not tuple() and not destino in self.movimiento_valido(tablero):
+            print("Error. La posición desitno no está dentro de los movimientos validos de la pieza")
+            print(destino,'\n', self.movimiento_valido(tablero))
+            return False
 
-        for movimiento in self.movimientos:
-            x = self.posicion[0] + movimiento[0]
-            y = self.posicion[1] + movimiento[1]
+        x = destino[0]
+        y = destino[1]
 
-            if destino == (x, y) and tablero[x][y].pieza is None and not Jaque(tuple[x, y]):
-                self.posicion[0] = x
-                self.posicion[1] = y
-                return True
+        pos_ant_pieza : tuple[int,int] = self.posicion
+        self.posicion = (x, y)
+        tablero[pos_ant_pieza[0]][pos_ant_pieza[1]].pieza = None
 
-        return False
+        pieza_enemgio = tablero[x][y].pieza
+        tablero[x][y].pieza = self
+
+        print(pieza_enemgio)
+        print(self)
+
+        if pieza_enemgio is not None and pieza_enemgio.posicion == self.posicion:
+            indice : int = enemigo.piezas.index(pieza_enemgio)
+            enemigo.piezas.remove(pieza_enemgio)
+
+        if tablero.amenazas(enemigo, pos_rey[0], pos_rey[1]):
+            print("Error. Tu movimiento provoca o no impide un jaque")
+            self.posicion = pos_ant_pieza
+            tablero[pos_ant_pieza[0]][pos_ant_pieza[1]].pieza = self
+            tablero[x][y].pieza = pieza_enemgio
+            if pieza_enemgio is not None:
+                enemigo.piezas.insert(indice, pieza_enemgio)
+            return False
+
+        print(tablero[x][y].pieza)
+
+        return True
 
     def __repr__(self):
         """
