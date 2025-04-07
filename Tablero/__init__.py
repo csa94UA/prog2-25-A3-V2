@@ -1,4 +1,4 @@
-from .Tablero import Tablero
-from .Casilla import Casilla
+from .tablero import Tablero
+from .casilla import Casilla
 
 __all__ = ["Tablero", "Casilla"]

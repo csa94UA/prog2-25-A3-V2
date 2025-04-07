@@ -1,4 +1,5 @@
 from Piezas.Pieza import Pieza
+from itertools import count
 
 """
 Modulo para la gestión y uso de un reina
@@ -33,7 +34,7 @@ class Reina(Pieza):
         Devuelve el conjunto de posiciones validas que puede tener.
     """
 
-    def __init__(self, posicion: list[int, int], color: bool) -> None:
+    def __init__(self, posicion: tuple[int,int], color: int) -> None:
         """
         Inicializa una instacia de la clase Reina
         Parámetros:
@@ -62,53 +63,114 @@ class Reina(Pieza):
         movimientos = []
 
         # Estos bucles for acceden solamente a la diagonal que me interesa
-        for d in range(1, min(8 - fila, columna + 1)):
-            i = fila + d
-            j = columna - d
-            if tablero[i][j].ocupado:
-                break
-            movimientos.append(tuple[i, j])
 
-        for k in range(1, min(fila + 1, 8 - columna)):
-            i = fila - d
-            j = columna + d
-            if tablero[i][j].ocupado:
-                break
-            movimientos.append(tuple[i, j])
-
-        for k in range(1, min(fila + 1, columna + 1)):
-            i = fila - k
-            j = columna - k
-            if tablero[i][j].ocupado:
-                break
-            movimientos.append(tuple[i, j])
-
-        for k in range(1, min(8 - fila, 8 - columna)):
+        for k in count(1):  # Abajo-izquierda
             i = fila + k
-            j = columna + k
-            if tablero[i][j].ocupado:
+            j = columna - k
+            if not tablero.limite(i, j):
+                break
+
+            if tablero[i][j].pieza is not None:
+
+                if tablero[i][j].pieza.color != self.color:
+                    movimientos.append((i, j))
+
                 break
             movimientos.append((i, j))
 
-        for i in range(fila-1,1,-1):
-            if tablero[i][columna] != 0:
+        for k in count(1):  # Arriba-derecha
+            i = fila - k
+            j = columna + k
+            if not tablero.limite(i, j):
+                break
+
+            if tablero[i][j].pieza is not None:
+
+                if tablero[i][j].pieza.color != self.color:
+                    movimientos.append((i, j))
+
+                break
+            movimientos.append((i, j))
+
+        for k in count(1):  # Arriba-izquierda
+            i = fila - k
+            j = columna - k
+            if not tablero.limite(i, j):
+                break
+
+            if tablero[i][j].pieza is not None:
+
+                if tablero[i][j].pieza.color != self.color:
+                    movimientos.append((i, j))
+
+                break
+            movimientos.append((i, j))
+
+        for k in count(1):  # Abajo-derecha
+            i = fila + k
+            j = columna + k
+            if not tablero.limite(i, j):
+                break
+
+            if tablero[i][j].pieza is not None:
+
+                if tablero[i][j].pieza.color != self.color:
+                    movimientos.append((i, j))
+
+                break
+            movimientos.append((i, j))
+
+        for i in count(fila-1,-1):
+
+            if not tablero.limite(i,columna):
+                break
+
+            if tablero[i][columna].pieza is not None:
+
+                if tablero[i][columna].pieza.color != self.color:
+                    movimientos.append((i,columna))
+
                 break
             movimientos.append((i,columna))
 
-        for i in range(fila+1,8):
-            if tablero[i][columna] != 0:
-                break
-            movimientos.append((i,columna))
+        for i in count(fila + 1):
 
-        for j in range(columna-1,1,-1):
-            if tablero[fila][j] != 0:
+            if not tablero.limite(i, columna):
                 break
-            movimientos.append((fila,j))
 
-        for j in range(columna+1,8):
-            if tablero[fila][j] != 0:
+            if tablero[i][columna].pieza is not None:
+
+                if tablero[i][columna].pieza.color != self.color:
+                    movimientos.append((i, columna))
+
                 break
-            movimientos.append((fila,j))
+            movimientos.append((i, columna))
+
+        for j in count(columna - 1, -1):
+
+            if not tablero.limite(fila, j):
+                break
+
+            if tablero[fila][j].pieza is not None:
+
+                if tablero[fila][j].pieza.color != self.color:
+                    movimientos.append((fila, j))
+
+                break
+            movimientos.append((fila, j))
+
+        for j in count(columna + 1):
+
+            if not tablero.limite(fila, j):
+                break
+
+            if tablero[fila][j].pieza is not None:
+
+                if tablero[fila][j].pieza.color != self.color:
+                    movimientos.append((fila, j))
+
+                break
+            movimientos.append((fila, j))
 
         return movimientos
 
