@@ -27,9 +27,9 @@ def digitar_movimiento(color : int) -> tuple:
             continue
 
         if mov == '0-0-0':
-            return [],2
+            return (),(),2
         if mov == '0-0':
-            return [],1
+            return (),(),1
 
         inicio, fin, especial = separar_datos(mov)
 

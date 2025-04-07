@@ -80,8 +80,13 @@ class Pieza(ABC):
             Si la pieza ha logrado llegar a su destino
         """
 
-        if especial.isalpha() and not self.posicion[0] in [1,6]:
+        if especial.isalpha() and not destino[0] in [0,7]:
             print("Error. No se encuentra en el otro lado del tablero")
+            return False
+
+        if especial == '0' and tablero[self.posicion[0]][self.posicion[1]].representacion() in ['P','p'] and \
+                destino[0] in [0,7]:
+            print("Error. No has digitado una promoción siendo peón.")
             return False
 
         # Recorremos todos los movimientos válidos de la pieza
@@ -94,21 +99,30 @@ class Pieza(ABC):
         x = destino[0]
         y = destino[1]
 
-        pos_ant = self.posicion
+        pos_ant_pieza : tuple[int,int] = self.posicion
         self.posicion = (x, y)
-        tablero[pos_ant[0]][pos_ant[1]].pieza = None
+        tablero[pos_ant_pieza[0]][pos_ant_pieza[1]].pieza = None
+
+        pieza_enemgio = tablero[x][y].pieza
+        tablero[x][y].pieza = self
+
+        print(pieza_enemgio)
+        print(self)
+
+        if pieza_enemgio is not None and pieza_enemgio.posicion == self.posicion:
+            indice : int = enemigo.piezas.index(pieza_enemgio)
+            enemigo.piezas.remove(pieza_enemgio)
 
         if tablero.amenazas(enemigo, pos_rey[0], pos_rey[1]):
             print("Error. Tu movimiento provoca o no impide un jaque")
-            self.posicion = pos_ant
-            tablero[pos_ant[0]][pos_ant[1]].pieza = self
+            self.posicion = pos_ant_pieza
+            tablero[pos_ant_pieza[0]][pos_ant_pieza[1]].pieza = self
+            tablero[x][y].pieza = pieza_enemgio
+            if pieza_enemgio is not None:
+                enemigo.piezas.insert(indice, pieza_enemgio)
             return False
 
-        if tablero[x][y].pieza is not None:
-            enemigo.piezas.remove(tablero[x][y].pieza)
-            tablero[x][y].pieza = None
-
-        tablero[x][y].pieza = self
+        print(tablero[x][y].pieza)
 
         return True
 

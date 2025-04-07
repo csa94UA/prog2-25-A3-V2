@@ -253,8 +253,8 @@ class Tablero:
 
         return intermedias
 
-
-    def quitar_permutaciones(self, mov : tuple, casillas_tocapelotas : list, fila : int, columna : int) -> list[(int,int)]:
+    @staticmethod
+    def quitar_permutaciones(mov : tuple, casillas_tocapelotas : list) -> list[(int,int)]:
         """
         Elimina las casillas peligrosas para la pieza 'victima' mediante la irrupción
         del camino por parte de otra pieza.
@@ -266,10 +266,6 @@ class Tablero:
         casillas_tocapelotas : list
             Son el conjunto de casillas que representan los caminos que atacan a la pieza 'victima'.
             Puede haber más de un camíno
-        fila : int
-            Fila en la que se encuentra la casilla o pieza 'víctima'
-        columna : int
-            Columna en la que se encuentra la casilla o pieza 'víctima'
 
         Retorna:
         --------
@@ -277,13 +273,6 @@ class Tablero:
             Devuelve la lista de posiciones intermedias entre dos puntos, incluyendo la posicion
             de la pieza agresor (fila_m,columna_m)
         """
-
-        #fila_p, columna_p = mov
-
-        #Posiblemente este código sea redundante porque el simple hecho de estar en medio de un
-        #camino te hace pertenecer al subconjunto de ese camino
-
-        #caminos_a_eliminar = self.casillas_intermedias(fila,columna,fila_p,columna_p)
 
         print("Posición que eliminará casillas: ", mov)
 
@@ -326,12 +315,10 @@ class Tablero:
 
         for pieza in jugador.piezas:
 
-            fila, columna = pieza.posicion
-
             for mov in pieza.movimiento_valido(self):
 
                 if mov in casillas_tocapelotas:
-                    casillas_tocapelotas = self.quitar_permutaciones(mov,casillas_tocapelotas,fila,columna)
+                    casillas_tocapelotas = self.quitar_permutaciones(mov,casillas_tocapelotas)
 
         print("Casillas resultantes", casillas_tocapelotas)
 
