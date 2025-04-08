@@ -39,13 +39,15 @@ class Rey(Pieza):
     -----------
     movimiento_valido() -> list[(int,int)]
         Devuelve el conjunto de posiciones validas que puede tener.
+    filtro_movimientos() -> list[(int,int)]
+        Retorna las nuevas posiciones teniendo en cuenta si la casilla era amenazada por una pieza enemiga
     enroque() -> bool
         Devuelve True si es posible hacer el enroque.
     jaque_mate() -> bool
         Comprueba si es jaque mate
     """
 
-    def __init__(self, posicion: list[int, int], color: bool, enemigo : Union["Jugador",None]=None) -> None:
+    def __init__(self, posicion: tuple[int,int], color: int, enemigo : Union["Jugador",None]=None) -> None:
         """
         Inicializa una instacia de la clase Rey
 
@@ -87,15 +89,11 @@ class Rey(Pieza):
                 if not tablero.limite(i,j) or (i == fila) and (columna == j):
                     continue
 
-                if tablero[i][j] is not None:
+                if tablero[i][j].pieza is not None and tablero[i][j].pieza.color != self.color:
+                    movimientos.append((i,j))
 
-                    if tablero[i][j].pieza.color != self.color:
-                        movimientos.append(tuple[i, j])
-
-                    break
-
-
-                movimientos.append(tuple[i,j])
+                if tablero[i][j].pieza is None:
+                    movimientos.append((i,j))
 
         return self.filtro_movimientos(movimientos, tablero)
 
@@ -118,7 +116,7 @@ class Rey(Pieza):
         casillas : list = []
 
         for fila, columna in movimientos:
-            if tablero.amenazas(self.enemigo,fila,columna) is []:
+            if not tablero.amenazas(self.enemigo, fila, columna):
                 casillas.append((fila,columna))
 
         return casillas
@@ -137,7 +135,7 @@ class Rey(Pieza):
         if self.movido is True:
             return False
 
-        return False
+        return True
 
     def __repr__(self):
         """

@@ -33,7 +33,7 @@ class Caballo(Pieza):
         Devuelve el conjunto de posiciones validas que puede tener.
     """
 
-    def __init__(self, posicion : list[int,int], color : bool) -> None:
+    def __init__(self, posicion : tuple[int,int], color : int) -> None:
         """
         Inicializa una instacia de la clase Caballo
         Parámetros:
@@ -57,11 +57,14 @@ class Caballo(Pieza):
         list[tuple(int,int)]
             Retorna una lista de movimientos válidos del caballo
         """
-        movimientos_posibles = [(1,2),(1,-2),(2,1),(2,-1),(-1,2),(-1,-2),(-2,1),(-2,-1)]
+        fila, columna = self.posicion
+
+        movimientos_posibles = [(fila + 1,columna + 2),( fila + 1,columna - 2),(fila + 2,columna + 1),(fila + 2,columna - 1),
+                                (fila - 1,columna + 2),(fila - 1,columna - 2),(fila - 2,columna + 1),(fila - 2,columna - 1)]
         movimientos = []
 
         for fila, columna in movimientos_posibles:
-            if not tablero[fila][columna].ocupado:
+            if tablero.limite(fila, columna) and not tablero[fila][columna].ocupado:
                 movimientos.append((fila,columna))
 
         return movimientos

@@ -1,10 +1,3 @@
-from Casilla import Casilla
-from Jugador import Jugador
-from typing import Union
-import itertools
-import pygame
-import os
-
 """
 Modulo para la gestión y uso de una pieza genérica
 
@@ -14,6 +7,13 @@ y contiene la información más esencial. Posee modulos que permite realizar las
 Clases:
     - Tablero
 """
+
+from .casilla import Casilla
+from Jugador import Jugador
+from typing import Union
+import itertools
+#import pygame
+import os
 
 class Tablero:
     """
@@ -34,10 +34,26 @@ class Tablero:
 
     Métodos:
     -----------
-    conquistado(Pieza) -> None:
-        Actualiza los atributos de la casilla al ser tomada por una pieza
-    representacion() -> str:
-        Representa la pieza que ocupa la casilla según la clase de pieza que sea y su color
+    obtener_casilla(self, fila : int, columna : int) -> Casilla:
+        Devuelve la casilla coherente a la perspectiva del jugador actual
+    limite(fila : int, columna : int) -> bool:
+        Comprueba si se ha digitado una posicion fuera de los limites
+    mostrar_tablero(self, color : bool) -> None:
+        Representa el tablero en función de la persepctiva del jugador actual
+    traduccion_FEN(self, color : int, enroque_n : int, enroque_b : int, en_passant : Union[str,None], contador : int, turno : int) -> str:
+        Devuelve toda la información del tablero en formato FEN. Util para guardar partidas y comunicarse con otras IA
+    casillas_intermedias(fila : int, columna : int, fila_m : int, columna_m : int) -> list[(int, int)]:
+        Retorna las casillas intermedias entre dos piezas. Usado para comprobar las casillas problematicas dentro de un jaque
+    quitar_permutaciones(self, mov : tuple, casillas_tocapelotas : list, fila : int, columna : int) -> None:
+        Elimina las permutaciones que contengan a la posicoin de la pieza. Se usa para eliminar casillas intermedias
+    jaque_in(self, fila : int, columna : int, jugador : Jugador, enemigo : Jugador) -> bool:
+        Comprueba si el jaque es inevitable o no
+    amenazas(self, enemigo : Jugador, fila : int, columna : int) -> list:
+        Revisa las piezas que amenazan una casilla
+    casillas_amenazadas(self, amenazadores : list, fila : int, columna : int) -> list:
+        Obtiene todas las casillas amenazadas entre la posición de cada pieza amenazadora y la posición de la pieza
+        víctima. En ella se emplea la funcion casillas_intermedias (por eso su similitud), pero este tiene en cuenta
+        el caso especial del caballo (que no tiene casillas intermedias)
     """
 
     def __init__(self) -> None:
@@ -45,7 +61,7 @@ class Tablero:
         Inicializa una instacia de la clase Casilla
         """
 
-        self.tablero : list[list[Casilla]]= [[Casilla(i,j) for i in range(8)] for j in range(8)]
+        self.tablero : list[list["Casilla"]]= [[Casilla(i,j) for i in range(8)] for j in range(8)]
         self.enroque : Union[list[bool,bool],None] = None
         self.en_passant : Union[tuple[str,int],None] = None
         self.contador : int = 0
@@ -71,7 +87,7 @@ class Tablero:
         """
         return self.tablero[indice]
 
-    def obtener_casilla(self, fila : int, columna : int) -> Casilla:
+    def obtener_casilla(self, fila : int, columna : int, color : int) -> Casilla:
         """
         Permite encontrar la casilla concreta. La diferencia se encuentra en que,
         como las matrices comienzan arriba a la izquierda y el tablero de ajedrez
@@ -92,9 +108,10 @@ class Tablero:
             Retorna la casilla correspondiente
         """
 
-        return self.tablero[8-fila][columna]
+        return self.tablero[fila][columna] if color else self.tablero[7-fila][columna]
 
-    def limite(self, fila : int, columna : int) -> bool:
+    @staticmethod
+    def limite(fila : int, columna : int) -> bool:
         """
         Comprueba si la posición (fila,columna) está dentro de los límites del tablero
 
@@ -127,16 +144,15 @@ class Tablero:
             Representa el color del jugador para mostrar el tablero desde su perspectiva
         """
 
-        fila = 7 if color else 0
-
         for i in range(8):
             for j in range(8):
-                print(self[fila-i][j].representacion(),end=" ")
+                #print(self[abs(fila-i)][j].representacion(),end=" ")
+                print(self.obtener_casilla(i, j, color).representacion(), end=' ')
             print()
 
         return None
 
-    def traduccion_FEN(self, color : bool, enroque_n : bool, enroque_b : bool, en_passant : str, contador : int, turno : int) -> str:
+    def traduccion_FEN(self, color : int, enroque_n : int, enroque_b : int, en_passant : Union[str,None], contador : int, turno : int) -> str:
         """
         Traduce la situación del tablero a formato FEN. Muy útil a la hora de guardar partidas,
         tratar con APIs de IA, comprimir la información del ajedrez, etc.
@@ -194,10 +210,10 @@ class Tablero:
 
         return fen
 
-    @staticmethod
-    def casillas_intermedias(fila : int, columna : int, fila_m : int, columna_m : int) -> list[(int, int)]:
+
+    def casillas_intermedias(self, fila : int, columna : int, fila_m : int, columna_m : int) -> list[(int, int)]:
         """
-        Método estático que calcula las casillas intermedias entre dos piezas (incluyendo la posicion
+        Metodo estático que calcula las casillas intermedias entre dos piezas (incluyendo la posicion
         de la pieza atacante)
 
         Parametros:
@@ -221,21 +237,24 @@ class Tablero:
         dir_i = 1 if fila > fila_m else -1
         dir_j = 1 if columna > columna_m else -1
 
-        if (fila - fila_m != 0 and abs(fila - fila_m) != abs(columna - columna_m)) and (fila - fila_m == 0):
+        print("Direccion: ", dir_i, dir_j)
+
+        if abs(fila - fila_m) != abs(columna - columna_m) and fila - fila_m != 0 and columna - columna_m != 0:
             return []
 
         generador = ((fila_m + landa * dir_i, columna_m + landa * dir_j) for landa in itertools.count(1))
 
+
         intermedias = [(fila_m,columna_m)]
         for pos in generador:
-            if pos == (fila,columna):
+            if pos == (fila,columna) or not self.limite(*pos):
                 break
             intermedias.append((fila,columna))
 
         return intermedias
 
-
-    def quitar_permutaciones(self, mov : tuple, casillas_tocapelotas : list, fila : int, columna : int) -> None:
+    @staticmethod
+    def quitar_permutaciones(mov : tuple, casillas_tocapelotas : list) -> list[(int,int)]:
         """
         Elimina las casillas peligrosas para la pieza 'victima' mediante la irrupción
         del camino por parte de otra pieza.
@@ -247,10 +266,6 @@ class Tablero:
         casillas_tocapelotas : list
             Son el conjunto de casillas que representan los caminos que atacan a la pieza 'victima'.
             Puede haber más de un camíno
-        fila : int
-            Fila en la que se encuentra la casilla o pieza 'víctima'
-        columna : int
-            Columna en la que se encuentra la casilla o pieza 'víctima'
 
         Retorna:
         --------
@@ -259,16 +274,14 @@ class Tablero:
             de la pieza agresor (fila_m,columna_m)
         """
 
-        #fila_p, columna_p = mov
+        print("Posición que eliminará casillas: ", mov)
 
-        #Posiblemente este código sea redundante porque el simple hecho de estar en medio de un
-        #camino te hace pertenecer al subconjunto de ese camino
+        casillas_tocapelotas = [pos for pos in casillas_tocapelotas if mov != pos]
 
-        #caminos_a_eliminar = self.casillas_intermedias(fila,columna,fila_p,columna_p)
+        print("Casillas tocapelotas actualizado ",casillas_tocapelotas)
 
-        casillas_tocapelotas[:] = [pos for pos in casillas_tocapelotas if mov not in pos]
 
-        return None
+        return casillas_tocapelotas
 
 
     def jaque_in(self, fila : int, columna : int, jugador : Jugador, enemigo : Jugador) -> bool:
@@ -294,18 +307,23 @@ class Tablero:
 
         amenazadores : list = self.amenazas(enemigo,fila,columna)
 
+        print(amenazadores)
+
         casillas_tocapelotas : list = self.casillas_amenazadas(amenazadores,fila,columna)
 
-        for pieza in jugador.piezas:
+        print(casillas_tocapelotas)
 
-            fila, columna = pieza.posicion
+        for pieza in jugador.piezas:
 
             for mov in pieza.movimiento_valido(self):
 
                 if mov in casillas_tocapelotas:
-                    self.quitar_permutaciones(mov,casillas_tocapelotas,fila,columna)
+                    casillas_tocapelotas = self.quitar_permutaciones(mov,casillas_tocapelotas)
 
-        if casillas_tocapelotas is []:
+        print("Casillas resultantes", casillas_tocapelotas)
+
+        if not casillas_tocapelotas:
+            print("No es inevitable")
             return False
 
         return True
@@ -328,11 +346,16 @@ class Tablero:
         list
             Devuelve una lista con la posición de la pieza y la pieza en sí
         """
+        from Piezas import Rey
 
         casillas : list = []
 
         for pieza in enemigo.piezas:
+            if isinstance(pieza, Rey):
+                print("Es un rey (lo ignoro epicamente)")
+                continue
             if (fila,columna) in pieza.movimiento_valido(self):
+                print("No es un rey (lo inserto epicamente)")
                 casillas.append((pieza.posicion, pieza))
 
         return casillas
@@ -363,10 +386,12 @@ class Tablero:
 
             fila_p, columna_p = posicion
 
-            if tablero[fila_p][columna_p].representacion() != 'Nn':
+            if self[fila_p][columna_p].representacion() not in ['N','n']:
+                print("No es un caballo")
                 casillas.append(self.casillas_intermedias(fila, columna, posicion[0], posicion[1]))
 
-            elif tablero[fila_p][columna_p].representacion() == 'Nn':
+            elif self[fila_p][columna_p].representacion() in ['N','n']:
+                print("Es un caballo")
                 casillas.append(posicion)
 
         return casillas

@@ -5,16 +5,19 @@ Este modulo proporciona funciones para la traducción del formato LAN simplifica
 simplificación de otros formatos LAN y manejo de errores.
 
 Funciones:
-    - digitar_movimiento() -> tuple: Piede al usuario digitar su movimiento en formato LAN simplificado y devuelve
-    el movimiento correspondiente
-    - separar_datos(mov : str) -> Separa la entrada de datos en sus partes correspondientes
-    - simplificacion(mov : str) -> Simplifica el formato LAN de entrada
+    - digitar_movimiento() -> tuple:
+    Piede al usuario digitar su movimiento en formato LAN simplificado y devuelve el movimiento correspondiente.
+
+    - separar_datos(mov : str) -> tuple:
+    Separa la entrada de datos en sus partes correspondientes
+    - traducción_LAN(mov : str) -> str:
+    Simplifica el formato LAN de entrada a nuestro formato ultrasimplificado.
 """
 
-def digitar_movimiento() -> tuple:
+def digitar_movimiento(color : int) -> tuple:
 
-    traduccion = {'a' : 1, 'b' : 2, 'c' : 3, 'd' : 4,
-                  'e' : 5, 'f' : 6, 'g' : 7, 'h' : 8}
+    traduccion = {'a' : 0, 'b' : 1, 'c' : 2, 'd' : 3,
+                  'e' : 4, 'f' : 5, 'g' : 6, 'h' : 7}
 
     while True:
         mov : str = input("\nDigite movimiento: \n")
@@ -24,9 +27,9 @@ def digitar_movimiento() -> tuple:
             continue
 
         if mov == '0-0-0':
-            return [],2
+            return (),(),2
         if mov == '0-0':
-            return [],1
+            return (),(),1
 
         inicio, fin, especial = separar_datos(mov)
 
@@ -42,18 +45,20 @@ def digitar_movimiento() -> tuple:
             print("\nError. Posicion inicial y final son identicas\n")
             continue
 
-        if not especial is None and (not especial[0] == '=' or len(especial) == 1):
+        if especial is not None and (not especial[0] == '=' or len(especial) == 1):
             print("\nError. Promocion digitado incorrectamente\n")
             continue
 
-        if especial[1] not in 'QRBNqrbn':
+        if especial is not None and especial[1] not in 'QRBNqrbn':
             print("\nError. Intento de promoción fallida por querer trasformar a una pieza no permitida\n")
             continue
 
-        if especial is None:
-            return (8 - int(inicio[1]), traduccion[inicio[0]]), (8 - int(fin[1]), traduccion[fin[0]]), 0
+        if color:
+            return ((8 - int(inicio[1]), traduccion[inicio[0]]), (8 - int(fin[1]), traduccion[fin[0]]),
+                    0 if especial is None else especial[1].upper())
         else:
-            return (8 - int(inicio[1]), traduccion[inicio[0]]), (8 - int(fin[1]), traduccion[fin[0]]), especial[1].upper()
+            return ((int(inicio[1]) - 1, traduccion[inicio[0]]), (int(fin[1]) - 1, traduccion[fin[0]]),
+                    0 if especial is None else especial[1].upper())
 
 
 
@@ -95,6 +100,7 @@ def traducción_LAN(mov : str) -> str:
     return mov
 
 if __name__ == '__main__':
+    """
     movimientos = [
         "e2-e4",  # Movimiento normal de peón (de e2 a e4)
         "d2-d4",  # Movimiento normal de peón (de d2 a d4)
@@ -110,9 +116,9 @@ if __name__ == '__main__':
         "0-0",  # Enroque corto (rey y torre se mueven)
         "0-0-0"  # Enroque largo (rey y torre se mueven)
     ]
-
+    
     # Ejemplo de impresión:
     for mov in movimientos:
         print(traducción_LAN(mov))
-
-    print(digitar_movimiento())
+    """
+    print(digitar_movimiento(1))
