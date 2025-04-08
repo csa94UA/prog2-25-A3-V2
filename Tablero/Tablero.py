@@ -375,8 +375,13 @@ class Tablero:
         piezas = {}
         nombres_piezas = {"r", "n", "b", "q", "k", "p", "R", "N", "B", "Q", "K", "P"}
         for nombre in nombres_piezas:
-            pieza = pygame.image.load(os.path.join("..", "piezas", f"{nombre}.png"))
+            if nombre.isupper():
+                carpeta = "PIEZAS BLANCAS"
+            else:
+                carpeta = "PIEZAS NEGRAS"
+            pieza = os.path.join(os.path.dirname(__file__), "..", carpeta, f"{nombre}.png")
             pieza = pygame.transform.scale(pieza, (tamano_casilla, tamano_casilla))
+            piezas[nombre] = pieza
         return piezas
 
     def crear_tablero(self):
@@ -453,3 +458,4 @@ if __name__ == "__main__":
     tablero = Tablero()
     tablero.mostrar_tablero(0)
     print(tablero.traduccion_FEN(1,1,1,None,0,1))
+    tablero.representacion_grafica()
