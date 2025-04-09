@@ -233,9 +233,8 @@ class Tablero:
             Devuelve la lista de posiciones intermedias entre dos puntos, incluyendo la posicion
             de la pieza agresor (fila_m,columna_m)
         """
-
-        dir_i = 1 if fila > fila_m else -1
-        dir_j = 1 if columna > columna_m else -1
+        dir_i = 1 if fila > fila_m else (-1 if fila < fila_m else 0)
+        dir_j = 1 if columna > columna_m else (-1 if columna < columna_m else 0)
 
         print("Direccion: ", dir_i, dir_j)
 
@@ -244,12 +243,13 @@ class Tablero:
 
         generador = ((fila_m + landa * dir_i, columna_m + landa * dir_j) for landa in itertools.count(1))
 
-
-        intermedias = [(fila_m,columna_m)]
+        intermedias : list = []
+        intermedias.append((fila_m,columna_m))
         for pos in generador:
+            print("Posicion intermedia: ",pos)
             if pos == (fila,columna) or not self.limite(*pos):
                 break
-            intermedias.append((fila,columna))
+            intermedias.append((pos[0],pos[1]))
 
         return intermedias
 
@@ -276,7 +276,7 @@ class Tablero:
 
         print("Posición que eliminará casillas: ", mov)
 
-        casillas_tocapelotas = [pos for pos in casillas_tocapelotas if mov != pos]
+        casillas_tocapelotas = [pos for pos in casillas_tocapelotas if mov not in pos]
 
         print("Casillas tocapelotas actualizado ",casillas_tocapelotas)
 
@@ -312,15 +312,30 @@ class Tablero:
         casillas_tocapelotas : list = self.casillas_amenazadas(amenazadores,fila,columna)
 
         print(casillas_tocapelotas)
-
+        salir : bool = False
         for pieza in jugador.piezas:
+            if pieza.posicion == (fila, columna):
+                rey = pieza
+                print("Rey encontrado: ",rey)
 
             for mov in pieza.movimiento_valido(self):
 
-                if mov in casillas_tocapelotas:
-                    casillas_tocapelotas = self.quitar_permutaciones(mov,casillas_tocapelotas)
+                if salir:
+                    break
+
+                for casillas_intermedias in casillas_tocapelotas:
+
+                    if salir:
+                        break
+
+                    if mov in casillas_intermedias:
+                        casillas_tocapelotas = self.quitar_permutaciones(mov,casillas_tocapelotas)
+                        salir = True
 
         print("Casillas resultantes", casillas_tocapelotas)
+
+        if rey.movimiento_valido(self):
+            return False
 
         if not casillas_tocapelotas:
             print("No es inevitable")
