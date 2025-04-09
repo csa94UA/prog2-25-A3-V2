@@ -399,14 +399,17 @@ class Tablero:
     def imagenes_piezas(self, tamano_casilla):
         piezas = {}
         nombres_piezas = {"r", "n", "b", "q", "k", "p", "R", "N", "B", "Q", "K", "P"}
+        carpeta = os.path.join(os.path.dirname(__file__), "..", "PIEZAS")
+
         for nombre in nombres_piezas:
             if nombre.isupper():
-                carpeta = "PIEZAS BLANCAS"
+                archivo = f"{nombre}.png"
             else:
-                carpeta = "PIEZAS NEGRAS"
-            pieza = os.path.join(os.path.dirname(__file__), "..", carpeta, f"{nombre}.png")
-            pieza = pygame.transform.scale(pieza, (tamano_casilla, tamano_casilla))
-            piezas[nombre] = pieza
+                archivo = f"b{nombre.upper()}.png"
+            ruta_imagen = os.path.join(carpeta, archivo)
+            imagen = pygame.image.load(ruta_imagen)
+            imagen = pygame.transform.scale(imagen, (tamano_casilla, tamano_casilla))
+            piezas[nombre] = imagen
         return piezas
 
     def crear_tablero(self):
@@ -433,15 +436,7 @@ class Tablero:
                     color = color_claro
                 else:
                     color = color_oscuro
-
-                pygame.draw.rect(ventana, color,
-                                 (columna * tamano_casilla, fila * tamano_casilla, tamano_casilla, tamano_casilla))
-                columna_letra = chr(65 + columna)
-                fila_numero = filas - fila
-                coordenada = columna_letra + str(fila_numero)
-                fuente = pygame.font.SysFont(None, 24)
-                texto = fuente.render(coordenada, True, color_texto)
-                ventana.blit(texto, (columna * tamano_casilla + 5, fila * tamano_casilla + 5))
+                pygame.draw.rect(ventana, color, (columna * tamano_casilla, fila * tamano_casilla, tamano_casilla, tamano_casilla))
 
     def dibujar_piezas(self, ventana, tablero, piezas, tamano_casilla):
         for fila in range(8):
