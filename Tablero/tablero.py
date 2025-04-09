@@ -12,7 +12,7 @@ from .casilla import Casilla
 from Jugador import Jugador
 from typing import Union
 import itertools
-#import pygame
+import pygame
 import os
 
 class Tablero:
