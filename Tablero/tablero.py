@@ -412,19 +412,44 @@ class Tablero:
         return casillas
 
     def imagenes_piezas(self, tamano_casilla):
+        """
+        Carga y ajusta las imágenes de las piezas del ajedrez desde la carpeta 'imagenes', donde se encuentran los archivos png.
+
+        Parametros:
+        -----------
+        tamano_casilla : int
+            El tamaño de cada casilla del tablero, que se usa para ajustar el tamaño de las imágenes de las piezas.
+
+        Retorna:
+        --------
+        dict
+            Devuelve un diccionario con las imágenes de las piezas.
+        """
         piezas = {}
         nombres_piezas = {"r", "n", "b", "q", "k", "p", "R", "N", "B", "Q", "K", "P"}
+        carpeta = os.path.join(os.path.dirname(__file__), "..", "imagenes")
+
         for nombre in nombres_piezas:
             if nombre.isupper():
-                carpeta = "PIEZAS BLANCAS"
+                archivo = f"{nombre}.png"
             else:
-                carpeta = "PIEZAS NEGRAS"
-            pieza = os.path.join(os.path.dirname(__file__), "..", carpeta, f"{nombre}.png")
-            pieza = pygame.transform.scale(pieza, (tamano_casilla, tamano_casilla))
-            piezas[nombre] = pieza
+                archivo = f"b{nombre.upper()}.png"
+            ruta_imagen = os.path.join(carpeta, archivo)
+            imagen = pygame.image.load(ruta_imagen)
+            imagen = pygame.transform.scale(imagen, (tamano_casilla, tamano_casilla))
+            piezas[nombre] = imagen
         return piezas
 
     def crear_tablero(self):
+        """
+        Crea un tablero de ajedrez representado como una lista de listas (matriz).
+
+        Retorna:
+        --------
+        list
+            Devuelve una lista de 8x8 que representa el tablero de ajedrez con las piezas colocadas en su
+            posición inicial.
+        """
         tablero = []
         for i in range(8):
             fila = []
@@ -441,24 +466,48 @@ class Tablero:
             tablero[6][i] = "P"
         return tablero
 
-    def dibujar_tablero(self, ventana, filas, columnas, tamano_casilla, color_claro, color_oscuro, color_texto):
+    def dibujar_tablero(self, ventana, filas, columnas, tamano_casilla, color_claro, color_oscuro):
+        """
+        Dibuja el tablero de ajedrez en la ventana de pygame.
+
+        Parametros:
+        -----------
+        ventana :
+            La ventana de pygame donde se dibujará el tablero.
+        filas : int
+            Número de filas del tablero.
+        columnas : int
+            Número de columnas del tablero.
+        tamano_casilla : int
+            El tamaño de cada casilla del tablero.
+        color_claro : tuple
+            El color de los cuadrados claros del tablero.
+        color_oscuro : tuple
+            El color de los cuadrados oscuros del tablero.
+        """
         for fila in range(filas):
             for columna in range(columnas):
                 if (fila + columna) % 2 == 0:
                     color = color_claro
                 else:
                     color = color_oscuro
-
-                pygame.draw.rect(ventana, color,
-                                 (columna * tamano_casilla, fila * tamano_casilla, tamano_casilla, tamano_casilla))
-                columna_letra = chr(65 + columna)
-                fila_numero = filas - fila
-                coordenada = columna_letra + str(fila_numero)
-                fuente = pygame.font.SysFont(None, 24)
-                texto = fuente.render(coordenada, True, color_texto)
-                ventana.blit(texto, (columna * tamano_casilla + 5, fila * tamano_casilla + 5))
+                pygame.draw.rect(ventana, color, (columna * tamano_casilla, fila * tamano_casilla, tamano_casilla, tamano_casilla))
 
     def dibujar_piezas(self, ventana, tablero, piezas, tamano_casilla):
+        """
+        Coloca las piezas del ajedrez en el tablero.
+
+        Parametros:
+        -----------
+        ventana :
+            La ventana de pygame donde se dibujarán las piezas.
+        tablero : list
+            El tablero de ajedrez que contiene las posiciones de las piezas.
+        piezas : dict
+            El diccionario donde se han guardado anteriormente las piezas.
+        tamano_casilla : int
+            El tamaño de cada casilla en el tablero.
+        """
         for fila in range(8):
             for columna in range(8):
                 pieza = tablero[fila][columna]
@@ -468,6 +517,11 @@ class Tablero:
                     ventana.blit(piezas[pieza], (x, y))
 
     def representacion_grafica(self):
+        """
+        Inicia pygame y crea una ventana gráfica para mostrar el tablero con las piezas.
+
+        Esta función también gestiona el bucle principal de la interfaz gráfica donde se dibujan el tablero y las piezas.
+        """
         pygame.init()
         ancho, alto = 600, 600
         filas, columnas = 8, 8
