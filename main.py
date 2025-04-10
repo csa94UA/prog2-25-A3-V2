@@ -1,6 +1,7 @@
 from crypt import methods
 from flask import Flask, request
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required,get_jwt_identity, get_jwt, hashlib
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required,get_jwt_identity, get_jwt
+import hashlib
 
 app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = "ContraseñaSuperSecreta"

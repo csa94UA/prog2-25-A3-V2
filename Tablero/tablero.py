@@ -34,6 +34,12 @@ class Tablero:
 
     Métodos:
     -----------
+    esta_en_jaque(self, jugador:Jugador) -> bool:
+        Detecta si un jugador se encuentra en jaque o no
+    guardar_estado(self) -> dict:
+        Guanda el estado del tablero en un diccionario
+    restaurar_estado(self, estado: dict) -> None:
+        Restaura el estado del tablero a partir de un diccionario obtenido del metodo guardar_estado()
     obtener_casilla(self, fila : int, columna : int) -> Casilla:
         Devuelve la casilla coherente a la perspectiva del jugador actual
     limite(fila : int, columna : int) -> bool:
@@ -86,6 +92,80 @@ class Tablero:
             Retorna la casilla (o las casillas) que ha sido seleccionado
         """
         return self.tablero[indice]
+
+    def esta_en_jaque(self, jugador:Jugador) -> bool:
+        """
+        Verifica si el rey del jugador está en jaque después de un movimiento.
+
+        Parámetros:
+        -----------
+        jugador : Jugador
+            A que jugador se quiere saber si esta en jaque o no
+
+        Retorna:
+        --------
+        bool
+            Devuelve True si el rey está en jaque, False si no lo está.
+        """
+    
+        posicion_rey = jugador.encontrar_rey()
+
+        for fila in self.tablero:
+            for casilla in fila:
+                pieza = casilla.pieza
+                if pieza and pieza.color != jugador.color:
+                    if posicion_rey in pieza.movimiento_valido(self):
+                        return True
+
+        return False
+
+    def guardar_estado(self) -> dict:
+        """
+        Guarda el estado actual del tablero y los datos relevantes para
+        poder restaurarlos más adelante. Este método es útil, por ejemplo,
+        al implementar deshacer movimientos o para evaluaciones de IA.
+
+        Retorna:
+        --------
+        dict
+            Diccionario que contiene el estado del tablero, los derechos de enroque,
+            la casilla de en passant, el contador de medio movimiento y el turno actual.
+        """
+
+        estado = {
+            "tablero": [[casilla.pieza for casilla in fila] for fila in self.tablero], 
+            "enroque": self.enroque.copy() if self.enroque else None,
+            "en_passant": self.en_passant,
+            "contador": self.contador,
+            "turno": self.turno,
+        }
+        return estado
+
+
+    def restaurar_estado(self, estado: dict) -> None:
+        """
+        Restaura el estado del tablero y de la partida a partir de un diccionario previamente
+        guardado. Ideal para funciones como deshacer movimiento, análisis o carga de partidas.
+
+        Parámetros:
+        -----------
+        estado : dict
+            Diccionario que contiene el estado del juego, tal como fue devuelto por guardar_estado.
+
+        Retorna:
+        --------
+        None
+            No retorna ningún valor. Modifica el estado interno del objeto.
+        """
+
+        for i in range(8):
+            for j in range(8):
+                self.tablero[i][j].pieza = estado["tablero"][i][j]
+
+        self.enroque = estado["enroque"].copy() if estado["enroque"] else None
+        self.en_passant = estado["en_passant"]
+        self.contador = estado["contador"]
+        self.turno = estado["turno"]
 
     def obtener_casilla(self, fila : int, columna : int, color : int) -> Casilla:
         """
@@ -233,9 +313,8 @@ class Tablero:
             Devuelve la lista de posiciones intermedias entre dos puntos, incluyendo la posicion
             de la pieza agresor (fila_m,columna_m)
         """
-
-        dir_i = 1 if fila > fila_m else -1
-        dir_j = 1 if columna > columna_m else -1
+        dir_i = 1 if fila > fila_m else (-1 if fila < fila_m else 0)
+        dir_j = 1 if columna > columna_m else (-1 if columna < columna_m else 0)
 
         print("Direccion: ", dir_i, dir_j)
 
@@ -244,12 +323,13 @@ class Tablero:
 
         generador = ((fila_m + landa * dir_i, columna_m + landa * dir_j) for landa in itertools.count(1))
 
-
-        intermedias = [(fila_m,columna_m)]
+        intermedias : list = []
+        intermedias.append((fila_m,columna_m))
         for pos in generador:
+            print("Posicion intermedia: ",pos)
             if pos == (fila,columna) or not self.limite(*pos):
                 break
-            intermedias.append((fila,columna))
+            intermedias.append((pos[0],pos[1]))
 
         return intermedias
 
@@ -276,7 +356,7 @@ class Tablero:
 
         print("Posición que eliminará casillas: ", mov)
 
-        casillas_tocapelotas = [pos for pos in casillas_tocapelotas if mov != pos]
+        casillas_tocapelotas = [pos for pos in casillas_tocapelotas if mov not in pos]
 
         print("Casillas tocapelotas actualizado ",casillas_tocapelotas)
 
@@ -312,15 +392,30 @@ class Tablero:
         casillas_tocapelotas : list = self.casillas_amenazadas(amenazadores,fila,columna)
 
         print(casillas_tocapelotas)
-
+        salir : bool = False
         for pieza in jugador.piezas:
+            if pieza.posicion == (fila, columna):
+                rey = pieza
+                print("Rey encontrado: ",rey)
 
             for mov in pieza.movimiento_valido(self):
 
-                if mov in casillas_tocapelotas:
-                    casillas_tocapelotas = self.quitar_permutaciones(mov,casillas_tocapelotas)
+                if salir:
+                    break
+
+                for casillas_intermedias in casillas_tocapelotas:
+
+                    if salir:
+                        break
+
+                    if mov in casillas_intermedias:
+                        casillas_tocapelotas = self.quitar_permutaciones(mov,casillas_tocapelotas)
+                        salir = True
 
         print("Casillas resultantes", casillas_tocapelotas)
+
+        if rey.movimiento_valido(self):
+            return False
 
         if not casillas_tocapelotas:
             print("No es inevitable")
