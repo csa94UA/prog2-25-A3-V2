@@ -9,8 +9,8 @@ Clases:
 """
 
 from typing import Union, TYPE_CHECKING
-if TYPE_CHECKING:
-    from Piezas import Caballo, Alfil, Rey, Torre, Reina, Pieza, Peon
+#if TYPE_CHECKING:
+#    from Piezas import Caballo, Alfil, Rey, Torre, Reina, Pieza, Peon
 
 class Casilla:
     """
@@ -77,25 +77,25 @@ class Casilla:
         str
             Devuelve el simbolo correspondiente a la pieza y su color
         """
-        from Piezas import Caballo, Alfil, Rey, Torre, Reina, Peon
+        #from Piezas import Caballo, Alfil, Rey, Torre, Reina, Peon
         pieza : Union[Pieza,None] = self.pieza
 
-        if isinstance(pieza, Peon):
+        if type(pieza).__name__ == "Peon":
             return 'P' if pieza.color else 'p'
 
-        if isinstance(pieza, Torre):
+        if type(pieza).__name__ == "Torre":
             return 'R' if pieza.color else 'r'
 
-        if isinstance(pieza, Caballo):
+        if type(pieza).__name__ == "Caballo":
             return 'N' if pieza.color else 'n'
 
-        if isinstance(pieza, Alfil):
+        if type(pieza).__name__ == "Alfil":
             return 'B' if pieza.color else 'b'
 
-        if isinstance(pieza, Reina):
+        if type(pieza).__name__ == "Reina":
             return 'Q' if pieza.color else 'q'
 
-        if isinstance(pieza, Rey):
+        if type(pieza).__name__ == "Rey":
             return 'K' if pieza.color else 'k'
 
         return '·'
