@@ -15,6 +15,8 @@ from Tablero import Tablero
 from Jugador import Jugador
 from random import randint
 from aflabeto_FEN import digitar_movimiento
+from Mejorin import get_best_move
+from Evalin import  evaluate_position
 
 def partida(jugador1 : Jugador, jugador2 : Jugador):
 
