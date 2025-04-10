@@ -55,7 +55,7 @@ def crear_piezas(color : bool, tablero : Tablero) -> list:
         peon = Peon([fila_p,j],color)
         piezas.append(peon)
         tablero[fila_p][j].pieza = peon
-
+ 
     fila_r : int = 7 if color else 0
     piezas_ext = [Torre([fila_r,0],color), Caballo([fila_r,1],color), Alfil([fila_r,2],color),
                   Reina([fila_r,3],color), Rey([fila_r,4],color),
