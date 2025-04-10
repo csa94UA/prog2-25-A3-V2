@@ -14,7 +14,28 @@ Funciones:
     Simplifica el formato LAN de entrada a nuestro formato ultrasimplificado.
 """
 
-def digitar_movimiento(color : int) -> tuple:
+from typing import Any
+
+def digitar_movimiento(color : int) -> None | tuple[tuple, tuple, int] | tuple[
+    tuple[int, Any], tuple[int, Any], int | Any]:
+    """
+    Función encargada de leer por consola el movimiento digitado por el jugador en formato LAN hipersimplificado.
+
+    Parametros:
+    -----------
+    color : bool -> Representa el color del jugador que digita el movimiento. Es importante para tener en cuenta su
+    persepctiva del tablero con la perspectiva que tiene el tablero dentro del código.
+
+    Retorna:
+    -----------
+    Any:
+        En realidad retorna una especie de tupla con la posicion inicial y final del movimiento respecto de la
+        perspectiva del tablero real (no la visual), además de devolver un entero que representa si es un movimiento
+        normal, enroque largo o enroque corto. Para la promoción devuelve directamente el carácter siempre en mayusculas.
+
+        Su estructura seria algo como -> None | tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]
+        Ahora entenderas porque no se pone (es demasiado largo).
+    """
 
     traduccion = {'a' : 0, 'b' : 1, 'c' : 2, 'd' : 3,
                   'e' : 4, 'f' : 5, 'g' : 6, 'h' : 7}
@@ -63,6 +84,18 @@ def digitar_movimiento(color : int) -> tuple:
 
 
 def separar_datos(mov : str) -> tuple:
+    """
+    Función que sirve para subdividir la cadena de texto otorgada por el jugador en {origen}{destino}{promocion}.
+
+    Porametros:
+    -----------
+    mov : str -> Es el movimiento digitado por el jugador
+
+    Retorna:
+    --------
+    tuple
+        Retorna el movimiento del jugador segmentado en sus partes correspondientes: {origen}{destino}{promocion}
+    """
 
     if len(mov) > 4:
         return mov[0:2],mov[2:4],mov[4:]
@@ -71,6 +104,19 @@ def separar_datos(mov : str) -> tuple:
 
 
 def traducción_LAN(mov : str) -> str:
+    """
+    Función que permite transformar cualquier movimiento digitado en formato LAN al formato LAN hipersimplificado
+
+    Parámetros:
+    ----------
+    mov : str -> Movimiento digitado por la máquina (que es quien digita en este formato)
+
+    Retorna:
+    ---------
+    str
+        Retorna el movimiento en formato LAN hipersimplificado
+    """
+
     mov_sep : list[str] = list(mov)
 
     if mov == '0-0-0':
@@ -100,25 +146,4 @@ def traducción_LAN(mov : str) -> str:
     return mov
 
 if __name__ == '__main__':
-    """
-    movimientos = [
-        "e2-e4",  # Movimiento normal de peón (de e2 a e4)
-        "d2-d4",  # Movimiento normal de peón (de d2 a d4)
-        "e5xd6",  # Captura de peón (de e5 captura en d6)
-        "Ng1-f3",  # Movimiento normal de Caballo (de g1 a f3)
-        "Nb1xc3",  # Captura del Caballo (de b1 captura en c3)
-        "Bf1-c4",  # Movimiento normal de Alfil (de f1 a c4)
-        "Ra1-a3",  # Movimiento normal de Torre (de a1 a a3)
-        "Qd1-d3",  # Movimiento normal de Reina (de d1 a d3)
-        "Ke1-e2",  # Movimiento normal de Rey (de e1 a e2)
-        "e7-e8=Q",  # Promoción de peón (de e7 a e8, coronándose a Dama)
-        "g7-g8=N+",  # Promoción de peón con jaque (de g7 a g8, coronándose a Caballo y dando jaque)
-        "0-0",  # Enroque corto (rey y torre se mueven)
-        "0-0-0"  # Enroque largo (rey y torre se mueven)
-    ]
-    
-    # Ejemplo de impresión:
-    for mov in movimientos:
-        print(traducción_LAN(mov))
-    """
     print(digitar_movimiento(1))

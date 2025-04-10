@@ -3,7 +3,6 @@ import requests
 import hashlib
 from Partida import partida
 from Jugador import Jugador
-from main import users, data
 
 URL = 'http://127.0.0.1:5000/'
 
@@ -18,26 +17,18 @@ def mostrar_menu() -> None:
     return None
 
 def crear_partida() -> None:
-    
-    if len(users.keys()) < 2:
-        print("No hay suficientes usuarios registrados como para iniciar una partida (aun no esta implementado JcE)")
-        return
-
-    print("Usuarios registrados:")
-    for usuario in users.keys():
-        print(f"- {usuario}")
         
     jug1_nombre = input("Digite su nombre jugador 1: ")
     jug1_contraseña = input("Digite su contraseña jugador 1: ")
     descodificado = hashlib.sha256(jug1_contraseña.encode()).hexdigest()
-    if jug1_nombre not in users and descodificado != users[jug1_nombre]:
+    if verificar_usuario(jug1_nombre, descodificado):
         print("Credenciales invalidas")
         return None
 
     jug2_nombre = input("Digite su nombre jugador 2: ")
     jug2_contraseña = input("Digite su contraseña jugador 2: ")
     descodificado = hashlib.sha256(jug2_contraseña.encode()).hexdigest()
-    if jug2_nombre not in users and descodificado != users[jug2_nombre]:
+    if verificar_usuario(jug2_nombre, descodificado):
         print("Credenciales invalidas")
         return None
 
@@ -50,6 +41,10 @@ def crear_partida() -> None:
     partida(jugador1, jugador2)
 
     return None
+
+def verificar_usuario(usuario : str, contraseña : str) -> bool:
+    respuesta = requests.get(f"{URL}/login?user={usuario}&password={contraseña}")
+    return True if respuesta.status_code == 200 else False
 
 def acceder_metodos_y_clases() -> None:
 
@@ -66,61 +61,61 @@ def mostrar_documentacion_juego() -> None:
 
 def acceder_elementos_api() -> None:
     while True:
-        print("\n=== Menú de API ===")
-        print("1. Registrar usuario (signup)")
-        print("2. Iniciar sesión (login)")
-        print("3. Listar datos")
+        print("\n------------Menú de API-----------")
+        print("1. Registrar usuario")
+        print("2. Iniciar sesión")
+        print("3. Listar de datos registrados")
         print("4. Agregar dato")
-        print("5. Consultar dato")
-        print("6. Actualizar dato")
-        print("7. Eliminar dato")
+        print("5. Consultar un dato")
+        print("6. Actualizar los datos")
+        print("7. Eliminar un dato")
         print("8. Volver al menú principal")
 
-        opcion = input("Seleccione una opción: ").strip()
+        opcion = input("Seleccione una opción: ")
         
         if opcion.isdigit() and 0 < int(opcion) < 9:
             opcion = int(opcion)
         else:
-            print("Opción inválida. Intente nuevamente.")
+            print("Opción incorrecta o invalida")
             continue
 
         match opcion:
             case 1:
-                usuario = input("Ingrese el nombre de usuario: ").strip()
-                contraseña = input("Ingrese la contraseña: ").strip()
-                resp = requests.post(f"{URL}/signup", params={"usuario": usuario, "contraseña": contraseña})
-                print(f"[{resp.status_code}] {resp.text}")
+                usuario = input("Ingrese el nombre de usuario: ")
+                contraseña = input("Ingrese la contraseña: ")
+                respuesta = requests.post(f"{URL}/signup?user={usuario}&password={contraseña}")
+                print(f"Estado: {respuesta.status_code}.  {respuesta.text}")
             case 2:
-                usuario = input("Ingrese el nombre de usuario: ").strip()
-                contraseña = input("Ingrese la contraseña: ").strip()
-                resp = requests.get(f"{URL}/login", params={"usuario": usuario, "contraseña": contraseña})
-                print(f"[{resp.status_code}] {resp.text}")
+                usuario = input("Ingrese el nombre de usuario: ")
+                contraseña = input("Ingrese la contraseña: ")
+                respuesta = requests.get(f"{URL}/login?user={usuario}&password={contraseña}")
+                print(f"Estado: {respuesta.status_code}.  {respuesta.text}")
             case 3:
-                resp = requests.get(f"{URL}/data")
-                print(f"[{resp.status_code}] {resp.text}")
+                respuesta = requests.get(f"{URL}/data")
+                print(f"Estado: {respuesta.status_code}.  {respuesta.text}")
             case 4:
-                id_data = input("Ingrese el ID para el dato a agregar: ").strip()
-                value = input("Ingrese el valor: ").strip()
-                resp = requests.post(f"{URL}/data/{id_data}", params={"value": value})
-                print(f"[{resp.status_code}] {resp.text}")
+                id_dato = input("Ingrese el ID para el dato a agregar: ")
+                valor = input("Ingrese el valor: ")
+                respuesta = requests.post(f"{URL}/data/{id_dato}?value={valor}")
+                print(f"Estado: {respuesta.status_code}.  {respuesta.text}")
             case 5:
-                id_data = input("Ingrese el ID del dato a consultar: ").strip()
-                resp = requests.get(f"{URL}/data/{id_data}")
-                print(f"[{resp.status_code}] {resp.text}")
+                id_dato = input("Ingrese el ID del dato a consultar: ")
+                respuesta = requests.get(f"{URL}/data/{id_dato}")
+                print(f"Estado: {respuesta.status_code}.  {respuesta.text}")
             case 6:
-                id_data = input("Ingrese el ID del dato a actualizar: ").strip()
-                value = input("Ingrese el nuevo valor: ").strip()
-                resp = requests.put(f"{URL}/data/{id_data}", params={"value": value})
-                print(f"[{resp.status_code}] {resp.text}")
+                id_dato = input("Ingrese el ID del dato a actualizar: ")
+                valor = input("Ingrese el nuevo valor: ")
+                respuesta = requests.put(f"{URL}/data/{id_dato}?value={valor}")
+                print(f"Estado: {respuesta.status_code}.  {respuesta.text}")
             case 7:
-                id_data = input("Ingrese el ID del dato a eliminar: ").strip()
-                resp = requests.delete(f"{URL}/data/{id_data}")
-                print(f"[{resp.status_code}] {resp.text}")
+                id_dato = input("Ingrese el ID del dato a eliminar: ")
+                respuesta = requests.delete(f"{URL}/data/{id_dato}")
+                print(f"Estado: {respuesta.status_code}.  {respuesta.text}")
             case 8:
                 print("Volviendo al menú principal.")
                 break
             case _:
-                print("Opción inválida. Intente nuevamente.")
+                print("Opción incorrecta o invalida")
 
     return None
 

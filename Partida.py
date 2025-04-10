@@ -50,6 +50,7 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
     Parametros:
     -----------
     jugador_1 : Jugador -> Representa el primer jugador
+
     jugador_2 : Jugador -> Representa el segundo jugador
 
     Retorna:

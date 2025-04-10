@@ -7,6 +7,9 @@ app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = "ContraseñaSuperSecreta"
 jwt = JWTManager(app)
 
+users = {}
+data = {}
+
 @app.route('/signup', methods=['POST'])
 def singup() -> tuple[str,int]:
     user = request.args.get('user', '')
@@ -32,9 +35,6 @@ def login():
 @app.route('/')
 def hello_world():
     return "Hola mundo"
-
-users = {}
-data = {}
 
 @app.route('/data', methods=['GET'])
 def get_data() -> tuple[list, int]:

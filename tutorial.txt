@@ -1,125 +1,70 @@
-# Resumen del Funcionamiento del Juego de Ajedrez
+El ajedrez es un juego de estrategia para dos jugadores, que se juega en un tablero de 8x8 casillas, alternando colores blanco y negro. 
+Cada jugador comienza con 16 piezas: 1 rey, 1 dama (o reina), 2 torres, 2 alfiles, 2 caballos y 8 peones.
+Representación de las piezas:
+Rey (K)
+Dama (Q)
+Torre (R)
+Alfil (B)
+Caballo (N)
+Peón (P)
+La representación de las piezas en el ajedrez vendrá marcado por su color, siendo las minúsculas las piezas negras y las mayúsculas las blancas. Sigue el formato FEN
+Movimiento de las piezas:
+K Rey:
+Se mueve una casilla en cualquier dirección: vertical, horizontal o diagonal.
+No puede moverse a una casilla bajo ataque enemigo.
+Tiene la posibilidad de hacer enroque SIEMPRE Y CUANDO no se haya movido nunca.
+Es la pieza más importante. Si te la capturan pierdes la partida
+Q Dama:
+Se mueve cualquier número de casillas en vertical, horizontal o diagonal.
+R Torre:
+Se mueve cualquier número de casillas en vertical u horizontal.
+B Alfil:
+Se mueve cualquier número de casillas en dirección diagonal
+N Caballo:
+Se mueve en forma de L: dos casillas en una dirección (vertical u horizontal) y luego una en perpendicular.
+Puede saltar sobre otras piezas, lo cual lo convierte en una pieza útil para hacer ataques sorpresa.
+P Peón:
+Avanza una casilla hacia adelante.
+En su primer movimiento puede avanzar dos casillas.
+Captura en diagonal, una casilla hacia adelante. También puede capturar diagonalmente con captura al paso (aún no implementado).
+Si un peón llega al final del tablero, debe promocionarse a cualquier otra pieza, excepto el rey o a sí mismo.
+Objetivo del juego:
+Lograr dar jaque mate al rey enemigo, es decir, atacarlo de forma que no pueda detener su captura
+Reglas del ajedrez:
+1. Cada jugador mueve una sola pieza por turno.
+2. No puedes pasar turno.
+3. No puedes dejar tu rey en jaque.
+4. Captura al paso (aún no implementado: si un peón avanza dos casillas desde su posición inicial y termina al lado de un peón enemigo, ese enemigo puede capturarlo como si hubiera avanzado solo una casilla (solo en el turno inmediatamente posterior).
+5. Al llegar al extremo opuesto del tablero con un peón, este debe promocionarse a dama, torre, alfil o caballo.
+6. Enroque: el rey y la torre no deben haberse movido, no puede haber piezas entre ellos y el rey no debe estar en jaque ni cruzar casillas amenazadas por el enemigo.
+7. Si estás en jaque, estás obligado a mover para salir del jaque. Si no puedes, es jaque mate y pierdes la partida.
+8. Empate (tablas):
+	Por falta de posibilidades para dar mate (no implica que solo queden los reyes).
+	Por ahogado (el jugador no tiene movimientos legales, pero no está en jaque).
+Representación del tablero:
+El tablero tiene filas (1 a 8) y columnas ('a' a 'h'). Ejemplo:
 
-Este documento resume el funcionamiento general del juego de ajedrez implementado en este proyecto. Se describen las clases principales, cómo se representan las piezas y el tablero, y la lógica de movimientos y validaciones.
+  a b c d e f g h
+8 r n b q k b n r 8
+7 p p p p p p p p 7
+6 		 		  6
+5 		 		  5
+4 		 		  4
+3 		 		  3
+2 P P P P P P P P 2
+1 R N B Q K B N R 1
+  a b c d e f g h
 
----
+Digitar movimientos:
+El juego sigue un formato LAN propio llamado LAN hipersimplificado. En este formato para digitar un movimiento solo tienes que poner en coordenadas de ajedrez la posición inicial
+y la posición final. El programa se encargará del resto (encontrar la pieza, ver si es valido el movimiento, etc). Un ejemplo sería el siguiente:
+e2e4 -> desde la casilla (5,2) hasta la casilla (5,4).
+También existen nomenclaturas especiales para movimientos únicos:
+Promoción:
+Formato -> {origen}{destino}={simbolo pieza}. Solo es válido si la pieza que se mueve es el Peón y se mueve hacia la otra punta del tablero. Ejemplo:
+a7a8='Q' -> desde la casilla (1,7) hasta la casilla (1,8) y promociona a la pieza Reina.
+Enroque:
+Formato -> 0-0-0 (enroque largo) o 0-0 (enroque corto). No se debe especificar nada. 
+El programa se encargará de hacerlo todo por ti. El enroque largo se realiza con la torre más alejada y el corto con el más cercano.
 
-## 1. Estructura General del Proyecto
 
-El proyecto está organizado en varios módulos/clases, entre los que se destacan:
-
-- **Tablero**:
-  - Representa el tablero de ajedrez como una matriz de 8x8.
-  - Cada celda es una instancia de la clase **Casilla**.
-  - Proporciona métodos para mostrar el tablero, verificar límites y obtener amenazas.
-
-- **Casilla**:
-  - Representa cada casilla del tablero, con atributos:
-    - `fila`, `columna`: Ubicación en el tablero.
-    - `ocupado`: Indica si hay una pieza en la casilla.
-    - `pieza`: La instancia de la pieza que ocupa la casilla.
-    - `amenazado`: Indica si la casilla está amenazada.
-  - Incluye métodos para mostrar la representación (por ejemplo, traduce la pieza a un símbolo).
-
-- **Pieza (clase abstracta)**:
-  - Define la interfaz común para todas las piezas (como `movimiento_valido`).
-  - Tiene atributos básicos: posición, color, estado (capturada, valor, etc.).
-  - Las subclases deben implementar el método `movimiento_valido(tablero)`, que devuelve los movimientos teóricamente permitidos.
-
-- **Subclases de Pieza**:
-  Cada pieza tiene su comportamiento específico:
-  - **Peón**:
-    - Se mueve hacia adelante y captura en diagonal.
-    - Tiene lógica para movimientos dobles, en passant y promoción.
-    - La función `transformacion()` comprueba si el peón puede promocionar.
-  - **Torre**:
-    - Se mueve en línea recta (horizontal y vertical).
-  - **Caballo**:
-    - Se mueve en forma de “L” (dos casillas en una dirección y una perpendicular).
-    - Es único en que puede saltar sobre otras piezas.
-  - **Alfil**:
-    - Se mueve en diagonal.
-  - **Reina**:
-    - Combina los movimientos de Torre y Alfil.
-  - **Rey**:
-    - Se mueve una casilla en cualquier dirección.
-    - Tiene restricciones adicionales para no moverse a casillas amenazadas.
-    - Incorpora lógica para el enroque.
-
-- **Jugador**:
-  - Cada jugador tiene atributos como nombre, color y una lista de piezas asignadas.
-  - Permite gestionar el inventario de piezas y, en un futuro, estadísticas o puntuaciones.
-
----
-
-## 2. Representación de las Piezas y el Tablero
-
-- **Tablero**:
-  Se representa internamente como una lista de listas (8x8) de objetos *Casilla*.
-  Cada casilla conoce su ubicación y si está ocupada, mostrando el símbolo correspondiente de la pieza que la ocupa (por ejemplo, `'P'` para un peón, `'R'` para una torre, etc.).
-
-- **Notación de Movimientos**:
-  El juego utiliza notación (por ejemplo, Notación Algebraica Larga) para definir los movimientos, donde se especifica la casilla de origen, la casilla de destino y, en su caso, un movimiento especial:
-  - **Movimiento simple**: `e2-e4`
-  - **Captura**: `e5xd6`
-  - **Enroque**: `0-0` o `0-0-0`
-  - **Promoción**: `e7-e8=Q`
-
-La función `digitar_movimiento()` se encarga de recibir la entrada del usuario en este formato y pasarla al sistema de validación.
-
----
-
-## 3. Lógica de Movimientos y Validaciones
-
-- **Movimiento Válido de una Pieza**:
-  Cada pieza tiene su método `movimiento_valido(tablero)`, que devuelve una lista (o conjunto) de movimientos permitidos según el estado actual del tablero.
-  Estos movimientos son posteriormente filtrados (por ejemplo, el Rey descarta las casillas donde quedaría en jaque).
-
-- **Validación del Movimiento**:
-  El método `mover()` (definido en la clase *Pieza* o en sus subclases) realiza las siguientes tareas:
-  - Comprueba que el destino esté entre los movimientos válidos.
-  - Simula el movimiento actualizando temporalmente la posición de la pieza y el estado del tablero.
-  - Verifica que, tras el movimiento, el rey del jugador no quede en jaque.
-  - Si se intenta un movimiento especial (enroque o promoción), se realizan validaciones adicionales:
-    - **Enroque**: Debe cumplir ciertas condiciones, como que las casillas intermedias no estén ocupadas ni amenazadas.
-    - **Promoción**: Solo se permite si la pieza es un Peón y está en la fila opuesta.
-  - Si el movimiento es válido, se actualiza el tablero y se refleja en el inventario del jugador; si no, se revierte el cambio.
-
-- **Detección de Jaque y Tablas**:
-  La función `amenazas()` del tablero calcula qué piezas enemigas amenazan una casilla en concreto. Esto se utiliza para:
-  - Comprobar que el Rey no se mueva a una casilla amenazada.
-  - Verificar, en conjunto con otras funciones, si la situación del jugador corresponde a jaque, jaque mate o tablas.
-
----
-
-## 4. Integración con la API Flask
-
-El proyecto también incluye una API RESTful implementada con Flask para gestionar:
-- Autenticación de usuarios (registro e inicio de sesión) con JWT.
-- Operaciones CRUD para guardar y recuperar datos (por ejemplo, estadísticas o configuraciones).
-- Un menú interactivo en un script de ejemplo (`examples.py`) que permite probar las distintas funcionalidades del servidor.
-
-Se recomienda utilizar `requirements.txt` para gestionar las dependencias y un entorno virtual (venv) que no se suba al repositorio.
-
----
-
-## Conclusiones
-
-- **Modularidad:**
-  El proyecto está organizado en módulos que permiten separar las funcionalidades de tablero, piezas, jugadores y la API. Esto facilita la escalabilidad y el mantenimiento.
-
-- **Validaciones rigurosas:**
-  Se realizan comprobaciones para movimientos, enroques, promociones y para evitar que se mueva el Rey a casillas amenazadas.
-
-- **Uso de notación estándar:**
-  La entrada y salida de movimientos se realizan mediante notación (p.ej., LAN extendida), lo que facilita la interpretación y depuración de jugadas.
-
-- **Integración con Flask:**
-  La API permite gestionar usuarios y datos, lo que abre la puerta a funcionalidades avanzadas como partidas en línea o análisis de partidas.
-
-Este resumen debería proporcionar una visión global de cómo funciona el juego y las principales áreas de funcionalidad implementadas en el proyecto. Si necesitas ampliar en algún apartado o añadir ejemplos adicionales, puedes hacerlo en este documento.
-
----
-
-¡Listo! Este archivo resume el funcionamiento del juego, sus movimientos, la representación de las piezas y la integración con la API.
-¿Te sirve este contenido o quieres ajustar algún punto en particular?
