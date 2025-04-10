@@ -188,7 +188,7 @@ class Tablero:
             Retorna la casilla correspondiente
         """
 
-        return self.tablero[fila][columna] if color else self.tablero[7-fila][columna]
+        return self.tablero[fila][columna] if color else self.tablero[7-fila][7-columna]
 
     @staticmethod
     def limite(fila : int, columna : int) -> bool:

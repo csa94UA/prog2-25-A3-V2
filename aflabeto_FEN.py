@@ -78,7 +78,7 @@ def digitar_movimiento(color : int) -> None | tuple[tuple, tuple, int] | tuple[
             return ((8 - int(inicio[1]), traduccion[inicio[0]]), (8 - int(fin[1]), traduccion[fin[0]]),
                     0 if especial is None else especial[1].upper())
         else:
-            return ((int(inicio[1]) - 1, traduccion[inicio[0]]), (int(fin[1]) - 1, traduccion[fin[0]]),
+            return ((int(inicio[1]) - 1, 7 - traduccion[inicio[0]]), (int(fin[1]) - 1, 7 - traduccion[fin[0]]),
                     0 if especial is None else especial[1].upper())
 
 
@@ -146,4 +146,4 @@ def traducción_LAN(mov : str) -> str:
     return mov
 
 if __name__ == '__main__':
-    print(digitar_movimiento(1))
+    print(digitar_movimiento(0))

@@ -119,10 +119,10 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
 
             if movimiento[2] == 1:
                 torre = next((torre for torre in jugador_actual.piezas if isinstance(torre, Torre) \
-                          and torre.posicion == (7,7)), None)
+                          and torre.posicion[1] == 7), None)
             else:
                 torre = next((torre for torre in jugador_actual.piezas if isinstance(torre, Torre) \
-                              and torre.posicion == (7,0)), None)
+                              and torre.posicion[1] == 0), None)
 
             print(rey)
             print(torre)
