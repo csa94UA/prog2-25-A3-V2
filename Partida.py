@@ -35,11 +35,11 @@ Funciones:
 """
 
 from Piezas import Caballo, Alfil, Rey, Reina, Peon, Torre, Pieza
-from Tablero import Tablero
 from Jugador import Jugador
 from random import randint
 from typing import Union
 from aflabeto_FEN import digitar_movimiento
+from Tablero import Tablero
 
 
 def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
@@ -77,7 +77,6 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
     jaque : bool = False
     turno = 1 if jugador1.color else 0
     jugador_actual : Union["Jugador",None] = None
-
     while not game_over:
         jugador_actual = jugador1 if turno else jugador2
         enemigo : Jugador = jugador1 if not turno else jugador2

@@ -113,22 +113,8 @@ class Pieza(ABC):
         
 
         if pieza_enemgio is not None and pieza_enemgio.posicion == self.posicion:
-            indice : int = enemigo.piezas.index(pieza_enemgio)
             enemigo.piezas.remove(pieza_enemgio)
         return True
-    """
-        if tablero.amenazas(enemigo, pos_rey[0], pos_rey[1]):
-            print("Error. Tu movimiento provoca o no impide un jaque")
-            self.posicion = pos_ant_pieza
-            tablero[pos_ant_pieza[0]][pos_ant_pieza[1]].pieza = self
-            tablero[x][y].pieza = pieza_enemgio
-            if pieza_enemgio is not None:
-                enemigo.piezas.insert(indice, pieza_enemgio)
-            return False
-
-        print(tablero[x][y].pieza)
-
-    """
     
     def __repr__(self):
         """

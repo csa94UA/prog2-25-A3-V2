@@ -9,8 +9,9 @@ Clases:
 """
 
 from .casilla import Casilla
-from Jugador import Jugador
+#from Jugador import Jugador
 from typing import Union
+import threading
 import itertools
 import pygame
 import os
@@ -52,9 +53,9 @@ class Tablero:
         Retorna las casillas intermedias entre dos piezas. Usado para comprobar las casillas problematicas dentro de un jaque
     quitar_permutaciones(self, mov : tuple, casillas_tocapelotas : list, fila : int, columna : int) -> None:
         Elimina las permutaciones que contengan a la posicoin de la pieza. Se usa para eliminar casillas intermedias
-    jaque_in(self, fila : int, columna : int, jugador : Jugador, enemigo : Jugador) -> bool:
+    jaque_in(self, fila : int, columna : int, jugador : "Jugador", enemigo : "Jugador") -> bool:
         Comprueba si el jaque es inevitable o no
-    amenazas(self, enemigo : Jugador, fila : int, columna : int) -> list:
+    amenazas(self, enemigo : "Jugador", fila : int, columna : int) -> list:
         Revisa las piezas que amenazan una casilla
     casillas_amenazadas(self, amenazadores : list, fila : int, columna : int) -> list:
         Obtiene todas las casillas amenazadas entre la posición de cada pieza amenazadora y la posición de la pieza
@@ -93,13 +94,13 @@ class Tablero:
         """
         return self.tablero[indice]
 
-    def esta_en_jaque(self, jugador:Jugador,enemigo:Jugador) -> bool:
+    def esta_en_jaque(self, jugador:"Jugador",enemigo:"Jugador") -> bool:
         """
         Verifica si el rey del jugador está en jaque después de un movimiento.
 
         Parámetros:
         -----------
-        jugador : Jugador
+        jugador : "Jugador"
             A que jugador se quiere saber si esta en jaque o no
 
         Retorna:
@@ -353,7 +354,7 @@ class Tablero:
         return casillas_tocapelotas
 
 
-    def jaque_in(self, fila : int, columna : int, jugador : Jugador, enemigo : Jugador) -> bool:
+    def jaque_in(self, fila : int, columna : int, jugador : "Jugador", enemigo : "Jugador") -> bool:
         """
         Comprueba si el jaque producido es inevitable o no
 
@@ -363,9 +364,9 @@ class Tablero:
             Fila en la que se encuentra la casilla o pieza 'víctima'
         columna : int
             Columna en la que se encuentra la casilla o pieza 'víctima'
-        jugador : Jugador
+        jugador : "Jugador"
             Representa el jugador que es dueño de la pieza 'vicitma'
-        enemigo : Jugador
+        enemigo : "Jugador"
             Representa el jugador que ataca la pieza 'victima' con una o más piezas
 
         Retorna:
@@ -405,13 +406,13 @@ class Tablero:
 
         return True
 
-    def amenazas(self, enemigo : Jugador, fila : int, columna : int) -> list:
+    def amenazas(self, enemigo : "Jugador", fila : int, columna : int) -> list:
         """
         Obtiene todas las piezas que amenazan una casilla junto con su posición
 
         Parametros:
         -----------
-        enemigo : Jugador
+        enemigo : "Jugador"
             Representa el jugador que ataca la pieza 'victima' con una o más piezas
         fila : int
             Fila en la que se encuentra la casilla o pieza 'víctima'
@@ -485,13 +486,14 @@ class Tablero:
         """
         piezas = {}
         nombres_piezas = {"r", "n", "b", "q", "k", "p", "R", "N", "B", "Q", "K", "P"}
-        carpeta = os.path.join(os.path.dirname(__file__), "..", "imagenes")
+        carpeta = os.path.join(os.path.dirname(__file__),  "imagenes")
 
         for nombre in nombres_piezas:
             if nombre.isupper():
-                archivo = f"{nombre}.png"
-            else:
                 archivo = f"b{nombre.upper()}.png"
+                
+            else:
+                archivo = f"{nombre}.png"
             ruta_imagen = os.path.join(carpeta, archivo)
             imagen = pygame.image.load(ruta_imagen)
             imagen = pygame.transform.scale(imagen, (tamano_casilla, tamano_casilla))
@@ -508,12 +510,7 @@ class Tablero:
             Devuelve una lista de 8x8 que representa el tablero de ajedrez con las piezas colocadas en su
             posición inicial.
         """
-        tablero = []
-        for i in range(8):
-            fila = []
-            for j in range(8):
-                fila.append("")
-            tablero.append(fila)
+        tablero = [["" for _ in range(8)] for _ in range(8)]
 
         piezas_negras = ["r", "n", "b", "q", "k", "b", "n", "r"]
         piezas_blancas = ["R", "N", "B", "Q", "K", "B", "N", "R"]
@@ -549,9 +546,9 @@ class Tablero:
                     color = color_claro
                 else:
                     color = color_oscuro
-                pygame.draw.rect(ventana, color, (columna * tamano_casilla, fila * tamano_casilla, tamano_casilla, tamano_casilla))
+                pygame.draw.rect(ventana, color, (columna * tamano_casilla + 30, fila * tamano_casilla, tamano_casilla, tamano_casilla))
 
-    def dibujar_piezas(self, ventana, tablero, piezas, tamano_casilla):
+    def dibujar_piezas(self, ventana, piezas, tamano_casilla):
         """
         Coloca las piezas del ajedrez en el tablero.
 
@@ -566,13 +563,57 @@ class Tablero:
         tamano_casilla : int
             El tamaño de cada casilla en el tablero.
         """
+        cambio = {
+            "Peon": "p",
+            "Torre": "r",
+            "Caballo": "n",
+            "Alfil": "b",
+            "Reina": "q",
+            "Rey": "k",
+        }
+
         for fila in range(8):
             for columna in range(8):
-                pieza = tablero[fila][columna]
-                if pieza in piezas:
-                    x = columna * tamano_casilla
+                pieza = self.tablero[fila][columna].pieza
+                if pieza:
+                    x = columna * tamano_casilla + 30
                     y = fila * tamano_casilla
-                    ventana.blit(piezas[pieza], (x, y))
+                    letra = cambio[type(pieza).__name__]
+                    if pieza.color:
+                        ventana.blit(piezas[letra.upper()], (x, y))
+                    else:
+                        ventana.blit(piezas[letra.lower()], (x, y))
+
+    def dibujar_coordenadas(self, ventana, tamano_casilla, color_texto=(255, 255, 255)):
+        """
+        Dibuja las coordenadas del tablero (a-h y 1-8) en los bordes del tablero.
+
+        Parametros:
+        -----------
+        ventana : Surface
+            La ventana de pygame donde se dibujarán las coordenadas.
+        tamano_casilla : int
+            El tamaño de cada casilla en el tablero.
+        color_texto : tuple
+            El color del texto para las coordenadas.
+        """
+        fuente = pygame.font.SysFont(None, tamano_casilla // 3)
+        letras = "abcdefgh"
+        numeros = "87654321"  # Para que 1 esté en la parte inferior
+
+        for i in range(8):
+            # Letras (abajo)
+            letra = fuente.render(letras[i], True, color_texto)
+            x = i * tamano_casilla + tamano_casilla // 2 - letra.get_width() // 2 + 30
+            y = 8 * tamano_casilla + 5  # justo debajo del tablero
+            ventana.blit(letra, (x, y))
+
+            # Números (izquierda)
+            numero = fuente.render(numeros[i], True, color_texto)
+            x = 5  # margen izquierdo
+            y = i * tamano_casilla + tamano_casilla // 2 - numero.get_height() // 2
+            ventana.blit(numero, (x, y))
+
 
     def representacion_grafica(self):
         """
@@ -586,10 +627,10 @@ class Tablero:
         tamano_casilla = ancho // columnas
         color_claro = (238, 238, 210)
         color_oscuro = (118, 150, 86)
+        clock = pygame.time.Clock()
 
         piezas = self.imagenes_piezas(tamano_casilla)
-        tablero = self.crear_tablero()
-        ventana = pygame.display.set_mode((ancho, alto))
+        ventana = pygame.display.set_mode((ancho + 30, alto + 30))
 
         inicio = True
         while inicio:
@@ -599,11 +640,54 @@ class Tablero:
 
             ventana.fill((0, 0, 0))
             self.dibujar_tablero(ventana, filas, columnas, tamano_casilla, color_claro, color_oscuro)
-            self.dibujar_piezas(ventana, tablero, piezas, tamano_casilla)
+            self.dibujar_coordenadas(ventana, tamano_casilla)
+            self.dibujar_piezas(ventana, piezas, tamano_casilla)
             pygame.display.flip()
-
+            clock.tick(60)
         pygame.quit()
 
+    def iniciar_grafica(self):
+        """
+        Inicia Pygame y crea la ventana gráfica para mostrar el tablero con las piezas.
+        Lanza el bucle gráfico en un hilo.
+        """
+        pygame.init()
+        self.ancho, self.alto = 600, 600
+        self.tamano_casilla = self.ancho // 8
+        self.color_claro = (238, 238, 210)
+        self.color_oscuro = (118, 150, 86)
+        self.clock = pygame.time.Clock()
+        self.piezas_graficas = self.imagenes_piezas(self.tamano_casilla)
+        self.ventana = pygame.display.set_mode((self.ancho + 30, self.alto + 30))
+        self.ventana_activa = True
+
+        # Inicia el hilo gráfico
+        threading.Thread(target=self.bucle_grafico, daemon=True).start()
+
+    def bucle_grafico(self):
+        """
+        Bucle infinito que mantiene actualizada la ventana gráfica.
+        Corre en un hilo separado.
+        """
+        while self.ventana_activa:
+            self.actualizar_grafica()
+
+    def actualizar_grafica(self):
+        """
+        Actualiza la ventana del tablero con las piezas, coordenadas y el estado del juego.
+        """
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                self.ventana_activa = False
+                pygame.quit()
+                sys.exit()
+
+        self.ventana.fill((0, 0, 0))  # Limpiar la pantalla
+        self.dibujar_tablero(self.ventana, 8, 8, self.tamano_casilla, self.color_claro, self.color_oscuro)
+        self.dibujar_coordenadas(self.ventana, self.tamano_casilla)
+        self.dibujar_piezas(self.ventana, self.piezas_graficas, self.tamano_casilla)
+        pygame.display.flip()
+        self.clock.tick(60)
 
 if __name__ == "__main__":
     tablero = Tablero()
