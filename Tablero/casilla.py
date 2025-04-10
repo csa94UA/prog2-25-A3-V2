@@ -1,7 +1,3 @@
-from typing import Union, TYPE_CHECKING
-if TYPE_CHECKING:
-    from Piezas import Caballo, Alfil, Rey, Torre, Reina, Pieza, Peon
-
 """
 Modulo para la gestión y uso de una casilla del tablero
 
@@ -11,6 +7,10 @@ y contiene la información más esencial. Posee modulos que permite realizar las
 Clases:
     - Casilla
 """
+
+from typing import Union, TYPE_CHECKING
+if TYPE_CHECKING:
+    from Piezas import Caballo, Alfil, Rey, Torre, Reina, Pieza, Peon
 
 class Casilla:
     """
@@ -32,9 +32,9 @@ class Casilla:
     Métodos:
     -----------
     conquistado(Pieza) -> None:
-        Actualiza los atributos de la casilla al ser tomada por una pieza
+        Actualiza los atributos de la casilla al ser tomada por una pieza.
     representacion() -> str:
-        Representa la pieza que ocupa la casilla según la clase de pieza que sea y su color
+        Representa la pieza que ocupa la casilla según la clase de pieza que sea y su color.
     """
 
     def __init__(self, fila : int, columna : int):
@@ -76,7 +76,6 @@ class Casilla:
         ---------
         str
             Devuelve el simbolo correspondiente a la pieza y su color
-        :return:
         """
         from Piezas import Caballo, Alfil, Rey, Torre, Reina, Peon
         pieza : Union[Pieza,None] = self.pieza
@@ -99,7 +98,7 @@ class Casilla:
         if isinstance(pieza, Rey):
             return 'K' if pieza.color else 'k'
 
-        return ' '
+        return '·'
 
     def __repr__(self):
         """
@@ -118,7 +117,7 @@ class Casilla:
 if __name__ == "__main__":
     from Piezas import Caballo, Alfil, Rey, Torre, Reina, Pieza, Peon
     casilla = Casilla(1,2)
-    pieza = Rey([1,2],0)
+    pieza = Rey((1,2),0)
     casilla.conquistado(pieza)
     print(repr(casilla))
     print(casilla.representacion())
