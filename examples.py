@@ -1,5 +1,4 @@
 import requests
-import hashlib
 from Partida import partida
 from Jugador import Jugador
 
@@ -8,10 +7,9 @@ URL = 'http://127.0.0.1:5000/'
 def mostrar_menu() -> None:
     print("\t-----------Yorkshire Chess-----------")
     print("1. Crear partida")
-    print("2. Acceder a información del código")
-    print("3. Documentación acerca del juego (muy remomendado)")
-    print("4. Acceder elemntos de la API (registrarse, acceder a información, etc)")
-    print("5. Salir")
+    print("2. Documentación acerca del juego (muy remomendado)")
+    print("3. Acceder elemntos de la API (registrarse, acceder a información, etc)")
+    print("4. Salir")
 
     return None
 
@@ -19,15 +17,13 @@ def crear_partida() -> None:
         
     jug1_nombre = input("Digite su nombre jugador 1: ")
     jug1_contraseña = input("Digite su contraseña jugador 1: ")
-    descodificado = hashlib.sha256(jug1_contraseña.encode()).hexdigest()
-    if verificar_usuario(jug1_nombre, descodificado):
+    if verificar_usuario(jug1_nombre, jug1_contraseña):
         print("Credenciales invalidas")
         return None
 
     jug2_nombre = input("Digite su nombre jugador 2: ")
     jug2_contraseña = input("Digite su contraseña jugador 2: ")
-    descodificado = hashlib.sha256(jug2_contraseña.encode()).hexdigest()
-    if verificar_usuario(jug2_nombre, descodificado):
+    if verificar_usuario(jug2_nombre, jug2_contraseña):
         print("Credenciales invalidas")
         return None
 
@@ -43,12 +39,7 @@ def crear_partida() -> None:
 
 def verificar_usuario(usuario : str, contraseña : str) -> bool:
     respuesta = requests.get(f"{URL}/login?user={usuario}&password={contraseña}")
-    return True if respuesta.status_code == 200 else False
-
-def acceder_metodos_y_clases() -> None:
-
-
-    return None
+    return False if respuesta.status_code == 200 else True
 
 def mostrar_documentacion_juego() -> None:
     
@@ -122,7 +113,7 @@ def menu() -> None:
     while True:
         mostrar_menu()
         opcion = input("¿Qué opción desea? ")
-        if opcion.isdigit() and 0 < int(opcion) < 6:
+        if opcion.isdigit() and 0 < int(opcion) < 5:
             opcion = int(opcion)
         else:
             print("No has digitado una opción correcta.")
@@ -132,10 +123,8 @@ def menu() -> None:
             case 1:
                 crear_partida()
             case 2:
-                acceder_metodos_y_clases()
-            case 3:
                 mostrar_documentacion_juego()
-            case 4:
+            case 3:
                 acceder_elementos_api()
             case _:
                 print("Saliendo...")
