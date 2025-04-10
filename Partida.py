@@ -149,13 +149,15 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
                 print("No ha sido posible hacer el enroque")
                 continue
 
-            else:
-                jaque: bool = comprobar_jaque_enemigo(tablero, jugador_actual, enemigo, torre)
+            jaque: bool = comprobar_jaque_enemigo(tablero, jugador_actual, enemigo, torre)
 
             pos_rey_enemigo = enemigo.encontrar_rey()
 
-            if tablero.jaque_in(pos_rey_enemigo[0], pos_rey_enemigo[1], enemigo, jugador_actual):
+            if jaque and tablero.jaque_in(pos_rey_enemigo[0], pos_rey_enemigo[1], enemigo, jugador_actual):
                 break
+
+            turno = 1 - turno
+            continue
 
         # Busca la pieza en esa posicion. Si no la encuentra, dará un mensaje de error y repetirá el movimiento
 
