@@ -63,7 +63,7 @@ class Pieza(ABC):
         """
         pass
 
-    def mover(self, destino: tuple[int, int], tablero: "Tablero", jugador : "Jugador", enemigo : "Jugador", especial : Union[str,int]) -> bool:
+    def mover(self, destino: tuple[int], tablero: "Tablero", jugador : "Jugador", enemigo : "Jugador", especial : Union[str,int]) -> bool:
         from Tablero import Tablero
         from Jugador import Jugador
         """
@@ -109,8 +109,6 @@ class Pieza(ABC):
             print("Error. Tu movimiento provoca o no impide un jaque")
             tablero.restaurar_estado(tablero_antiguo)
             return False
-        print(pieza_enemgio)
-        print(self)
 
         
 

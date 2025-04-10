@@ -313,8 +313,6 @@ class Tablero:
         dir_i = 1 if fila > fila_m else (-1 if fila < fila_m else 0)
         dir_j = 1 if columna > columna_m else (-1 if columna < columna_m else 0)
 
-        print("Direccion: ", dir_i, dir_j)
-
         if abs(fila - fila_m) != abs(columna - columna_m) and fila - fila_m != 0 and columna - columna_m != 0:
             return []
 
@@ -323,7 +321,6 @@ class Tablero:
         intermedias : list = []
         intermedias.append((fila_m,columna_m))
         for pos in generador:
-            print("Posicion intermedia: ",pos)
             if pos == (fila,columna) or not self.limite(*pos):
                 break
             intermedias.append((pos[0],pos[1]))
@@ -351,12 +348,7 @@ class Tablero:
             de la pieza agresor (fila_m,columna_m)
         """
 
-        print("Posición que eliminará casillas: ", mov)
-
         casillas_tocapelotas = [pos for pos in casillas_tocapelotas if mov not in pos]
-
-        print("Casillas tocapelotas actualizado ",casillas_tocapelotas)
-
 
         return casillas_tocapelotas
 
@@ -384,16 +376,12 @@ class Tablero:
 
         amenazadores : list = self.amenazas(enemigo,fila,columna)
 
-        print(amenazadores)
-
         casillas_tocapelotas : list = self.casillas_amenazadas(amenazadores,fila,columna)
 
-        print(casillas_tocapelotas)
         salir : bool = False
         for pieza in jugador.piezas:
             if pieza.posicion == (fila, columna):
                 rey = pieza
-                print("Rey encontrado: ",rey)
 
             for mov in pieza.movimiento_valido(self):
 
@@ -409,13 +397,10 @@ class Tablero:
                         casillas_tocapelotas = self.quitar_permutaciones(mov,casillas_tocapelotas)
                         salir = True
 
-        print("Casillas resultantes", casillas_tocapelotas)
-
         if rey.movimiento_valido(self):
             return False
 
         if not casillas_tocapelotas:
-            print("No es inevitable")
             return False
 
         return True
@@ -444,10 +429,8 @@ class Tablero:
 
         for pieza in enemigo.piezas:
             if isinstance(pieza, Rey):
-                print("Es un rey (lo ignoro epicamente)")
                 continue
             if (fila,columna) in pieza.movimiento_valido(self):
-                print("No es un rey (lo inserto epicamente)")
                 casillas.append((pieza.posicion, pieza))
 
         return casillas
@@ -479,11 +462,9 @@ class Tablero:
             fila_p, columna_p = posicion
 
             if self[fila_p][columna_p].representacion() not in ['N','n']:
-                print("No es un caballo")
                 casillas.append(self.casillas_intermedias(fila, columna, posicion[0], posicion[1]))
 
             elif self[fila_p][columna_p].representacion() in ['N','n']:
-                print("Es un caballo")
                 casillas.append(posicion)
 
         return casillas
