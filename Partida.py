@@ -117,8 +117,12 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
 
             print("Se busca enroque")
 
-            torre = next((torre for torre in jugador_actual.piezas if isinstance(torre, Torre) \
-                          and torre.posicion[0] in [0,7]), None)
+            if movimiento[2] == 1:
+                torre = next((torre for torre in jugador_actual.piezas if isinstance(torre, Torre) \
+                          and torre.posicion == (7,7)), None)
+            else:
+                torre = next((torre for torre in jugador_actual.piezas if isinstance(torre, Torre) \
+                              and torre.posicion == (7,0)), None)
 
             print(rey)
             print(torre)
@@ -148,8 +152,10 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
             else:
                 jaque: bool = comprobar_jaque_enemigo(tablero, jugador_actual, enemigo, torre)
 
-                if tablero.jaque_in(rey.posicion[0], rey.posicion[1], enemigo, jugador_actual):
-                    break
+            pos_rey_enemigo = enemigo.encontrar_rey()
+
+            if tablero.jaque_in(pos_rey_enemigo[0], pos_rey_enemigo[1], enemigo, jugador_actual):
+                break
 
         # Busca la pieza en esa posicion. Si no la encuentra, dará un mensaje de error y repetirá el movimiento
 
@@ -319,6 +325,10 @@ def comprobar_enroque_corto(tablero : "Tablero", enemigo : "Jugador", rey : "Rey
     tablero[fila][7].pieza = None
     tablero[fila][5].pieza = torre
 
+    print("Enroque exitoso")
+    print(torre)
+    print(rey)
+
     return True
 
 def comprobar_enroque_largo(tablero : "Tablero", enemigo : "Jugador", rey : "Rey",
@@ -368,6 +378,10 @@ def comprobar_enroque_largo(tablero : "Tablero", enemigo : "Jugador", rey : "Rey
     torre.movido = True
     tablero[fila][0].pieza = None
     tablero[fila][3].pieza = torre
+
+    print("Enroque exitoso")
+    print(torre)
+    print(rey)
 
     return True
 
