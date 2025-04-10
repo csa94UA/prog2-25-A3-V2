@@ -164,7 +164,7 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
 
         # pos_antigua = pieza.posicion
 
-        if not pieza.mover(movimiento[1], tablero, jugador_actual, enemigo, rey.posicion, str(movimiento[2])):
+        if not pieza.mover(movimiento[1], tablero, jugador_actual, enemigo, str(movimiento[2])):
             print("El movimiento es inválido (autojaque, movimiento impromio de la pieza, etc")
             continue
 
@@ -495,7 +495,7 @@ def caso_jaque(tablero : "Tablero", jugador_actual : "Jugador", enemigo : "Jugad
         print("Error. No se ha encontrado el rey")
         return False
 
-    if not pieza.mover(movimiento[1], tablero, jugador_actual, enemigo, rey.posicion, str(movimiento[2])):
+    if not pieza.mover(movimiento[1], tablero, jugador_actual, enemigo, str(movimiento[2])):
         print("El movimiento es inválido (autojaque, movimiento impromio de la pieza, etc)")
         return False
 

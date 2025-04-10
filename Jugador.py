@@ -77,6 +77,25 @@ class Jugador:
         self.piezas.remove(pieza)
 
         return None
+    
+    def encontrar_rey(self)->tuple[int,int]:
+        """
+        Elimina la pieza en caso de ser capturada
+
+        Retorna:
+        --------
+        tuple
+            Retorna una tupla con la posicion del rey
+
+        """
+        rey = None
+        for pieza in self.piezas:
+            if type(pieza).__name__ == "Rey":
+                rey = pieza
+                break
+
+        posicion_rey = rey.posicion
+        return posicion_rey
 
     def __repr__(self):
         """
@@ -89,4 +108,4 @@ class Jugador:
         """
 
         return f"{type(self).__name__}(Jugador -> {self.nombre}, puntuacion -> {self.puntuacion}, \
-        color ->  {"1" if self.color else "0"}, piezas -> {self.piezas}, Cantidad -> {self.cantidad})"
+        color ->  {str(1) if self.color else str(0)}, piezas -> {self.piezas}, Cantidad -> {self.cantidad})"

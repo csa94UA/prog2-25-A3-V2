@@ -34,6 +34,12 @@ class Tablero:
 
     Métodos:
     -----------
+    esta_en_jaque(self, jugador:Jugador) -> bool:
+        Detecta si un jugador se encuentra en jaque o no
+    guardar_estado(self) -> dict:
+        Guanda el estado del tablero en un diccionario
+    restaurar_estado(self, estado: dict) -> None:
+        Restaura el estado del tablero a partir de un diccionario obtenido del metodo guardar_estado()
     obtener_casilla(self, fila : int, columna : int) -> Casilla:
         Devuelve la casilla coherente a la perspectiva del jugador actual
     limite(fila : int, columna : int) -> bool:
@@ -86,6 +92,80 @@ class Tablero:
             Retorna la casilla (o las casillas) que ha sido seleccionado
         """
         return self.tablero[indice]
+
+    def esta_en_jaque(self, jugador:Jugador) -> bool:
+        """
+        Verifica si el rey del jugador está en jaque después de un movimiento.
+
+        Parámetros:
+        -----------
+        jugador : Jugador
+            A que jugador se quiere saber si esta en jaque o no
+
+        Retorna:
+        --------
+        bool
+            Devuelve True si el rey está en jaque, False si no lo está.
+        """
+    
+        posicion_rey = jugador.encontrar_rey()
+
+        for fila in self.tablero:
+            for casilla in fila:
+                pieza = casilla.pieza
+                if pieza and pieza.color != jugador.color:
+                    if posicion_rey in pieza.movimiento_valido(self):
+                        return True
+
+        return False
+
+    def guardar_estado(self) -> dict:
+        """
+        Guarda el estado actual del tablero y los datos relevantes para
+        poder restaurarlos más adelante. Este método es útil, por ejemplo,
+        al implementar deshacer movimientos o para evaluaciones de IA.
+
+        Retorna:
+        --------
+        dict
+            Diccionario que contiene el estado del tablero, los derechos de enroque,
+            la casilla de en passant, el contador de medio movimiento y el turno actual.
+        """
+
+        estado = {
+            "tablero": [[casilla.pieza for casilla in fila] for fila in self.tablero], 
+            "enroque": self.enroque.copy() if self.enroque else None,
+            "en_passant": self.en_passant,
+            "contador": self.contador,
+            "turno": self.turno,
+        }
+        return estado
+
+
+    def restaurar_estado(self, estado: dict) -> None:
+        """
+        Restaura el estado del tablero y de la partida a partir de un diccionario previamente
+        guardado. Ideal para funciones como deshacer movimiento, análisis o carga de partidas.
+
+        Parámetros:
+        -----------
+        estado : dict
+            Diccionario que contiene el estado del juego, tal como fue devuelto por guardar_estado.
+
+        Retorna:
+        --------
+        None
+            No retorna ningún valor. Modifica el estado interno del objeto.
+        """
+
+        for i in range(8):
+            for j in range(8):
+                self.tablero[i][j].pieza = estado["tablero"][i][j]
+
+        self.enroque = estado["enroque"].copy() if estado["enroque"] else None
+        self.en_passant = estado["en_passant"]
+        self.contador = estado["contador"]
+        self.turno = estado["turno"]
 
     def obtener_casilla(self, fila : int, columna : int, color : int) -> Casilla:
         """
