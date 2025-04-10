@@ -12,7 +12,7 @@ from .casilla import Casilla
 from Jugador import Jugador
 from typing import Union
 import itertools
-#import pygame
+import pygame
 import os
 
 class Tablero:
@@ -513,7 +513,6 @@ class Tablero:
         tamano_casilla = ancho // columnas
         color_claro = (238, 238, 210)
         color_oscuro = (118, 150, 86)
-        color_texto = (255, 0, 0)
 
         piezas = self.imagenes_piezas(tamano_casilla)
         tablero = self.crear_tablero()
@@ -526,7 +525,7 @@ class Tablero:
                     inicio = False
 
             ventana.fill((0, 0, 0))
-            self.dibujar_tablero(ventana, filas, columnas, tamano_casilla, color_claro, color_oscuro, color_texto)
+            self.dibujar_tablero(ventana, filas, columnas, tamano_casilla, color_claro, color_oscuro)
             self.dibujar_piezas(ventana, tablero, piezas, tamano_casilla)
             pygame.display.flip()
 
