@@ -105,7 +105,7 @@ class Pieza(ABC):
         
         pieza_enemgio = tablero[x][y].pieza
         tablero[x][y].pieza = self
-        if tablero.esta_en_jaque(jugador):
+        if tablero.esta_en_jaque(jugador,enemigo):
             print("Error. Tu movimiento provoca o no impide un jaque")
             tablero.restaurar_estado(tablero_antiguo)
             return False

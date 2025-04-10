@@ -34,7 +34,7 @@ class Tablero:
 
     Métodos:
     -----------
-    esta_en_jaque(self, jugador:Jugador) -> bool:
+    esta_en_jaque(self, jugador:Jugador,enemigo:Jugador) -> bool:
         Detecta si un jugador se encuentra en jaque o no
     guardar_estado(self) -> dict:
         Guanda el estado del tablero en un diccionario
@@ -93,7 +93,7 @@ class Tablero:
         """
         return self.tablero[indice]
 
-    def esta_en_jaque(self, jugador:Jugador) -> bool:
+    def esta_en_jaque(self, jugador:Jugador,enemigo:Jugador) -> bool:
         """
         Verifica si el rey del jugador está en jaque después de un movimiento.
 
@@ -110,12 +110,9 @@ class Tablero:
     
         posicion_rey = jugador.encontrar_rey()
 
-        for fila in self.tablero:
-            for casilla in fila:
-                pieza = casilla.pieza
-                if pieza and pieza.color != jugador.color:
-                    if posicion_rey in pieza.movimiento_valido(self):
-                        return True
+        for pieza in enemigo.piezas:
+            if (posicion_rey in pieza.movimiento_valido(self) and type(pieza).__name__ != "Peon") or (type(pieza).__name__ == "Peon" and posicion_rey in pieza.movimiento_valido(self,True) ):
+                return True
 
         return False
 
