@@ -116,7 +116,7 @@ class Rey(Pieza):
         casillas : list = []
 
         for fila, columna in movimientos:
-            if not tablero.amenazas(self.enemigo, fila, columna):
+            if not tablero.amenazas(self.enemigo, fila, columna) and tablero.posibilidad_matar_con_rey(self.enemigo, fila, columna, self):
                 casillas.append((fila,columna))
 
         return casillas

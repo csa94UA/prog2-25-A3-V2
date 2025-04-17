@@ -112,7 +112,7 @@ class Tablero:
         posicion_rey = jugador.encontrar_rey()
 
         for pieza in enemigo.piezas:
-            if (posicion_rey in pieza.movimiento_valido(self) and type(pieza).__name__ != "Peon") or (type(pieza).__name__ == "Peon" and posicion_rey in pieza.movimiento_valido(self,True) ):
+            if (posicion_rey in pieza.movimiento_valido(self) and type(pieza).__name__ != "Peon") or (type(pieza).__name__ == "Peon" and posicion_rey in pieza.movimiento_valido(self) ):
                 return True
 
         return False
@@ -469,6 +469,47 @@ class Tablero:
                 casillas.append(posicion)
 
         return casillas
+
+    def posibilidad_matar_con_rey(self, enemigo : "Jugador", fila : int, columna : int, rey : "Rey") -> bool:
+        """
+        Comprueba si la casilla a la que se puede mover el rey para matar una pieza del enemigo es realmente posible.
+        Para ello simula que se mueve a dicha posición y se comprueba si alguna pieza la puede atacar.
+
+        Parametros:
+        -----------
+        enemigo : list
+            Jugador enemigo que va a sufrir del poder del rey Ö
+        fila : int
+            Fila en la que se encuentra el rey
+        columna : int
+            Columna en la que se encuentra el rey
+        Retorna:
+        --------
+        bool
+            Devuelve si puede matar a dicha pieza.
+        """
+
+        pieza_aux : "Pieza" = self[fila][columna].pieza
+        indice : int = enemigo.piezas.index(pieza_aux)
+        enemigo.piezas.remove(pieza_aux)
+
+        self[fila][columna].pieza = rey
+
+        pos_aux_rey = rey.posicion
+        rey.posicion = (fila,columna)
+
+        if not self.amenazas(enemigo, fila, columna):
+            self[fila][columna].pieza = pieza_aux
+            rey.posicion = pos_aux_rey
+            enemigo.piezas.insert(indice,pieza_aux)
+            return True
+
+        else:
+            self[fila][columna].pieza = pieza_aux
+            rey.posicion = pos_aux_rey
+            enemigo.piezas.insert(indice,pieza_aux)
+            return False
+
 
     def imagenes_piezas(self, tamano_casilla):
         """

@@ -80,12 +80,15 @@ class Pieza(ABC):
         """
         pos_rey = jugador.encontrar_rey()
 
-        if especial.isalpha() and not destino[0] in [0,7]:
+        x = destino[0]
+        y = destino[1]
+
+        if especial.isalpha() and not x in [0,7]:
             print("Error. No se encuentra en el otro lado del tablero")
             return False
 
         if especial == '0' and tablero[self.posicion[0]][self.posicion[1]].representacion() in ['P','p'] and \
-                destino[0] in [0,7]:
+                x in [0,7]:
             print("Error. No has digitado una promoción siendo peón.")
             return False
 
@@ -95,9 +98,8 @@ class Pieza(ABC):
             print("Error. La posición desitno no está dentro de los movimientos validos de la pieza")
             print(destino,'\n', self.movimiento_valido(tablero))
             return False
+
         tablero_antiguo = tablero.guardar_estado()
-        x = destino[0]
-        y = destino[1]
 
         pos_ant_pieza : tuple[int,int] = self.posicion
         self.posicion = (x, y)
@@ -105,7 +107,7 @@ class Pieza(ABC):
         
         pieza_enemgio = tablero[x][y].pieza
         tablero[x][y].pieza = self
-        if tablero.esta_en_jaque(jugador,enemigo):
+        if tablero.amenazas(enemigo,*pos_rey):
             print("Error. Tu movimiento provoca o no impide un jaque")
             tablero.restaurar_estado(tablero_antiguo)
             return False
