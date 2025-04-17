@@ -7,7 +7,6 @@ y contiene la información más esencial. Posee modulos que permite realizar las
 Clases:
     - Tablero
 """
-
 from .casilla import Casilla
 #from Jugador import Jugador
 from typing import Union
@@ -74,6 +73,49 @@ class Tablero:
         self.contador : int = 0
         self.jugadas : int = 0
         self.turno : int = 1 #Representa el color que tiene el turno (por defecto es el blanco)
+
+    @classmethod
+    def creacion_con_FEN(cls, fen : str) -> None:
+        """
+        Perimte inicializar la clase Tablero de otra manera pasándole la información en formato FEN
+
+        Parametros:
+        -----------
+        fen : str
+            string que contiene toda la información necesario para el tablero
+        """
+        from Partidas.aflabeto_FEN import traduccion_posicion
+
+        cls.tablero = [[Casilla(i,j) for i in range(8)] for j in range(8)]
+
+        fen = fen.split()
+        filas = fen[0].split('/')
+
+        for i,fila in enumerate(filas):
+            j = 0
+
+            for letra in fila:
+                if letra.isdigit():
+                    j += int(letra)
+                    continue
+
+                cls[i][j].pieza = tranformacion_a_pieza(i, j, simbolo)
+
+
+        cls.turno = 1 if fen[1] == 'w' else 0
+        if fen[2] == '':
+            cls.enroque = None
+        else:
+            cls.enroque = (True if 'KQ' in fen[2] else False, True if 'kq' in fen[2] else False)
+
+        if fen[3] == '-':
+            cls.en_passant = None
+        else:
+            cls.en_passant = (fen[3],traduccion_posicion(fen[3]))
+
+        cls.contador = int(fen[4])
+
+        return None
 
 
     def __getitem__(self, indice : int):
@@ -171,7 +213,7 @@ class Tablero:
         como las matrices comienzan arriba a la izquierda y el tablero de ajedrez
         comienza abajo a la izquierda, nuestra matriz está invertida. Para solucionarlo,
         dentro del codigo se tratará como una matriz normal, pero a la hora de mostrarlo
-        al usuario, invertimos las filas para que sea acorde a su perspectiva.
+        al usuario, invertimos las filas y las columnas para que sea acorde a su perspectiva.
 
         Parametros:
         -----------
@@ -211,20 +253,19 @@ class Tablero:
 
         return False
 
-    def mostrar_tablero(self, color : bool) -> None:
+    def mostrar_tablero(self, color : int) -> None:
         """
         Muestra el tablero por consola desde la perspeciva del color del jugador, es decir,
         las piezas situadas abajo son las del color pasada por parámetro
 
         Parametros:
         -----------
-        color : bool
+        color : int
             Representa el color del jugador para mostrar el tablero desde su perspectiva
         """
 
         for i in range(8):
             for j in range(8):
-                #print(self[abs(fila-i)][j].representacion(),end=" ")
                 print(self.obtener_casilla(i, j, color).representacion(), end=' ')
             print()
 

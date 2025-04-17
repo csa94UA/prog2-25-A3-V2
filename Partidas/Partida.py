@@ -38,7 +38,7 @@ from Piezas import Caballo, Alfil, Rey, Reina, Peon, Torre, Pieza
 from Jugador import Jugador
 from random import randint
 from typing import Union
-from aflabeto_FEN import digitar_movimiento
+from Partidas.aflabeto_FEN import digitar_movimiento
 from Tablero import Tablero
 
 

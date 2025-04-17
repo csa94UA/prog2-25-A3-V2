@@ -100,6 +100,40 @@ class Casilla:
 
         return '·'
 
+    def tranformacion_a_pieza(self, fila : int, columna : int, simbolo : str) -> None:
+        """
+        Inicializa la casilla con la pieza correspondiente. Es usado para transformar el formato FEN a un tablero
+
+        Parametros:
+        -----------
+        fila : int
+            Fila en la que se encuentra la casilla.
+
+        columna : int
+            Columna en la que se encuentra la casilla.
+
+        simbolo : str
+            Simbolo de la pieza.
+        """
+
+        match(simbolo.upper()):
+            case 'K':
+                self.pieza = Rey((fila, columna), 1 if simbolo.lower() != simbolo else 0)
+            case 'Q':
+                self.pieza = Reina((fila,columna), 1 if simbolo.lower() != simbolo else 0)
+            case 'N':
+                self.pieza = Caballo((fila,columna), 1 if simbolo.lower() != simbolo else 0)
+            case 'B':
+                self.pieza = Alfil((fila,columna), 1 if simbolo.lower() != simbolo else 0)
+            case 'R':
+                self.pieza = Torre((fila,columna), 1 if simbolo.lower() != simbolo else 0)
+            case 'P':
+                self.pieza = Peon((fila,columna), 1 if simbolo.lower() != simbolo else 0)
+            case '_':
+                print(f"Error. No se ha encontrado una pieza válida para el símbolo {simbolo}")
+
+        return None
+
     def __repr__(self):
         """
         Metodo especial para mostrar toda la información de la clase

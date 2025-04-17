@@ -103,7 +103,7 @@ def separar_datos(mov : str) -> tuple:
         return mov[0:2],mov[2:],None
 
 
-def traducción_LAN(mov : str) -> str:
+def transformacion_a_LAN_hipersimplificado(mov : str) -> str:
     """
     Función que permite transformar cualquier movimiento digitado en formato LAN al formato LAN hipersimplificado
 
@@ -144,6 +144,27 @@ def traducción_LAN(mov : str) -> str:
         mov += letra
 
     return mov
+
+def traduccion_posicion(posicion : str) -> tuple[int,int]:
+    """
+    Transforma una posición escrita en formato LAN a coordenadas del tablero
+
+    Parámetros:
+    ----------
+    pos : str
+
+        Posición del tablero
+
+    Retorna:
+    ---------
+    tuple[int,int]
+        Devuelve la posición en coordenadas
+    """
+
+    traduccion = {'a': 0, 'b': 1, 'c': 2, 'd': 3,
+                  'e': 4, 'f': 5, 'g': 6, 'h': 7}
+
+    return traduccion[posicion[0]],int(posicion[1])
 
 if __name__ == '__main__':
     print(digitar_movimiento(0))

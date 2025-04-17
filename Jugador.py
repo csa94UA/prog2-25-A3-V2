@@ -26,8 +26,8 @@ class Jugador:
         """
         self.nombre : str = nombre
         self.puntuacion : int = puntuacion
-        self.color : Union[bool,None] = None
-        self.piezas : list= []
+        self.color : Union[int,None] = None
+        self.piezas : list = []
         self.cantidad : dict = {"P" : 0, "B" : 0, "N" : 0,
                                "R" : 0, "Q" : 0, "K" : 0}
 
