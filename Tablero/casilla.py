@@ -68,38 +68,6 @@ class Casilla:
 
         return None
 
-    def representacion(self) -> str:
-        """
-        Metodo que retorna el simbolo que representa la pieza que contiene la casilla
-
-        Retorna:
-        ---------
-        str
-            Devuelve el simbolo correspondiente a la pieza y su color
-        """
-        #from Piezas import Caballo, Alfil, Rey, Torre, Reina, Peon
-        pieza : Union[Pieza,None] = self.pieza
-
-        if type(pieza).__name__ == "Peon":
-            return 'P' if pieza.color else 'p'
-
-        if type(pieza).__name__ == "Torre":
-            return 'R' if pieza.color else 'r'
-
-        if type(pieza).__name__ == "Caballo":
-            return 'N' if pieza.color else 'n'
-
-        if type(pieza).__name__ == "Alfil":
-            return 'B' if pieza.color else 'b'
-
-        if type(pieza).__name__ == "Reina":
-            return 'Q' if pieza.color else 'q'
-
-        if type(pieza).__name__ == "Rey":
-            return 'K' if pieza.color else 'k'
-
-        return '·'
-
     def tranformacion_a_pieza(self, fila : int, columna : int, simbolo : str) -> None:
         """
         Inicializa la casilla con la pieza correspondiente. Es usado para transformar el formato FEN a un tablero
@@ -133,6 +101,18 @@ class Casilla:
                 print(f"Error. No se ha encontrado una pieza válida para el símbolo {simbolo}")
 
         return None
+    
+    def __str__(self) -> str:
+        """
+        Metodo dunder que retorna el simbolo que representa la pieza que contiene la casilla
+
+        Retorna:
+        ---------
+        str
+            Devuelve el simbolo correspondiente a la pieza y su color
+        """
+
+        return '.' if self.pieza is None else print(self.pieza)
 
     def __repr__(self):
         """
@@ -154,4 +134,4 @@ if __name__ == "__main__":
     pieza = Rey((1,2),0)
     casilla.conquistado(pieza)
     print(repr(casilla))
-    print(casilla.representacion())
+    print(casilla)

@@ -87,7 +87,7 @@ class Pieza(ABC):
             print("Error. No se encuentra en el otro lado del tablero")
             return False
 
-        if especial == '0' and tablero[self.posicion[0]][self.posicion[1]].representacion() in ['P','p'] and \
+        if especial == '0' and print(tablero[self.posicion[0]][self.posicion[1]]) in ['P','p'] and \
                 x in [0,7]:
             print("Error. No has digitado una promoción siendo peón.")
             return False
@@ -117,6 +117,14 @@ class Pieza(ABC):
         if pieza_enemgio is not None and pieza_enemgio.posicion == self.posicion:
             enemigo.piezas.remove(pieza_enemgio)
         return True
+
+    @abstractmethod
+    def __str__(self):
+        """
+        Método abstracto que se espera ser definido por las subclases.
+        Debe devolver la representación en string de la pieza en sí (teniendo en cuenta su color)
+        """
+        pass
     
     def __repr__(self):
         """
@@ -127,6 +135,6 @@ class Pieza(ABC):
         str
             Retorna un str con toda la información
         """
-        return (f"{type(self).__name__}(Posición -> {self.posicion}, "
-                f"Color -> {self.color}, Capturado -> {self.capturado}, "
-                f"Valor -> {self.valor}, Movimientos -> {self.movimientos})")
+        return (f"{type(self).__name__}(Posición = {self.posicion}, "
+                f"Color = {self.color}, Capturado = {self.capturado}, "
+                f"Valor = {self.valor}, Movimientos = {self.movimientos})")

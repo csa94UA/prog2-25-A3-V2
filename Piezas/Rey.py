@@ -137,6 +137,17 @@ class Rey(Pieza):
 
         return True
 
+    def __str__(self) -> str:
+        """
+        Método dunder que devuelve la representación de la pieza, teniendo en cuenta su color
+
+        Retorna:
+        --------
+        str
+            Devuelve su representación
+        """
+        return 'K' if self.color else 'k'
+
     def __repr__(self):
         """
         Metodo especial para mostrar toda la información de la clase

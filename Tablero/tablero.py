@@ -68,8 +68,8 @@ class Tablero:
         """
 
         self.tablero : list[list["Casilla"]]= [[Casilla(i,j) for i in range(8)] for j in range(8)]
-        self.enroque : Union[list[bool,bool],None] = None
-        self.en_passant : Union[tuple[str,int],None] = None
+        self.enroque : Union[list[bool],None] = None
+        self.en_passant : Union[tuple[str,tuple[int,int]],None] = None
         self.contador : int = 0
         self.jugadas : int = 0
         self.turno : int = 1 #Representa el color que tiene el turno (por defecto es el blanco)
@@ -86,7 +86,9 @@ class Tablero:
         """
         from Partidas.aflabeto_FEN import traduccion_posicion
 
-        cls.tablero = [[Casilla(i,j) for i in range(8)] for j in range(8)]
+        self = cls()
+
+        self.tablero = [[Casilla(i,j) for i in range(8)] for j in range(8)]
 
         fen = fen.split()
         filas = fen[0].split('/')
@@ -99,26 +101,26 @@ class Tablero:
                     j += int(letra)
                     continue
 
-                cls[i][j].pieza = tranformacion_a_pieza(i, j, simbolo)
+                self[i][j].tranformacion_a_pieza(i, j, letra)
 
 
-        cls.turno = 1 if fen[1] == 'w' else 0
+        self.turno = 1 if fen[1] == 'w' else 0
         if fen[2] == '':
-            cls.enroque = None
+            self.enroque = None
         else:
-            cls.enroque = (True if 'KQ' in fen[2] else False, True if 'kq' in fen[2] else False)
+            self.enroque = [True if 'KQ' in fen[2] else False, True if 'kq' in fen[2] else False] if fen[2] else None
 
         if fen[3] == '-':
-            cls.en_passant = None
+            self.en_passant = None
         else:
-            cls.en_passant = (fen[3],traduccion_posicion(fen[3]))
+            self.en_passant = (fen[3],traduccion_posicion(fen[3]))
 
-        cls.contador = int(fen[4])
+        self.contador = int(fen[4])
 
         return None
 
 
-    def __getitem__(self, indice : int):
+    def __getitem__(self, indice : int) -> Union[list["Casilla"],"Casilla"]:
         """
         Metodo especial para poder acceder a un elemento de la matriz
         solamente con la variable de la clase Tablero.
@@ -135,6 +137,20 @@ class Tablero:
             Retorna la casilla (o las casillas) que ha sido seleccionado
         """
         return self.tablero[indice]
+
+    def __str__(self) -> None:
+        """
+        Método dunder que representa el tablero desde la persepctiva del jugador que tiene el turn
+        """
+
+        color : int = self.turno
+
+        for i in range(8):
+            for j in range(8):
+                print(self.obtener_casilla(i, j, color), end=' ')
+            print()
+
+        return None
 
     def esta_en_jaque(self, jugador:"Jugador",enemigo:"Jugador") -> bool:
         """
@@ -266,7 +282,7 @@ class Tablero:
 
         for i in range(8):
             for j in range(8):
-                print(self.obtener_casilla(i, j, color).representacion(), end=' ')
+                print(self.obtener_casilla(i, j, color), end=' ')
             print()
 
         return None
@@ -306,9 +322,9 @@ class Tablero:
             espacio = 0
             for j in range(8):
 
-                if self[i][j].representacion() != ' ':
+                if print(self[i][j]) != '.':
                     fen += str(espacio) if espacio != 0 else ''
-                    fen += self[i][j].representacion()
+                    fen += print(self[i][j])
                     espacio = 0
                     continue
 
@@ -503,10 +519,10 @@ class Tablero:
 
             fila_p, columna_p = posicion
 
-            if self[fila_p][columna_p].representacion() not in ['N','n']:
+            if print(self[fila_p][columna_p]) not in ['N','n']:
                 casillas.append(self.casillas_intermedias(fila, columna, posicion[0], posicion[1]))
 
-            elif self[fila_p][columna_p].representacion() in ['N','n']:
+            elif print(self[fila_p][columna_p]) in ['N','n']:
                 casillas.append(posicion)
 
         return casillas
