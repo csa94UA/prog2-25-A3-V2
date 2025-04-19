@@ -101,7 +101,7 @@ class Casilla:
                 print(f"Error. No se ha encontrado una pieza válida para el símbolo {simbolo}")
 
         return None
-    
+
     def __str__(self) -> str:
         """
         Metodo dunder que retorna el simbolo que representa la pieza que contiene la casilla
@@ -112,7 +112,7 @@ class Casilla:
             Devuelve el simbolo correspondiente a la pieza y su color
         """
 
-        return '.' if self.pieza is None else print(self.pieza)
+        return '.' if self.pieza is None else str(self.pieza)
 
     def __repr__(self):
         """

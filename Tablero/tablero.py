@@ -138,19 +138,21 @@ class Tablero:
         """
         return self.tablero[indice]
 
-    def __str__(self) -> None:
+    def __str__(self) -> str:
         """
         Método dunder que representa el tablero desde la persepctiva del jugador que tiene el turn
         """
 
-        color : int = self.turno
+        color: int = self.turno
+        filas = []
 
         for i in range(8):
+            fila = []
             for j in range(8):
-                print(self.obtener_casilla(i, j, color), end=' ')
-            print()
+                fila.append(str(self.obtener_casilla(i, j, color)))
+            filas.append(' '.join(fila))
 
-        return None
+        return '\n'.join(filas)
 
     def esta_en_jaque(self, jugador:"Jugador",enemigo:"Jugador") -> bool:
         """
@@ -282,7 +284,7 @@ class Tablero:
 
         for i in range(8):
             for j in range(8):
-                print(self.obtener_casilla(i, j, color), end=' ')
+                print(str(self.obtener_casilla(i, j, color)), end=' ')
             print()
 
         return None
@@ -322,9 +324,9 @@ class Tablero:
             espacio = 0
             for j in range(8):
 
-                if print(self[i][j]) != '.':
+                if str(self[i][j]) != '.':
                     fen += str(espacio) if espacio != 0 else ''
-                    fen += print(self[i][j])
+                    fen += str(self[i][j])
                     espacio = 0
                     continue
 
@@ -519,10 +521,10 @@ class Tablero:
 
             fila_p, columna_p = posicion
 
-            if print(self[fila_p][columna_p]) not in ['N','n']:
+            if str(self[fila_p][columna_p]) not in ['N','n']:
                 casillas.append(self.casillas_intermedias(fila, columna, posicion[0], posicion[1]))
 
-            elif print(self[fila_p][columna_p]) in ['N','n']:
+            elif str(self[fila_p][columna_p]) in ['N','n']:
                 casillas.append(posicion)
 
         return casillas
@@ -789,6 +791,6 @@ class Tablero:
 
 if __name__ == "__main__":
     tablero = Tablero()
-    tablero.mostrar_tablero(0)
+    print(tablero)
     print(tablero.traduccion_FEN(1,1,1,None,0,1))
     tablero.representacion_grafica()

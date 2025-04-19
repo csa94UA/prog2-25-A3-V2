@@ -87,7 +87,7 @@ class Pieza(ABC):
             print("Error. No se encuentra en el otro lado del tablero")
             return False
 
-        if especial == '0' and print(tablero[self.posicion[0]][self.posicion[1]]) in ['P','p'] and \
+        if especial == '0' and str(tablero[self.posicion[0]][self.posicion[1]]) in ['P','p'] and \
                 x in [0,7]:
             print("Error. No has digitado una promoción siendo peón.")
             return False
@@ -96,7 +96,6 @@ class Pieza(ABC):
 
         if destino is not tuple() and not destino in self.movimiento_valido(tablero):
             print("Error. La posición desitno no está dentro de los movimientos validos de la pieza")
-            print(destino,'\n', self.movimiento_valido(tablero))
             return False
 
         tablero_antiguo = tablero.guardar_estado()
