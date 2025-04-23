@@ -1,0 +1,646 @@
+"""
+Modulo para la ejecucion de una partida, ya sea JcJ, JcE o EcE.
+
+Este modulo proporciona funciones para el intercambio de turnos, manejo de excepciones e
+inicialización de la partida.
+
+Funciones:
+    - partida(jugador1 : Jugador, jugador2 : Jugador) -> Jugador:
+    Simula la partida y determina el ganador. Es la funcion nucleo de todo el programa.
+
+    - crear_piezas(color : bool, tablero : Tablero) -> list[Pieza]:
+    Inicializa el tablero y las fichas de cada jugador.
+
+    - encontrar_pieza(tablero : "Tablero", jugador : "Jugador", origen : tuple[int]) -> Union["Pieza",None]:
+    Busca la pieza digitada dentro de del conjunto de piezas del jugador. Si lo encuentra devuelve dicha pieza.
+
+    - comprobar_enroque_corto(tablero : "Tablero", enemigo : "Jugador", rey : "Rey", torre : "Torre") -> bool:
+    En caso de digitar un enroque corto comprueba si es posible.
+
+    - comprobar_enroque_largo(tablero : "Tablero", enemigo : "Jugador", rey : "Rey", torre : "Torre") -> bool:
+    Igual que con el enroque corto solo que para el caso de enroque largo.
+
+    - comprobar_promocion(pieza : "Peon", promocion : Union[str,int], jugador_actual : "Jugador") -> bool:
+    Comprueba si la promocion es valido. En caso afirmativo se intercambia el peon por la pieza deseada (dentro de
+    las permitidas).
+
+    - comprobar_jaque_enemigo(tablero : "Tablero", jugador_actual : "Jugador", enemigo : "Jugador", pieza : Union["Pieza",None]) -> bool:
+    Comprueba si el movimiento que hemos realizado provoca un jaque al rey enemigo.
+
+    - caso_jaque(tablero : "Tablero", jugador_actual : "Jugador", enemigo : "Jugador", movimiento : tuple) -> bool:
+    Determina si tu movimiento evita el jaque. Solo se activa cuando se ejecuta el caso especial de jaque.
+
+    - comprobar_tablas(tablero : "Tablero", jugador_actual : "Jugador", enemigo : "Jugador") -> bool:
+    Comprueba si se ha producido un empate (por el momento solo devuelve True si solo hay en el tablero los reyes).
+"""
+
+from Piezas import Caballo, Alfil, Rey, Reina, Peon, Torre, Pieza
+from Jugador import Jugador
+from random import randint
+from typing import Union
+from Partidas.aflabeto_FEN import digitar_movimiento
+from Tablero import Tablero
+
+
+def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
+    """
+    Es la función principal de este archivo. En ella se trata toda la logica general de una partida de ajedrez (trato de
+    turnos, manejo de movimientos especiales, manejo de errores, etc.).
+
+    Parametros:
+    -----------
+    jugador_1 : Jugador -> Representa el primer jugador
+
+    jugador_2 : Jugador -> Representa el segundo jugador
+
+    Retorna:
+    ----------
+    Jugador
+        Devuelve el jugador que ha ganado. Si hay empate devuelve None.
+    """
+
+    # Inicializamos tablero
+    tablero = Tablero()
+
+    jaque, turno = inicializacion_partida(jugador1, jugador2, tablero)
+
+    while True:
+        # Se inicializa los turnos de cada jugador, siendo enemigo el jugador que no tiene turno.
+        jugador_actual = jugador1 if turno else jugador2
+        enemigo : Jugador = jugador1 if not turno else jugador2
+
+        tablero.turno = jugador_actual.color
+
+        # Mostramos el tablero
+        print(tablero)
+
+        # Se comprueba si son tablas.
+        if comprobar_tablas(tablero, jugador_actual, enemigo):
+            jugador_actual = None #Nadie gana
+            print("Nadie gana")
+            break
+
+        print(f"\nTurno de {jugador_actual.nombre}")
+
+        # Pedimos el movimiento del jugador
+        movimiento = digitar_movimiento(jugador_actual.color)
+
+        # Si el jugador actual está en jaque se procede a efectuar el caso especial de jaque.
+        if jaque:
+            intento : bool = caso_jaque(tablero, jugador_actual, enemigo, movimiento)
+
+            # Si no se ha logrado evitar el jaque, se regresa al principio
+            if not intento:
+                continue
+
+        # Comprobamos si quieren hacer enroque. Si es así se simula y se comprueba su validez
+        if type(movimiento[2]) == int and movimiento[2] in [1,2]:
+
+            bandera, pieza = comprobar_enroque(movimiento, jugador_actual, enemigo, tablero)
+
+            if not bandera:
+                continue
+
+        # Busca la pieza en esa posicion. Si no la encuentra, dará un mensaje de error y repetirá el movimiento
+        if not(type(movimiento[2]) == int and movimiento[2] in [1,2]):
+            intento, pieza = comprobar_movimiento(movimiento, jugador_actual, enemigo, tablero)
+
+            if not intento:
+                continue
+
+        #En caso de que sea un peon y se haya digitado una promoción, debemos comprobar si es válida. En caso afirmativo
+        #transformamos ese peon a la pieza deseada
+
+        if str(movimiento[2]).isalpha():
+
+            intento : bool = comprobar_promocion(pieza, movimiento[2], jugador_actual, tablero)
+
+            if not intento:
+                print("Error. No se ha podido realizar la promoción")
+                continue
+
+        #Vemos si produce la pieza un jaque. En caso afirmativo lo guardamos para el jugador del siguiente turno
+        rey = next((rey for rey in enemigo.piezas if isinstance(rey, Rey)), None)
+        jaque : bool = comprobar_jaque_enemigo(tablero, jugador_actual, enemigo, pieza)
+
+        # Si está en jaque y resulta que no se puede evitar, entonces se termina la partida.
+        if jaque and tablero.jaque_in(rey.posicion[0], rey.posicion[1], enemigo, jugador_actual):
+            break
+
+        turno = 1 - turno
+
+    print("Ha ganado el jugador", jugador_actual.nombre)
+    print("Felicidades!!!!!")
+
+    return jugador_actual
+
+def inicializacion_partida(jugador1 : "Jugador", jugador2 : "Jugador", tablero : "Tablero") -> (bool,int):
+    """
+    Función que inicializa el inicio de una partida.
+
+    Parametros:
+    -----------
+    jugador1 : Jugador
+        Uno de los jugadores.
+
+    jugador2 : Jugador
+        Otro de los jugadores.
+
+    tablero : Tablero
+        Tablero en sí para inicializar las posiciones de las piezas.
+
+    Retorna:
+    ----------
+    (bool, int)
+        Retorna la inicialización de la variable jaque y el turno del jugador, siendo 1 turno de blancas y 0 el de negras.
+    """
+
+    # Establecemos un inicio de turno aleatorio
+    if randint(0, 1000) < 499:
+        jugador1.color = 1
+        jugador2.color = 0
+    else:
+        jugador2.color = 1
+        jugador1.color = 0
+
+    # Insertamos las piezas en el tablero y en el inventario del jugador
+    jugador1.piezas = crear_piezas(jugador1.color, tablero, jugador2)
+    jugador2.piezas = crear_piezas(jugador2.color, tablero, jugador1)
+
+    return False, 1 if jugador1.color else 0
+
+
+def crear_piezas(color : int, tablero : Tablero, enemigo : "Jugador") -> list["Pieza"]:
+    """
+    Función que inicializa las piezas de un jugador al comenzar una partida. Tiene en cuanta el color del jugador para
+    colocar las piezas en su lugar.
+
+    Parametros:
+    -----------
+    color : int -> Color del jugador a quien se le van a crear las piezas.
+
+    tablero : Tablero -> Tablero en sí para guardar la posición de las piezas creadas.
+
+    Retorna:
+    ----------
+    list[Pieza]
+        Retorna la lista de piezas que se han creado y que se asignaran al jugador correspondiente
+    """
+
+    piezas = []
+
+    #Inicializamos primero todos los peones
+    fila_p : int = 6 if color else 1
+    for j in range(8):
+        peon = Peon((fila_p,j),color)
+        piezas.append(peon)
+        tablero[fila_p][j].pieza = peon
+
+    #A continuación se inicializan el resto de piezas de manera ordenada.
+    fila_r : int = 7 if color else 0
+    piezas_ext = [Torre((fila_r,0),color), Caballo((fila_r,1),color), Alfil((fila_r,2),color),
+                  Reina((fila_r,3),color), Rey((fila_r,4),color, enemigo),
+                  Alfil((fila_r,5),color), Caballo((fila_r,6),color), Torre((fila_r,7),color)]
+
+    #Se va insertando cada una de las piezas en la lista que se devolverá.
+    for pieza in piezas_ext:
+        piezas.append(pieza)
+        fila, columna = pieza.posicion
+        tablero[fila][columna].pieza = pieza
+
+    return piezas
+
+def encontrar_pieza(tablero : "Tablero", jugador : "Jugador", origen : tuple[int]) -> Union["Pieza",None]:
+    """
+    Busca la pieza en la posicion de origen digitada por el jugador. Para lograrlo recorre toda la lista de piezas del
+    jugador hasta dar con aquella cuya posicion coincide con la posicion origen digitada anteriormente.
+
+    Parametros:
+    -----------
+    tablero : Tablero -> Tablero en sí. Solo está para comprobar si es exactamente esa pieza.
+
+    jugador : Jugador -> Jugador que ha digitado el movimiento.
+
+    origen : tuple[int] -> Es la posicion origen digitada por el jugador.
+
+    Retorna:
+    ----------
+    Pieza
+        Retorna la pieza que coincide su posicion con la posicion origen digitada. Si no se encuentra devuelve None.
+    """
+
+    for piezas in jugador.piezas:
+        if origen == tuple(piezas.posicion): #Si la posición d origen coeincide con el de la pieza.
+            return piezas
+
+    return None
+
+def comprobar_enroque(movimiento : tuple, jugador_actual : "Jugador", enemigo : "Jugador", tablero : "Tablero") -> (bool, "Torre"):
+    """
+    Se ejecuta el caso especial de enroque en caso de que se digite dicho movimiento.
+
+    Parametros:
+    -----------
+    movimiento : tuple
+        Contiene en realidad solo un entero, pues no existe como tal la posición inicial y la final ya que están vacías.
+
+    jugador_actual : Jugador
+        Es el jugador que efectua el enroque.
+
+    enemigo : Jugador
+        Jugador de color contrario. Usado para comprobar si sus piezas amenazan las casillas intermedias.
+
+    tablero : Tablero
+        Tablero en sí. De ella se obtienen las casillas intermedias entre el rey y la torre.
+
+    Retorna:
+    ----------
+    (bool, Torre)
+        Devuelve True si se ha producido el enroque y devuelve también la torre que se ha movido para comprobar más tarde
+        si ha hecho jaque al enemigo
+    """
+
+    # Buscamos el rey del jugador actual
+    rey = next((rey for rey in jugador_actual.piezas if isinstance(rey, Rey)), None)
+
+    # Buscamos la torre adecuada al enroque digitado
+    if movimiento[2] == 1:
+        torre = next((torre for torre in jugador_actual.piezas if isinstance(torre, Torre) \
+                      and torre.posicion[1] == 7), None)
+    else:
+        torre = next((torre for torre in jugador_actual.piezas if isinstance(torre, Torre) \
+                      and torre.posicion[1] == 0), None)
+
+    # Si no se encuentra la torre se cancela el enroque
+    if torre is None:
+        print("No se ha encontrado una torre para hacer enroque")
+        return False, torre
+
+    # Si por alguna razon no se encuentra se considera invalido (aunque nunca debería pasar esto).
+    if rey is None:
+        print("No se ha encontrado un rey para hacer enroque")
+        return False, torre
+
+    # Se acceden a sus posiciones.
+    pos_rey = rey.posicion
+    pos_torre = torre.posicion
+
+    # Se comprueba si ha sido un exito el enroque
+    intento: bool = comprobar_enroque_corto(tablero, enemigo, rey, torre) if movimiento[2] == 1 else \
+        comprobar_enroque_largo(tablero, enemigo, rey, torre)
+
+    # Si no ha sido un éxito se devuelve todo a su estado original
+    if not intento:
+        rey.posicion = pos_rey
+        torre.posicion = pos_torre
+        print("No ha sido posible hacer el enroque")
+        return False, torre
+
+    return True, torre
+
+def comprobar_enroque_corto(tablero : "Tablero", enemigo : "Jugador", rey : "Rey",
+                            torre : "Torre") -> bool:
+    """
+    Comprueba si el enroque corto es posible. Para ello comprueba cada una de las exigencias que se deben cumplir para
+    realizar un enroque. En este caso se comprueba el corto porque se necesita usar la torre de la derecha.
+
+    Parametros:
+    -----------
+    tablero : Tablero -> Tablero en sí. De ella se obtienen las casillas intermedias entre el rey y la torre.
+
+    enemigo : Jugador -> Jugador de color contrario. Usado para comprobar si sus piezas amenazan las casillas intermedias.
+
+    rey : Rey -> Rey del jugador actual. Necesario para poder comprobar si puede hacer enroque.
+
+    torre : Torre -> Torre del jugador actual. Necesario para poder comprobar si puede hacer enroque.
+
+    Retorna:
+    ----------
+    bool
+        Devuelve True si se ha producido el eroque corto
+    """
+
+    #Comprobamos si ambos pueden hacer enroque
+    if not rey.enroque() or not torre.enroque():
+        print("No pueden hacer enroque")
+        return False
+
+    #Calculamos el número de casillas intermedias
+    intermedias = abs(rey.posicion[1] - torre.posicion[1])
+    fila = 7 if rey.color else 0
+
+    #Comprobamos cada una de las casillas intermedias si están libres completamente.
+    for j in range(1, intermedias):
+        columna : int = rey.posicion[1] + j
+        if tablero.amenazas(enemigo, fila, columna):
+            print("Error. una casilla es amenazada por alguna pieza enemiga")
+            return False
+
+        if tablero[fila][columna].pieza is not None:
+            print("Error. Camino no despejado")
+            return False
+
+    #Se realiza el enroque
+    rey.posicion = (fila, 6)
+    rey.movido = True
+    tablero[fila][4].pieza = None
+    tablero[fila][6].pieza = rey
+
+    torre.posicion = (fila, 5)
+    torre.movido = True
+    tablero[fila][7].pieza = None
+    tablero[fila][5].pieza = torre
+
+    print("Enroque exitoso")
+
+    return True
+
+def comprobar_enroque_largo(tablero : "Tablero", enemigo : "Jugador", rey : "Rey",
+                            torre : "Torre") -> bool:
+    """
+    Comprueba si el enroque corto es posible. Para ello comprueba cada una de las exigencias que se deben cumplir para
+    realizar un enroque. En este caso se comprueba el corto porque se necesita usar la torre de la derecha.
+
+    Parametros:
+    -----------
+    tablero : Tablero -> Tablero en sí. De ella se obtienen las casillas intermedias entre el rey y la torre.
+
+    enemigo : Jugador -> Jugador de color contrario. Usado para comprobar si sus piezas amenazan las casillas intermedias.
+
+    rey : Rey -> Rey del jugador actual. Necesario para poder comprobar si puede hacer enroque.
+
+    torre : Torre -> Torre del jugador actual. Necesario para poder comprobar si puede hacer enroque.
+
+    Retorna:
+    ----------
+    bool
+        Devuelve True si se ha producido el eroque largo
+    """
+
+    # Comprobamos si ambos pueden hacer enroque
+    if not rey.enroque() or not torre.enroque():
+        print("No pueden hacer enroque")
+        return False
+
+    # Calculamos el número de casillas intermedias
+    intermedias = abs(rey.posicion[1] - torre.posicion[1])
+    fila = 7 if rey.color else 0
+
+    # Comprobamos cada una de las casillas intermedias si están libres completamente.
+    for j in range(1, intermedias):
+        columna: int = rey.posicion[1] - j
+        if tablero.amenazas(enemigo, fila, columna):
+            print("Error. una casilla es amenazada por alguna pieza enemiga")
+            return False
+
+        if tablero[fila][columna].pieza is not None:
+            print("Error. Camino no despejado")
+            return False
+
+    # Se realiza el enroque
+    rey.posicion = (fila, 2)
+    rey.movido = True
+    tablero[fila][4].pieza = None
+    tablero[fila][2].pieza = rey
+
+    torre.posicion = (fila, 3)
+    torre.movido = True
+    tablero[fila][0].pieza = None
+    tablero[fila][3].pieza = torre
+
+    print("Enroque exitoso")
+
+    return True
+
+def comprobar_movimiento(movimiento : tuple, jugador_actual : "Jugador", enemigo : "Jugador", tablero : "Tablero") -> (bool,"Pieza"):
+    """
+    Se ejecuta el movimiento digitado por el jugador actual.
+
+    Parametros:
+    -----------
+    movimiento : tuple
+        Contiene el movimiento del jugador actual.
+
+    jugador_actual : Jugador
+        Es el jugador que efectua el movimiento.
+
+    enemigo : Jugador
+        Jugador de color contrario.
+
+    tablero : Tablero
+        Tablero en sí.
+
+    Retorna:
+    ----------
+    (bool, Pieza)
+        Devuelve True si se ha producido el movimiento y devuelve también la pieza que se ha movido.
+    """
+
+    # Se busca la pieza
+    pieza: Union["Pieza", None] = encontrar_pieza(tablero, jugador_actual, movimiento[0])
+
+    # Si no se ha encontrado la pieza se anula el movimiento.
+    if pieza is None:
+        print("Error. No se ha encontrado ninguna pieza.")
+        return False, pieza
+
+    # Si el movimiento es incorrecto se considera invalido el movimiento.
+    if not pieza.mover(movimiento[1], tablero, jugador_actual, enemigo, str(movimiento[2])):
+        print("El movimiento es inválido (autojaque, movimiento impromio de la pieza, etc)")
+        return False, pieza
+
+    # Se inicializa su atributo movido si lo contiene.
+    if str(pieza).upper() in ['K', 'R', 'P']:
+        pieza.movido = True
+
+    return True, pieza
+
+def comprobar_promocion(pieza : "Pieza", promocion : Union[str,int], jugador_actual : "Jugador", tablero : "Tablero") -> bool:
+    """
+    Comprueba si la promocion es válida. En caso afirmativo realiza la promoción correspondiente
+
+    Parametros:
+    -----------
+    pieza : Peon -> Es el peon que se va a promocionar.
+
+    promocion : Union[str,int] -> Promocion digitado por el usuario.
+
+    jugador_actual : Jugador -> Dueño del peon que se va a promocionar
+
+    Retorna:
+    ----------
+    bool
+        Devuelve True si se ha producido la promocion
+    """
+
+    # Se almacena la pieza y su posición dentro del inventario
+    indice = jugador_actual.piezas.index(pieza)
+    jugador_actual.piezas.remove(pieza)
+
+    # Se comprueba que promoción ha hecho, en caso afirmativo se sustituye por dicha pieza.
+    match promocion:
+        case 'Q':
+            pieza = Reina(pieza.posicion, pieza.color)
+            jugador_actual.piezas.insert(indice,pieza)
+            tablero[pieza.posicion[0]][pieza.posicion[1]].pieza = pieza
+
+        case 'R':
+            pieza = Torre(pieza.posicion, pieza.color)
+            pieza.movido = True
+            jugador_actual.piezas.insert(indice, pieza)
+            tablero[pieza.posicion[0]][pieza.posicion[1]].pieza = pieza
+
+        case 'B':
+            pieza = Alfil(pieza.posicion, pieza.color)
+            jugador_actual.piezas.insert(indice, pieza)
+            tablero[pieza.posicion[0]][pieza.posicion[1]].pieza = pieza
+
+        case 'N':
+            pieza = Caballo(pieza.posicion, pieza.color)
+            jugador_actual.piezas.insert(indice, pieza)
+            tablero[pieza.posicion[0]][pieza.posicion[1]].pieza = pieza
+
+        case _:
+            print("Error. Se ha intentado promocionar a una pieza invalida")
+            jugador_actual.piezas.insert(indice, pieza)
+            return False
+
+    print("Promoción exitosa")
+
+    return True
+
+def comprobar_jaque_enemigo(tablero : "Tablero", jugador_actual : "Jugador", enemigo : "Jugador",
+                            pieza : Union["Pieza",None]) -> bool:
+    """
+    Comprueba si el movimiento del jugador actual ha hecho jaque al enemigo.
+
+    Parametros:
+    -----------
+    tablero : Tablero -> Tablero en sí.
+
+    jugador_actual : Jugador -> Jugador que ha realizado el jaque.
+
+    enemgio : Jugador -> Dueño del rey que se ha puesto en jaque.
+
+    pieza : Pieza -> Pieza que ha sido movido y que podria haber puesto en jaque al enemigo
+
+    Retorna:
+    ----------
+    bool
+        Devuelve True si se ha producido un jaque
+    """
+
+    # Se busca al rey enemigo
+    rey_enemigo = next((rey for rey in enemigo.piezas if isinstance(rey, Rey)), None)
+
+    # Si por alguna razon no se encuentra se considera invalido (aunque nunca debería pasar esto).
+    if rey_enemigo is None:
+        return True
+
+    # Si por alguna razon no hay una pieza que amenace, se comprueba si alguna pieza del jugador actual ataca al rey enemigo
+    if pieza is None:
+        return True if tablero.amenazas(jugador_actual, rey_enemigo.posicion[0], rey_enemigo.posicion[1]) else False
+
+    # Se comprueba si la pieza ataca al rey enemigo
+    return True if rey_enemigo.posicion in pieza.movimiento_valido(tablero) else False
+
+def caso_jaque(tablero : "Tablero", jugador_actual : "Jugador", enemigo : "Jugador", movimiento : tuple) -> bool:
+    """
+    Función que trata el caso especial de jaque. En ella se tratan todos los casos posibles dentro de un jaque para
+    determinar si el movimiento evita el jaque.
+
+    Parametros:
+    -----------
+    tablero : Tablero -> Tablero en sí.
+
+    jugador_actual : Jugador -> Jugador que ha recibido el jaque
+
+    enemgio : Jugador -> Jugador que ha hecho jaque
+
+    movimiento : tuple -> Movimiento digitado por el jugador actual
+
+    Retorna:
+    ----------
+    bool
+        Retorna True si ha evitado el jaque
+    """
+
+    # Si se intenta hacer enroque en medio de un jaque se considera inválido el movimiento
+    if type(movimiento[2]) == int and movimiento[2] in [1,2]:
+        print("Error. Se ha intentado hacer un enroque en medio de un jaque")
+        return False
+
+    # Buscamos la pieza que queremos mover
+    pieza : Union["Pieza",None] = encontrar_pieza(tablero, jugador_actual, movimiento[0])
+
+    # Si no se ha encontrado ninguna se considera inválido.
+    if pieza is None:
+        print("Error. No se ha encontrado ninguna pieza.")
+        return False
+
+    # No se puede promocionar si no eres un peon.
+    if str(movimiento[2]).isalpha() and not isinstance(pieza, Peon):
+        print("Error. Se ha intentado promocionar una pieza que no es peón.")
+        return False
+
+    # Se busca el rey del jugador actual
+    rey = next((rey for rey in jugador_actual.piezas if isinstance(rey, Rey)), None)
+
+    # Si por alguna razon no se encuentra se considera invalido (aunque nunca debería pasar esto).
+    if rey is None:
+        print("Error. No se ha encontrado el rey")
+        return False
+
+    # Se comprueba si el movimiento es capaz de evitar el jaque
+    if not pieza.mover(movimiento[1], tablero, jugador_actual, enemigo, str(movimiento[2])):
+        print("El movimiento es inválido (autojaque, movimiento impromio de la pieza, etc)")
+        return False
+
+    return True
+
+def comprobar_tablas(tablero : "Tablero", jugador_actual : "Jugador", enemigo : "Jugador") -> bool:
+    """
+    Comprueba si se ha producido un empate
+
+    Parametros:
+    -----------
+    tablero : Tablero -> Tablero en sí.
+
+    jugador_actual : Jugador -> Jugador que ha realizado el jaque.
+
+    enemgio : Jugador -> Dueño del rey que se ha puesto en jaque.
+
+    Retorna:
+    ----------
+    bool
+        Devuelve True si son tablas
+    """
+
+    # Si ambos solo tienen el rey se considera tablas.
+    if len(jugador_actual.piezas) == 1 and len(enemigo.piezas) == 1:
+        return True
+
+    # Se busca al rey del jugador actual
+    rey = next((rey for rey in jugador_actual.piezas if isinstance(rey, Rey)), None)
+
+    # Si por alguna razon no se encuentra se considera invalido (aunque nunca debería pasar esto).
+    if rey is None:
+        print("Error: No se encontró el rey del jugador.")
+        return True
+
+    # Si el rey está amenazado entonces no puede ser tablas.
+    if tablero.amenazas(enemigo, rey.posicion[0], rey.posicion[1]):
+        return False
+
+    # Si resulta que alguna pieza del jugador actual se puede mover entonces no es tablas.
+    for pieza in jugador_actual.piezas:
+        movimientos = pieza.movimiento_valido(tablero) if not isinstance(pieza, Rey) else []
+        if movimientos:
+            return False
+
+    return True
+
+if __name__ == "__main__":
+    jug1 = Jugador("Carlos",1000)
+    jug2 = Jugador("Jorgis",2300)
+    partida(jug1,jug2)

@@ -7,9 +7,8 @@ que estarán dispoonibles cuando esté en partida
 Clases:
     - Jugador
 """
-
 from Piezas import Caballo, Alfil, Rey, Torre, Reina, Pieza, Peon
-from typing import Union
+from typing import Union, Self
 
 class Jugador:
 
@@ -26,8 +25,8 @@ class Jugador:
         """
         self.nombre : str = nombre
         self.puntuacion : int = puntuacion
-        self.color : Union[bool,None] = None
-        self.piezas : list= []
+        self.color : Union[int,None] = None
+        self.piezas : list = []
         self.cantidad : dict = {"P" : 0, "B" : 0, "N" : 0,
                                "R" : 0, "Q" : 0, "K" : 0}
 
@@ -77,6 +76,163 @@ class Jugador:
         self.piezas.remove(pieza)
 
         return None
+    
+    def encontrar_rey(self) -> tuple[int,int]:
+        """
+        Elimina la pieza en caso de ser capturada
+
+        Retorna:
+        --------
+        tuple
+            Retorna una tupla con la posicion del rey
+
+        """
+        rey = None
+        for pieza in self.piezas:
+            if type(pieza).__name__ == "Rey":
+                rey = pieza
+                break
+
+        posicion_rey = rey.posicion
+        return posicion_rey
+
+    def __len__(self) -> int:
+        """
+        Método dunder para devolver el número de piezas que tiene el jugador
+
+        Retorna:
+        --------
+        int
+            Número de piezas que tiene el jugador
+
+        """
+        return len(self.piezas)
+
+    def __bool__(self) -> bool:
+        """
+        Método dunder que comprueba si solo le queda el rey
+
+        Retorna:
+        --------
+        bool
+            Devuelve True si tiene más piezas a parte del rey
+        """
+
+        return False if self.encontrar_rey() or len(self) == 1 else True
+
+    def __sub__(self, other : "Pieza") -> "Jugador":
+        """
+        Método dunder que elimina una pieza de la lista de piezas del jugador
+
+        Retorna:
+        --------
+        Jugador
+            Devuelve un nuevo objeto de la clase jugador con los atributos actualizados
+        """
+        if not isinstance(other, Pieza):
+            print("Error. Se ha intentado eliminar de la lista de piezas algo que no es una pieza")
+            return self
+
+        jugador = Jugador(self.nombre, self.puntuacion)
+
+        for pieza in self.piezas:
+            if other == pieza:
+                self.piezas.remove(other)
+                break
+
+        else:
+            print(f"No se ha encontrado la pieza {other} en el jugdaor {self.nombre}")
+
+        jugador.color = self.color
+        jugador.piezas = self.piezas
+        jugador.cantidad = self.cantidad
+
+        return jugador
+
+    def __rsub__(self, other : "Pieza") -> "Jugador":
+        """
+        Método dunder que elimina una pieza de la lista de piezas del jugador
+
+        Retorna:
+        --------
+        Jugador
+            Devuelve un nuevo objeto de la clase jugador con los atributos actualizados
+        """
+        return self - other
+
+    def __isub__(self, other : "Pieza") -> Self:
+        """
+        Método dunder que elimina una pieza de la lista de piezas del jugador
+
+        Retorna:
+        --------
+        Self
+            Devuelve su propia instancia con los atributos actualizados
+        """
+        if not isinstance(other, Pieza):
+            print("Error. Se ha intentado eliminar de la lista de piezas algo que no es una pieza")
+            return self
+
+        for pieza in self.piezas:
+            if other == pieza:
+                self.piezas.remove(other)
+                break
+
+        else:
+            print(f"No se ha encontrado la pieza {other} en el jugdaor {self.nombre}")
+
+        return self
+
+    def __add__(self, other : "Pieza") -> "Jugador":
+        """
+        Método dunder que añade una pieza de la lista de piezas del jugador
+
+        Retorna:
+        --------
+        Jugador
+            Devuelve un nuevo objeto de la clase jugador con los atributos actualizados
+        """
+        if not isinstance(other, Pieza):
+            print("Error. Se ha intentado eliminar de la lista de piezas algo que no es una pieza")
+            return self
+
+        jugador = Jugador(self.nombre, self.puntuacion)
+
+        self.piezas.insert(0,other)
+
+        jugador.color = self.color
+        jugador.piezas = self.piezas
+        jugador.cantidad = self.cantidad
+
+        return jugador
+
+    def __radd__(self, other : "Pieza") -> "Jugador":
+        """
+        Método dunder que añade una pieza de la lista de piezas del jugador
+
+        Retorna:
+        --------
+        Jugador
+            Devuelve un nuevo objeto de la clase jugador con los atributos actualizados
+        """
+        return self + other
+
+    def __iadd__(self, other : "Pieza") -> Self:
+        """
+        Método dunder que añade una pieza de la lista de piezas del jugador
+
+        Retorna:
+        --------
+        Self
+            Devuelve su propia instancia con los atributos actualizados
+        """
+        if not isinstance(other, Pieza):
+            print("Error. Se ha intentado eliminar de la lista de piezas algo que no es una pieza")
+            return self
+
+        self.piezas.insert(0, other)
+
+        return self
 
     def __repr__(self):
         """
@@ -88,5 +244,5 @@ class Jugador:
             Retorna un str con toda la información
         """
 
-        return f"{type(self).__name__}(Jugador -> {self.nombre}, puntuacion -> {self.puntuacion}, \
-        color ->  {"1" if self.color else "0"}, piezas -> {self.piezas}, Cantidad -> {self.cantidad})"
+        return f"{type(self).__name__}(nombre = {self.nombre}, puntuacion = {self.puntuacion}, \
+        color =  {str(1) if self.color else str(0)}, piezas = {self.piezas}, cantidad = {self.cantidad})"

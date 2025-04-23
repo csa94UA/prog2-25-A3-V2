@@ -174,6 +174,17 @@ class Reina(Pieza):
 
         return movimientos
 
+    def __str__(self) -> str:
+        """
+        Método dunder que devuelve la representación de la pieza, teniendo en cuenta su color
+
+        Retorna:
+        --------
+        str
+            Devuelve su representación
+        """
+        return 'Q' if self.color else 'q'
+
     def __repr__(self):
         """
         Metodo especial para mostrar toda la información de la clase
