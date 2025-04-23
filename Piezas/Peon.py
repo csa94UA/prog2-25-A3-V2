@@ -104,21 +104,6 @@ class Peon(Pieza):
 
         return False
 
-    def __repr__(self):
-        """
-        Metodo especial para mostrar toda la información de la clase
-
-        Retorna:
-        --------
-        str
-            Retorna un str con toda la información
-        """
-        return (f"{type(self).__name__}(Posición -> {self.posicion}, "
-                f"Color -> {self.color}, Capturado -> {self.capturado}, "
-                f"Valor -> {self.valor}, Movido -> {self.movido}, "
-                f"Movimientos -> {self.movimientos})")
-
-
     def mover_doble(self, tablero : "Tablero", color : int) -> bool:
         """
         Comprueba si puede dar un segundo paso
@@ -166,3 +151,28 @@ class Peon(Pieza):
             return True
 
         return False
+
+    def __str__(self) -> str:
+        """
+        Método dunder que devuelve la representación de la pieza, teniendo en cuenta su color
+
+        Retorna:
+        --------
+        str
+            Devuelve su representación
+        """
+        return 'P' if self.color else 'p'
+
+    def __repr__(self):
+        """
+        Metodo especial para mostrar toda la información de la clase
+
+        Retorna:
+        --------
+        str
+            Retorna un str con toda la información
+        """
+        return (f"{type(self).__name__}(Posición -> {self.posicion}, "
+                f"Color -> {self.color}, Capturado -> {self.capturado}, "
+                f"Valor -> {self.valor}, Movido -> {self.movido}, "
+                f"Movimientos -> {self.movimientos})")

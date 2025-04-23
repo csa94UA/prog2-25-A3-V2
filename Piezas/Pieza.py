@@ -80,12 +80,15 @@ class Pieza(ABC):
         """
         pos_rey = jugador.encontrar_rey()
 
-        if especial.isalpha() and not destino[0] in [0,7]:
+        x = destino[0]
+        y = destino[1]
+
+        if especial.isalpha() and not x in [0,7]:
             print("Error. No se encuentra en el otro lado del tablero")
             return False
 
-        if especial == '0' and tablero[self.posicion[0]][self.posicion[1]].representacion() in ['P','p'] and \
-                destino[0] in [0,7]:
+        if especial == '0' and str(tablero[self.posicion[0]][self.posicion[1]]) in ['P','p'] and \
+                x in [0,7]:
             print("Error. No has digitado una promoción siendo peón.")
             return False
 
@@ -93,11 +96,9 @@ class Pieza(ABC):
 
         if destino is not tuple() and not destino in self.movimiento_valido(tablero):
             print("Error. La posición desitno no está dentro de los movimientos validos de la pieza")
-            print(destino,'\n', self.movimiento_valido(tablero))
             return False
+
         tablero_antiguo = tablero.guardar_estado()
-        x = destino[0]
-        y = destino[1]
 
         pos_ant_pieza : tuple[int,int] = self.posicion
         self.posicion = (x, y)
@@ -105,7 +106,7 @@ class Pieza(ABC):
         
         pieza_enemgio = tablero[x][y].pieza
         tablero[x][y].pieza = self
-        if tablero.esta_en_jaque(jugador,enemigo):
+        if tablero.amenazas(enemigo,*pos_rey):
             print("Error. Tu movimiento provoca o no impide un jaque")
             tablero.restaurar_estado(tablero_antiguo)
             return False
@@ -115,6 +116,14 @@ class Pieza(ABC):
         if pieza_enemgio is not None and pieza_enemgio.posicion == self.posicion:
             enemigo.piezas.remove(pieza_enemgio)
         return True
+
+    @abstractmethod
+    def __str__(self):
+        """
+        Método abstracto que se espera ser definido por las subclases.
+        Debe devolver la representación en string de la pieza en sí (teniendo en cuenta su color)
+        """
+        pass
     
     def __repr__(self):
         """
@@ -125,6 +134,6 @@ class Pieza(ABC):
         str
             Retorna un str con toda la información
         """
-        return (f"{type(self).__name__}(Posición -> {self.posicion}, "
-                f"Color -> {self.color}, Capturado -> {self.capturado}, "
-                f"Valor -> {self.valor}, Movimientos -> {self.movimientos})")
+        return (f"{type(self).__name__}(Posición = {self.posicion}, "
+                f"Color = {self.color}, Capturado = {self.capturado}, "
+                f"Valor = {self.valor}, Movimientos = {self.movimientos})")

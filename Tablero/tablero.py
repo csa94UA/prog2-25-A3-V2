@@ -7,7 +7,6 @@ y contiene la información más esencial. Posee modulos que permite realizar las
 Clases:
     - Tablero
 """
-
 from .casilla import Casilla
 #from Jugador import Jugador
 from typing import Union
@@ -69,14 +68,59 @@ class Tablero:
         """
 
         self.tablero : list[list["Casilla"]]= [[Casilla(i,j) for i in range(8)] for j in range(8)]
-        self.enroque : Union[list[bool,bool],None] = None
-        self.en_passant : Union[tuple[str,int],None] = None
+        self.enroque : Union[list[bool],None] = None
+        self.en_passant : Union[tuple[str,tuple[int,int]],None] = None
         self.contador : int = 0
         self.jugadas : int = 0
         self.turno : int = 1 #Representa el color que tiene el turno (por defecto es el blanco)
 
+    @classmethod
+    def creacion_con_FEN(cls, fen : str) -> None:
+        """
+        Perimte inicializar la clase Tablero de otra manera pasándole la información en formato FEN
 
-    def __getitem__(self, indice : int):
+        Parametros:
+        -----------
+        fen : str
+            string que contiene toda la información necesario para el tablero
+        """
+        from Partidas.aflabeto_FEN import traduccion_posicion
+
+        self = cls()
+
+        self.tablero = [[Casilla(i,j) for i in range(8)] for j in range(8)]
+
+        fen = fen.split()
+        filas = fen[0].split('/')
+
+        for i,fila in enumerate(filas):
+            j = 0
+
+            for letra in fila:
+                if letra.isdigit():
+                    j += int(letra)
+                    continue
+
+                self[i][j].tranformacion_a_pieza(i, j, letra)
+
+
+        self.turno = 1 if fen[1] == 'w' else 0
+        if fen[2] == '':
+            self.enroque = None
+        else:
+            self.enroque = [True if 'KQ' in fen[2] else False, True if 'kq' in fen[2] else False] if fen[2] else None
+
+        if fen[3] == '-':
+            self.en_passant = None
+        else:
+            self.en_passant = (fen[3],traduccion_posicion(fen[3]))
+
+        self.contador = int(fen[4])
+
+        return None
+
+
+    def __getitem__(self, indice : int) -> Union[list["Casilla"],"Casilla"]:
         """
         Metodo especial para poder acceder a un elemento de la matriz
         solamente con la variable de la clase Tablero.
@@ -93,6 +137,22 @@ class Tablero:
             Retorna la casilla (o las casillas) que ha sido seleccionado
         """
         return self.tablero[indice]
+
+    def __str__(self) -> str:
+        """
+        Método dunder que representa el tablero desde la persepctiva del jugador que tiene el turn
+        """
+
+        color: int = self.turno
+        filas = []
+
+        for i in range(8):
+            fila = []
+            for j in range(8):
+                fila.append(str(self.obtener_casilla(i, j, color)))
+            filas.append(' '.join(fila))
+
+        return '\n'.join(filas)
 
     def esta_en_jaque(self, jugador:"Jugador",enemigo:"Jugador") -> bool:
         """
@@ -112,7 +172,7 @@ class Tablero:
         posicion_rey = jugador.encontrar_rey()
 
         for pieza in enemigo.piezas:
-            if (posicion_rey in pieza.movimiento_valido(self) and type(pieza).__name__ != "Peon") or (type(pieza).__name__ == "Peon" and posicion_rey in pieza.movimiento_valido(self,True) ):
+            if (posicion_rey in pieza.movimiento_valido(self) and type(pieza).__name__ != "Peon") or (type(pieza).__name__ == "Peon" and posicion_rey in pieza.movimiento_valido(self) ):
                 return True
 
         return False
@@ -171,7 +231,7 @@ class Tablero:
         como las matrices comienzan arriba a la izquierda y el tablero de ajedrez
         comienza abajo a la izquierda, nuestra matriz está invertida. Para solucionarlo,
         dentro del codigo se tratará como una matriz normal, pero a la hora de mostrarlo
-        al usuario, invertimos las filas para que sea acorde a su perspectiva.
+        al usuario, invertimos las filas y las columnas para que sea acorde a su perspectiva.
 
         Parametros:
         -----------
@@ -211,21 +271,20 @@ class Tablero:
 
         return False
 
-    def mostrar_tablero(self, color : bool) -> None:
+    def mostrar_tablero(self, color : int) -> None:
         """
         Muestra el tablero por consola desde la perspeciva del color del jugador, es decir,
         las piezas situadas abajo son las del color pasada por parámetro
 
         Parametros:
         -----------
-        color : bool
+        color : int
             Representa el color del jugador para mostrar el tablero desde su perspectiva
         """
 
         for i in range(8):
             for j in range(8):
-                #print(self[abs(fila-i)][j].representacion(),end=" ")
-                print(self.obtener_casilla(i, j, color).representacion(), end=' ')
+                print(str(self.obtener_casilla(i, j, color)), end=' ')
             print()
 
         return None
@@ -265,9 +324,9 @@ class Tablero:
             espacio = 0
             for j in range(8):
 
-                if self[i][j].representacion() != ' ':
+                if str(self[i][j]) != '.':
                     fen += str(espacio) if espacio != 0 else ''
-                    fen += self[i][j].representacion()
+                    fen += str(self[i][j])
                     espacio = 0
                     continue
 
@@ -462,13 +521,54 @@ class Tablero:
 
             fila_p, columna_p = posicion
 
-            if self[fila_p][columna_p].representacion() not in ['N','n']:
+            if str(self[fila_p][columna_p]) not in ['N','n']:
                 casillas.append(self.casillas_intermedias(fila, columna, posicion[0], posicion[1]))
 
-            elif self[fila_p][columna_p].representacion() in ['N','n']:
+            elif str(self[fila_p][columna_p]) in ['N','n']:
                 casillas.append(posicion)
 
         return casillas
+
+    def posibilidad_matar_con_rey(self, enemigo : "Jugador", fila : int, columna : int, rey : "Rey") -> bool:
+        """
+        Comprueba si la casilla a la que se puede mover el rey para matar una pieza del enemigo es realmente posible.
+        Para ello simula que se mueve a dicha posición y se comprueba si alguna pieza la puede atacar.
+
+        Parametros:
+        -----------
+        enemigo : list
+            Jugador enemigo que va a sufrir del poder del rey Ö
+        fila : int
+            Fila en la que se encuentra el rey
+        columna : int
+            Columna en la que se encuentra el rey
+        Retorna:
+        --------
+        bool
+            Devuelve si puede matar a dicha pieza.
+        """
+
+        pieza_aux : "Pieza" = self[fila][columna].pieza
+        indice : int = enemigo.piezas.index(pieza_aux)
+        enemigo.piezas.remove(pieza_aux)
+
+        self[fila][columna].pieza = rey
+
+        pos_aux_rey = rey.posicion
+        rey.posicion = (fila,columna)
+
+        if not self.amenazas(enemigo, fila, columna):
+            self[fila][columna].pieza = pieza_aux
+            rey.posicion = pos_aux_rey
+            enemigo.piezas.insert(indice,pieza_aux)
+            return True
+
+        else:
+            self[fila][columna].pieza = pieza_aux
+            rey.posicion = pos_aux_rey
+            enemigo.piezas.insert(indice,pieza_aux)
+            return False
+
 
     def imagenes_piezas(self, tamano_casilla):
         """
@@ -691,6 +791,6 @@ class Tablero:
 
 if __name__ == "__main__":
     tablero = Tablero()
-    tablero.mostrar_tablero(0)
+    print(tablero)
     print(tablero.traduccion_FEN(1,1,1,None,0,1))
     tablero.representacion_grafica()

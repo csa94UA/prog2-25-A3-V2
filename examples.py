@@ -1,5 +1,5 @@
 import requests
-from Partida import partida
+from Partidas.Partida import partida
 from Jugador import Jugador
 
 URL = 'http://127.0.0.1:5000/'

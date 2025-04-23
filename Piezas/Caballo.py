@@ -69,6 +69,17 @@ class Caballo(Pieza):
 
         return movimientos
 
+    def __str__(self) -> str:
+        """
+        Método dunder que devuelve la representación de la pieza, teniendo en cuenta su color
+
+        Retorna:
+        --------
+        str
+            Devuelve su representación
+        """
+        return 'N' if self.color else 'n'
+
     def __repr__(self):
         """
         Metodo especial para mostrar toda la información de la clase
