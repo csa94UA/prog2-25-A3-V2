@@ -15,6 +15,7 @@ Funciones:
 """
 
 from typing import Any
+from error_partidas import ErrorPartida
 
 def digitar_movimiento(color : int) -> None | tuple[tuple, tuple, int] | tuple[
     tuple[int, Any], tuple[int, Any], int | Any]:
@@ -41,45 +42,59 @@ def digitar_movimiento(color : int) -> None | tuple[tuple, tuple, int] | tuple[
                   'e' : 4, 'f' : 5, 'g' : 6, 'h' : 7}
 
     while True:
-        mov : str = input("\nDigite movimiento: \n")
+        try:
+            #Pedimos al usuario que digite un movimiento
+            mov : str = input("\nDigite movimiento: \n")
 
-        if len(mov) > 6:
-            print("\nError. Movimiento demasiado largo\n")
+            #Si se digita un movimiento muy largo se considera invalido
+            if len(mov) > 6:
+                raise ErrorPartida("Movimiento demasiado largo","digitar movimiento")
+
+        except ErrorPartida as e:
+            print(e)
             continue
 
+        #Si se digitan enroques solo se devuelve su clave (2 es largo y 1 corto)
         if mov == '0-0-0':
             return (),(),2
         if mov == '0-0':
             return (),(),1
 
-        inicio, fin, especial = separar_datos(mov)
+        try:
+            #Obtenemos desglosado el movimiento
+            inicio, fin, especial = separar_datos(mov)
 
-        if not(inicio[0]  in 'abcdefgh' and inicio[1] in '12345678'):
-            print("\nError. Posicion inicial digitado incorrectamente\n")
+            #Si no se ha digitado bien la posición de origen
+            if not(inicio[0]  in 'abcdefgh' and inicio[1] in '12345678'):
+                raise ErrorPartida("Posicion inicial digitado incorrectamente","digitar movimiento")
+
+            #Si no se ha digitado bien la posición destino
+            if not (fin[0] in 'abcdefgh' and fin[1] in '12345678'):
+                raise ErrorPartida("Posicion final digitado incorrectamente", "digitar movimiento")
+
+            #Si destino y origen son iguales
+            if inicio == fin:
+                raise ErrorPartida("Posicion inicial y final son identicas", "digitar movimiento")
+
+            #Si no se digita correctamente la promoción
+            if especial is not None and (not especial[0] == '=' or len(especial) == 1):
+                raise ErrorPartida("Promocion digitado incorrectamente", "digitar movimiento")
+
+            #Si deseas promocionar a una pieza que no se puede
+            if especial is not None and especial[1] not in 'QRBNqrbn':
+                raise ErrorPartida("Intento de promoción fallida por querer trasformar a una pieza no permitida", "digitar movimiento")
+
+        except ErrorPartida as e:
+            print(e)
             continue
 
-        if not (fin[0] in 'abcdefgh' and fin[1] in '12345678'):
-            print("\nError. Posicion final digitado incorrectamente\n")
-            continue
-
-        if inicio == fin:
-            print("\nError. Posicion inicial y final son identicas\n")
-            continue
-
-        if especial is not None and (not especial[0] == '=' or len(especial) == 1):
-            print("\nError. Promocion digitado incorrectamente\n")
-            continue
-
-        if especial is not None and especial[1] not in 'QRBNqrbn':
-            print("\nError. Intento de promoción fallida por querer trasformar a una pieza no permitida\n")
-            continue
-
-        if color:
-            return ((8 - int(inicio[1]), traduccion[inicio[0]]), (8 - int(fin[1]), traduccion[fin[0]]),
-                    0 if especial is None else especial[1].upper())
         else:
-            return ((int(inicio[1]) - 1, 7 - traduccion[inicio[0]]), (int(fin[1]) - 1, 7 - traduccion[fin[0]]),
-                    0 if especial is None else especial[1].upper())
+            if color:
+                return ((8 - int(inicio[1]), traduccion[inicio[0]]), (8 - int(fin[1]), traduccion[fin[0]]),
+                        0 if especial is None else especial[1].upper())
+            else:
+                return ((int(inicio[1]) - 1, 7 - traduccion[inicio[0]]), (int(fin[1]) - 1, 7 - traduccion[fin[0]]),
+                        0 if especial is None else especial[1].upper())
 
 
 
