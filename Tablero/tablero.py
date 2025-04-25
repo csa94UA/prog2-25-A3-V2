@@ -9,7 +9,7 @@ Clases:
 """
 from .casilla import Casilla
 #from Jugador import Jugador
-from typing import Union
+from typing import Union, Self
 import threading
 import itertools
 import pygame
@@ -75,7 +75,7 @@ class Tablero:
         self.turno : int = 1 #Representa el color que tiene el turno (por defecto es el blanco)
 
     @classmethod
-    def creacion_con_FEN(cls, fen : str) -> None:
+    def creacion_con_FEN(cls, fen : str) -> Self:
         """
         Perimte inicializar la clase Tablero de otra manera pasándole la información en formato FEN
 
@@ -117,7 +117,7 @@ class Tablero:
 
         self.contador = int(fen[4])
 
-        return None
+        return self
 
 
     def __getitem__(self, indice : int) -> Union[list["Casilla"],"Casilla"]:

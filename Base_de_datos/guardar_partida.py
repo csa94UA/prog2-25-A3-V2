@@ -33,12 +33,12 @@ class GuardarPartida:
         informacion = {
             'jugador_blanco' : self.jugador_b,
             'jugador_negro' : self.jugador_n,
-            'jugadas' : self.mov_LAN
-            'tablero' : self.fen
+            'jugadas' : self.mov_LAN,
+            'tablero' : self.fen,
             'resultado' : self.resultado
         }
 
-        with open(archivo, 'w') as escritura:
+        with open(f"{archivo}.json", 'w') as escritura:
             json.dump(informacion, escritura, ident = 4)
 
         return None
@@ -66,7 +66,7 @@ class GuardarPartida:
 
     def json_a_pgn(self, archivo : str):
 
-        with open(archivo, 'r') as lectura:
+        with open(f"{archivo}.json", 'r') as lectura:
             partida = json.load(lectura)
 
         pgn = f'[Event "Partida {partida["jugador_blanco"]} vs {partida["jugador_negro"]}"], '
