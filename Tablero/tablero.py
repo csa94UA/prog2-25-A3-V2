@@ -289,7 +289,7 @@ class Tablero:
 
         return None
 
-    def traduccion_FEN(self, color : int, enroque_n : int, enroque_b : int, en_passant : Union[str,None], contador : int, turno : int) -> str:
+    def traduccion_FEN(self, turno : int) -> str:
         """
         Traduce la situación del tablero a formato FEN. Muy útil a la hora de guardar partidas,
         tratar con APIs de IA, comprimir la información del ajedrez, etc.
@@ -298,17 +298,7 @@ class Tablero:
         -----------
         color : bool
             Representa el turno del jugador. Si es 1 entonces es el blanco y si es 0 entonces es el negro
-        enroque_n : bool
-            Representa la posibilidad del jugador negro en hacer enroque
-        enroque_b : bool
-            Representa la posibilidad del jugador blanco en hacer enroque
-        en_passant : str
-            Muestra en que casilla (representado con coordenadas de ajedrez) se puede capturar al paso.
-            Este valor cambia en cada turno, por lo que no tiene dependencia del color.
-        contador : int
-            Cuenta la cantidad de semimovimientos realizados. Los semimovimientos son aquellos donde
-            no se han capturado ni movido peones. Si el valor llega a 50, se proclama tablas (empate).
-            Este valor se reanuda a 0 cuando se pierde la racha (creo).
+
         turno : int
             Representa el turno de la partida. Útil para ordenar los eventos de una partida dentro de una BD
 
@@ -335,14 +325,14 @@ class Tablero:
             fen += str(espacio) if espacio != 0 else ''
             fen += '/' if i != 7 else ''
 
-        fen += ' w ' if color else ' b '
+        fen += ' w ' if self.turno else ' b '
 
-        fen += 'KQ' if enroque_b else ''
-        fen += 'kq' if enroque_n else ''
+        fen += 'KQ' if self.enroque[0] else ''
+        fen += 'kq' if self.enroque[1] else ''
 
-        fen += f' {en_passant[0]} ' if en_passant is not None else ' - '
+        fen += ' - ' if self.en_passant is None else f' {self.en_passant[0]} '
 
-        fen += str(contador) + ' '
+        fen +=  '0 ' #Va a ser siempre cero ya que no me ha dado tiempo a impliementar casos especiales
         fen += str(turno)
 
         return fen

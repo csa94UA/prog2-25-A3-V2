@@ -66,6 +66,7 @@ class Pieza(ABC):
     def mover(self, destino: tuple[int], tablero: "Tablero", jugador : "Jugador", enemigo : "Jugador", especial : Union[str,int]) -> bool:
         from Tablero import Tablero
         from Jugador import Jugador
+        from Partidas.aflabeto_FEN import traduccion_inversa
         """
         Desplaza la pieza desde su posición hasta el destino.
 
@@ -111,10 +112,24 @@ class Pieza(ABC):
             tablero.restaurar_estado(tablero_antiguo)
             return False
 
-        
-
         if pieza_enemgio is not None and pieza_enemgio.posicion == self.posicion:
             enemigo.piezas.remove(pieza_enemgio)
+
+        if tablero.en_passant is not None and self.posicion == tablero.en_passant[1] and str(self) in ['P','p']:
+            peon_enemigo = tablero[x + 1 if self.posicion else x - 1][y].pieza
+
+            if peon_enemigo is not None and str(peon_enemigo) in ['P','p'] and peon_enemigo.color != self.color:
+                tablero[x + 1 if self.posicion else x - 1][y].pieza = None
+                enemigo.piezas.remove(peon_enemigo)
+
+        if abs(pos_ant_pieza[0] - self.posicion[0]) == 2 and str(tablero[self.posicion[0]][self.posicion[1]]) in ['P','p']:
+            en_passant : tuple[int,int] = (pos_ant_pieza[0] - 1 if self.color else pos_ant_pieza[0] + 1, self.posicion[1])
+            tablero.en_passant = [traduccion_inversa(en_passant),en_passant]
+            print("En_passant: ", tablero.en_passant)
+            return True
+
+        tablero.en_passant = None
+
         return True
 
     @abstractmethod

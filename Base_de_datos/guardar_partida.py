@@ -13,7 +13,7 @@ import json
 
 class GuardarPartida:
 
-    def __init__(self, jugador1 : str, jugador2 : str, ) -> None:
+    def __init__(self, jugador1 : str, jugador2 : str) -> None:
         self.jugador_b : str = jugador1
         self.jugador_n : str = jugador2
         self.mov_LAN : list = []
@@ -70,7 +70,7 @@ class GuardarPartida:
             partida = json.load(lectura)
 
         pgn = f'[Event "Partida {partida["jugador_blanco"]} vs {partida["jugador_negro"]}"], '
-        f'[White "{partida["jugador_b"]}"], '
+        f'[White "{partida["jugador_blanco"]}"], '
         f'[Black "{partida["jugador_negro"]}"], '
         f'[Result "{partida["resultado"]}"], '
         f'[FEN "{partida["fen"][0]}]'

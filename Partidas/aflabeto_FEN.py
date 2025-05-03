@@ -14,8 +14,11 @@ Funciones:
     Simplifica el formato LAN de entrada a nuestro formato ultrasimplificado.
 """
 
-from typing import Any
-from error_partidas import ErrorPartida
+from typing import Any, Optional, Union
+from Partidas.error_partidas import ErrorPartida
+
+traduccion = {'a' : 0, 'b' : 1, 'c' : 2, 'd' : 3,
+                  'e' : 4, 'f' : 5, 'g' : 6, 'h' : 7}
 
 def digitar_movimiento(color : int) -> None | tuple[tuple, tuple, int] | tuple[
     tuple[int, Any], tuple[int, Any], int | Any]:
@@ -37,9 +40,6 @@ def digitar_movimiento(color : int) -> None | tuple[tuple, tuple, int] | tuple[
         Su estructura seria algo como -> None | tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]
         Ahora entenderas porque no se pone (es demasiado largo).
     """
-
-    traduccion = {'a' : 0, 'b' : 1, 'c' : 2, 'd' : 3,
-                  'e' : 4, 'f' : 5, 'g' : 6, 'h' : 7}
 
     while True:
         try:
@@ -87,6 +87,10 @@ def digitar_movimiento(color : int) -> None | tuple[tuple, tuple, int] | tuple[
         except ErrorPartida as e:
             print(e)
             continue
+        except IndexError:
+            e = ErrorPartida("No se ha digitado movimiento","digitar movimiento")
+            print(e)
+            continue
 
         else:
             if color:
@@ -117,10 +121,22 @@ def separar_datos(mov : str) -> tuple:
     else:
         return mov[0:2],mov[2:],None
 
+def traducir_movimiento_ia(mov : str) -> tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]:
+    if mov == '0-0-0':
+        return (), (), 2
+    if mov == '0-0':
+        return (), (), 1
+
+    inicio, fin, especial = separar_datos(mov)
+
+    return ((8 - int(inicio[1]), traduccion[inicio[0]]), (8 - int(fin[1]), traduccion[fin[0]]),
+            0 if especial is None else especial[1].upper())
+
 
 def transformacion_a_LAN_hipersimplificado(mov : str) -> str:
     """
-    Función que permite transformar cualquier movimiento digitado en formato LAN al formato LAN hipersimplificado
+    Función que permite transformar cualquier movimiento digitado en formato SAN al formato LAN hipersimplificado, pero
+    ignora la posición de origen y la pieza que se mueve.
 
     Parámetros:
     ----------
@@ -134,13 +150,8 @@ def transformacion_a_LAN_hipersimplificado(mov : str) -> str:
 
     mov_sep : list[str] = list(mov)
 
-    if mov == '0-0-0':
+    if mov == '0-0-0' or mov == '0-0':
         return mov
-    if mov == '0-0':
-        return mov
-
-    if '-' in mov_sep:
-        mov_sep.remove('-')
 
     if '+' in mov_sep:
         mov_sep.remove('+')
@@ -151,8 +162,12 @@ def transformacion_a_LAN_hipersimplificado(mov : str) -> str:
     if 'x' in mov_sep:
         mov_sep.remove('x')
 
-    if not mov_sep[0] in 'abcdefgh' or not mov_sep[1] in '12345678':
-        mov_sep.remove(mov_sep[0])
+    while True:
+        if not mov_sep[0] in 'abcdefgh' or not mov_sep[1] in '12345678':
+            mov_sep.remove(mov_sep[0])
+            continue
+
+        break
 
     mov : str = ''
     for letra in mov_sep:
@@ -180,6 +195,17 @@ def traduccion_posicion(posicion : str) -> tuple[int,int]:
                   'e': 4, 'f': 5, 'g': 6, 'h': 7}
 
     return traduccion[posicion[0]],int(posicion[1])
+
+def traduccion_inversa(posicion : Union[tuple[int,int], int], donde : Optional[str] = None) -> str:
+    columnas = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+
+    if type(posicion) == int:
+        if donde == "fila":
+            return str(posicion - 1)
+
+        return columnas[posicion]
+
+    return columnas[posicion[1]] + str(8 - posicion[0])
 
 if __name__ == '__main__':
     print(digitar_movimiento(0))

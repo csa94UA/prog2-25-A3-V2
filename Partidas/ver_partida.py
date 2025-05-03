@@ -27,31 +27,30 @@ def visualizar_partida_antigua(archivo : str, jugador_actual : Jugador, enemigo 
             indice = int(input("\nDigite el indice de la partida que desea reproducir: "))
             if not(0 <= int(indice) < len(partida)):
                 raise ValueError("Error. Has digitado un índice fuera de los límites")
-
+            break
         except ValueError as error_valor:
             print(error_valor)
         except TypeError:
             print("No has digitado un número")
-        else:
-            break
-        finally:
-            continue
 
-    for turno, fen in enumerate(partida[indice]["partida"]):
-        tablero = Tablero.creacion_con_FEN(fen)
+    fens : list[str] = partida[indice]["fens"]
+    turno : int = 0
+    running : bool = True
+    reloj = pygame.time.Clock()
+
+    while running:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                running = False
+            elif evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_RIGHT:
+                    turno = min(indice + 1, len(partida[indice]) - 1)
+                elif evento.key == pygame.K_LEFT:
+                    turno = max(indice - 1, 0)
+
+        tablero = Tablero.creacion_con_FEN(fens[turno])
         print(tablero)
-        reloj = pygame.time.Clock()
-        while True:
-            for evento in pygame.event.get():
-                if evento.type == pygame.QUIT:
-                    break
-                elif evento.type == pygame.KEYDOWN:
-                    if evento.key == pygame.K_RIGHT:
-                        min(indice + 1, len(partida[indice]) - 1)
-                    elif evento.key == pygame.K_LEFT:
-                        max(indice - 1, 0)
-
-            reloj.tick(30)
+        reloj.tick(30)
 
     pygame.quit()
 
@@ -63,6 +62,6 @@ def cargar_partida_json(archivo : str) -> str:
 
 def enlistar_partida(partidas : list[dict], jugador_actual : Jugador, enemigo : Jugador) -> None:
     for i,partida in enumerate(partidas):
-        print(f"{i}: {partida[f'{jugador_actual}']} contra {partida[f'{enemigo}']}. Resultado -> {partida['Resultado']}")
+        print(f"{i}: {partida['jugador_blanco']} contra {partida['jugador_negro']}. Resultado -> {partida['resultado']}")
 
     return None

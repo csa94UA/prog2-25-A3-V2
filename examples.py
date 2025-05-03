@@ -1,5 +1,5 @@
 import requests
-from Partidas.Partida import partida
+from Partidas import partida
 from Jugador import Jugador
 
 URL = 'http://127.0.0.1:5000/'
@@ -14,18 +14,24 @@ def mostrar_menu() -> None:
     return None
 
 def crear_partida() -> None:
-        
+    bot : bool = False
+
     jug1_nombre = input("Digite su nombre jugador 1: ")
     jug1_contraseña = input("Digite su contraseña jugador 1: ")
     if verificar_usuario(jug1_nombre, jug1_contraseña):
         print("Credenciales invalidas")
         return None
 
-    jug2_nombre = input("Digite su nombre jugador 2: ")
-    jug2_contraseña = input("Digite su contraseña jugador 2: ")
-    if verificar_usuario(jug2_nombre, jug2_contraseña):
-        print("Credenciales invalidas")
-        return None
+    opcion : str = input("Desea jugar contra la IA? (S/N)")
+    if opcion.isalpha() and opcion.upper() in ['S','N']:
+        jug2_nombre : str = "StockFish"
+        bot = True
+    else:
+        jug2_nombre = input("Digite su nombre jugador 2: ")
+        jug2_contraseña = input("Digite su contraseña jugador 2: ")
+        if verificar_usuario(jug2_nombre, jug2_contraseña):
+            print("Credenciales invalidas")
+            return None
 
     # Crear objetos Jugador (aquí puedes complementar con otros atributos si los necesitas)
     jugador1 = Jugador(jug1_nombre, 0)
@@ -33,7 +39,7 @@ def crear_partida() -> None:
 
     # Iniciar la partida usando la función 'partida' existente
     print("Iniciando partida...")
-    partida(jugador1, jugador2)
+    partida(jugador1, jugador2, bot)
 
     return None
 

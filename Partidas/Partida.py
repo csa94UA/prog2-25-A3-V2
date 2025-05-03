@@ -36,15 +36,17 @@ Funciones:
 
 from Piezas import Caballo, Alfil, Rey, Reina, Peon, Torre, Pieza
 from Piezas.error_creacion_pieza import ErrorCrearPieza
-from error_partidas import ErrorPartida
+from Partidas.error_partidas import ErrorPartida
 from Jugador import Jugador
 from random import randint
 from typing import Union
-from Partidas.aflabeto_FEN import digitar_movimiento
+from Partidas.aflabeto_FEN import digitar_movimiento, transformacion_a_LAN_hipersimplificado, traduccion_inversa, \
+    traducir_movimiento_ia
 from Tablero import Tablero
+from app import movimiento_ia
 
 
-def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
+def partida(jugador1 : Jugador, jugador2 : Jugador, bot : bool = False) -> Union["Jugador",None]:
     """
     Es la función principal de este archivo. En ella se trata toda la logica general de una partida de ajedrez (trato de
     turnos, manejo de movimientos especiales, manejo de errores, etc.).
@@ -68,10 +70,11 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
 
     while True:
         # Se inicializa los turnos de cada jugador, siendo enemigo el jugador que no tiene turno.
-        jugador_actual = jugador1 if turno else jugador2
+        jugador_actual : Jugador = jugador1 if turno else jugador2
         enemigo : Jugador = jugador1 if not turno else jugador2
 
         tablero.turno = jugador_actual.color
+        act_en_passant : bool = False
 
         # Mostramos el tablero
         print(tablero)
@@ -84,8 +87,16 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
 
         print(f"\nTurno de {jugador_actual.nombre}")
 
-        # Pedimos el movimiento del jugador
-        movimiento = digitar_movimiento(jugador_actual.color)
+        # Pedimos el movimiento del jugador / IA
+        if jugador_actual.nombre == "StockFish" and bot:
+            print(tablero.traduccion_FEN(tablero.contador))
+            san = movimiento_ia(tablero.traduccion_FEN(tablero.contador))
+
+            lan_hipersimplificado = detectar_pieza(san, jugador_actual) + transformacion_a_LAN_hipersimplificado(san)
+
+            movimiento = traducir_movimiento_ia(lan_hipersimplificado)
+        else:
+            movimiento = digitar_movimiento(jugador_actual.color)
 
         # Si el jugador actual está en jaque se procede a efectuar el caso especial de jaque.
         if jaque:
@@ -94,6 +105,7 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
             # Si no se ha logrado evitar el jaque, se regresa al principio
             if not intento:
                 continue
+            act_en_passant = True
 
         # Comprobamos si quieren hacer enroque. Si es así se simula y se comprueba su validez
         if type(movimiento[2]) == int and movimiento[2] in [1,2]:
@@ -102,6 +114,12 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
 
             if not bandera:
                 continue
+
+            if jugador_actual.color:
+                tablero.enroque[0] = False
+            else:
+                tablero.enroque[1] = False
+            act_en_passant = True
 
         # Busca la pieza en esa posicion. Si no la encuentra, dará un mensaje de error y repetirá el movimiento
         if not(type(movimiento[2]) == int and movimiento[2] in [1,2]):
@@ -130,9 +148,14 @@ def partida(jugador1 : Jugador, jugador2 : Jugador) -> Union["Jugador",None]:
             break
 
         turno = 1 - turno
+        tablero.contador += 1
+        print(tablero.traduccion_FEN(tablero.contador))
+        if act_en_passant:
+            tablero.en_passant = None
 
-    print(f"Ha ganado el jugador {jugador_actual.nombre}")
-    print("Felicidades!!!!!")
+    if jugador_actual is not None:
+        print(f"Ha ganado el jugador {jugador_actual.nombre}")
+        print("Felicidades!!!!!")
 
     return jugador_actual
 
@@ -166,13 +189,17 @@ def inicializacion_partida(jugador1 : "Jugador", jugador2 : "Jugador", tablero :
         jugador1.color = 0
 
     # Insertamos las piezas en el tablero y en el inventario del jugador
-    jugador1.piezas = crear_piezas(jugador1.color, tablero, jugador2)
-    jugador2.piezas = crear_piezas(jugador2.color, tablero, jugador1)
+    jugador1.piezas = crear_piezas(jugador1.color, tablero, jugador1, jugador2)
+    jugador2.piezas = crear_piezas(jugador2.color, tablero, jugador2, jugador1)
+
+    tablero.enroque = [True,True]
+    tablero.en_passant = None
+    tablero.contador = 0
 
     return False, 1 if jugador1.color else 0
 
 
-def crear_piezas(color : int, tablero : Tablero, enemigo : "Jugador") -> list["Pieza"]:
+def crear_piezas(color : int, tablero : Tablero, jugador : "Jugador", enemigo : "Jugador") -> list["Pieza"]:
     """
     Función que inicializa las piezas de un jugador al comenzar una partida. Tiene en cuanta el color del jugador para
     colocar las piezas en su lugar.
@@ -196,10 +223,10 @@ def crear_piezas(color : int, tablero : Tablero, enemigo : "Jugador") -> list["P
     for j in range(8):
         peon = Peon((fila_p, j), color)
         try:
-            if peon in jug1.piezas or peon in jug2.piezas:
+            if peon in jugador.piezas or peon in enemigo.piezas:
                 raise ErrorCrearPieza(peon, "Se ha intentado crear una pieza que ya existe")
-            if any(p.posicion == peon.posicion and p != peon for p in jug1.piezas) or \
-                    any(p.posicion == peon.posicion for p in jug2.piezas):
+            if any(p.posicion == peon.posicion and p != peon for p in jugador.piezas) or \
+                    any(p.posicion == peon.posicion for p in enemigo.piezas):
                 raise ErrorCrearPieza(peon, "Se ha intentado crear una pieza en una posición previamente ocupada")
         except ErrorCrearPieza as e:
             print(e)
@@ -216,10 +243,10 @@ def crear_piezas(color : int, tablero : Tablero, enemigo : "Jugador") -> list["P
     #Se va insertando cada una de las piezas en la lista que se devolverá.
     for pieza in piezas_ext:
         try:
-            if pieza in jug1.piezas or pieza in jug2.piezas:
+            if pieza in jugador.piezas or pieza in enemigo.piezas:
                 raise ErrorCrearPieza(pieza, "Se ha intentado crear una pieza que ya existe")
-            if any(p.posicion == pieza.posicion and p != pieza for p in jug1.piezas) or \
-                    any(p.posicion == pieza.posicion for p in jug2.piezas):
+            if any(p.posicion == pieza.posicion and p != pieza for p in jugador.piezas) or \
+                    any(p.posicion == pieza.posicion for p in enemigo.piezas):
                 raise ErrorCrearPieza(pieza, "Se ha intentado crear una pieza en una posición previamente ocupada")
         except ErrorCrearPieza as e:
             print(e)
@@ -250,10 +277,47 @@ def encontrar_pieza(jugador : "Jugador", origen : tuple[int]) -> Union["Pieza",N
     """
 
     for piezas in jugador.piezas:
-            if origen == tuple(piezas.posicion): #Si la posición d origen coeincide con el de la pieza.
+            if origen == tuple(piezas.posicion): #Si la posición de origen coincide con el de la pieza.
                 return piezas
 
     return None
+
+def detectar_pieza(san : str, jugador_actual : "Jugador") -> str:
+
+    origen = san[:2]
+
+    try:
+        if origen[0] in 'abcdefgh':
+            pieza = next((p for p in jugador_actual.piezas if traduccion_inversa(p.posicion[0], "columna") == origen[1]), None)
+
+            if not pieza:
+                raise ErrorPartida("No se ha encontrado la pieza de origen","traducir movimiento SAN")
+
+            coordenadas : str = traduccion_inversa(pieza.posicion)
+
+        elif origen[1] in '12345678' or (origen[1] in 'abcdefgh' and san[2] not in '12345678'):
+            piezas = [pieza for pieza in jugador_actual.piezas if str(pieza) == origen[0]]
+            if not piezas:
+                raise ErrorPartida("No se ha encontrado la pieza de origen","traducir movimiento SAN")
+
+            if not len(piezas) == 1:
+                posicion = 'fila' if origen[1] in '12345678' else 'columna'
+                pieza = next((p for p in piezas if traduccion_inversa(p.posicion[0], posicion) == origen[1]), None)
+
+                if not pieza:
+                    raise ErrorPartida("No se ha encontrado la pieza de origen", "traducir movimiento SAN")
+
+                coordenadas : str = traduccion_inversa(pieza.posicion)
+            else:
+                coordenadas: str = traduccion_inversa(piezas[0].posicion)
+        else:
+            coordenadas : str = ""
+
+    except ErrorPartida as e:
+        print(e)
+        return ''
+    else:
+        return coordenadas
 
 def comprobar_enroque(movimiento : tuple, jugador_actual : "Jugador", enemigo : "Jugador", tablero : "Tablero") -> (bool, "Torre"):
     """
@@ -425,6 +489,8 @@ def comprobar_movimiento(movimiento : tuple, jugador_actual : "Jugador", enemigo
         # Se inicializa su atributo movido si lo contiene.
         if str(pieza).upper() in ['K', 'R', 'P']:
             pieza.movido = True
+
+        #tablero.en_passant[0] = traduccion_inversa(tablero.en_passant[1])
         return True, pieza
 
 def comprobar_promocion(pieza : "Pieza", promocion : Union[str,int], jugador_actual : "Jugador", tablero : "Tablero") -> bool:
