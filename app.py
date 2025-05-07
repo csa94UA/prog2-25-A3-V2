@@ -1,3 +1,4 @@
+import random
 import requests
 
 TOKEN_API = "AQUIVAMITOKENEPICO"
@@ -7,16 +8,22 @@ BASE = "https://lichess.org/api"
 def movimiento_ia(fen : str) -> tuple[str, int] | str:
     parametros = {
         "fen": fen,
-        "multiPv": 1
+        "multiPv": 3
     }
-    r = requests.get(f"{BASE}/cloud-eval", headers=HEADERS, params=parametros)
-    r.raise_for_status()
-    data = r.json()
+    print(f'{BASE}/cloud-eval?fen={fen}&multiPv=3')
+    try:
+        r = requests.get(f"{BASE}/cloud-eval", headers=HEADERS, params=parametros)
+        r.raise_for_status()
+        data = r.json()
 
-    if "pvs" in data and data["pvs"]:
-        return data["pvs"][0]["moves"].split()[0]
+        movimientos = [entry["moves"].split()[0] for entry in data["pvs"]]
+
+    except requests.RequestException:
+        print("Problemas con movimiento IA Lichess: No se ha podido obtener su movimiento. Se procederá a consultar a StockFish")
+        return '404'
+
     else:
-        return "No se pudo obtener jugada de la IA.", 500
+        return random.choice(movimientos)
 
 def descargar_partida_en_json(game_id : str) -> dict:
     parametros = {

@@ -9,7 +9,7 @@ Clases:
 """
 from .casilla import Casilla
 #from Jugador import Jugador
-from typing import Union, Self
+from typing import Union, Self, Optional
 import threading
 import itertools
 import pygame
@@ -102,6 +102,7 @@ class Tablero:
                     continue
 
                 self[i][j].tranformacion_a_pieza(i, j, letra)
+                j += 1
 
 
         self.turno = 1 if fen[1] == 'w' else 0
@@ -144,12 +145,13 @@ class Tablero:
         """
 
         color: int = self.turno
-        filas = []
+        filas = ['  '.join(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'])]
 
         for i in range(8):
             fila = []
             for j in range(8):
                 fila.append(str(self.obtener_casilla(i, j, color)))
+                fila.append(f'  {8 - i}' if j == 7 else '')
             filas.append(' '.join(fila))
 
         return '\n'.join(filas)
@@ -327,8 +329,12 @@ class Tablero:
 
         fen += ' w ' if self.turno else ' b '
 
-        fen += 'KQ' if self.enroque[0] else ''
-        fen += 'kq' if self.enroque[1] else ''
+        enroque : str = ''
+
+        enroque += 'KQ' if self.enroque[0] else ''
+        enroque += 'kq' if self.enroque[1] else ''
+
+        fen += enroque if enroque != '' else '-'
 
         fen += ' - ' if self.en_passant is None else f' {self.en_passant[0]} '
 
@@ -480,8 +486,10 @@ class Tablero:
         for pieza in enemigo.piezas:
             if isinstance(pieza, Rey):
                 continue
+
             if (fila,columna) in pieza.movimiento_valido(self):
-                casillas.append((pieza.posicion, pieza))
+                if not (columna == pieza.posicion[1] and str(pieza).upper() == 'P'):
+                    casillas.append((pieza.posicion, pieza))
 
         return casillas
 
@@ -538,7 +546,10 @@ class Tablero:
             Devuelve si puede matar a dicha pieza.
         """
 
-        pieza_aux : "Pieza" = self[fila][columna].pieza
+        pieza_aux : Optional["Pieza"] = self[fila][columna].pieza
+        if pieza_aux is None:
+            return True
+
         indice : int = enemigo.piezas.index(pieza_aux)
         enemigo.piezas.remove(pieza_aux)
 

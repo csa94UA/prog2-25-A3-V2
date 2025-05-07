@@ -133,7 +133,7 @@ def traducir_movimiento_ia(mov : str) -> tuple[tuple, tuple, int] | tuple[tuple[
             0 if especial is None else especial[1].upper())
 
 
-def transformacion_a_LAN_hipersimplificado(mov : str) -> str:
+def transformacion_a_LAN_hipersimplificado(mov : str) -> list[str] | str | Any:
     """
     Función que permite transformar cualquier movimiento digitado en formato SAN al formato LAN hipersimplificado, pero
     ignora la posición de origen y la pieza que se mueve.
@@ -153,6 +153,12 @@ def transformacion_a_LAN_hipersimplificado(mov : str) -> str:
     if mov == '0-0-0' or mov == '0-0':
         return mov
 
+    if mov in ['e1g1','e1h1','e8g8','e8h8']:
+        return ['0-0',mov]
+
+    if mov in ['e1c1','e1a1','e8c8','e8a8']:
+        return ['0-0-0',mov]
+
     if '+' in mov_sep:
         mov_sep.remove('+')
 
@@ -168,6 +174,9 @@ def transformacion_a_LAN_hipersimplificado(mov : str) -> str:
             continue
 
         break
+
+    if mov_sep[-1].upper() in 'rnbq':
+        mov_sep.insert(-1,'=')
 
     mov : str = ''
     for letra in mov_sep:
@@ -190,9 +199,6 @@ def traduccion_posicion(posicion : str) -> tuple[int,int]:
     tuple[int,int]
         Devuelve la posición en coordenadas
     """
-
-    traduccion = {'a': 0, 'b': 1, 'c': 2, 'd': 3,
-                  'e': 4, 'f': 5, 'g': 6, 'h': 7}
 
     return traduccion[posicion[0]],int(posicion[1])
 

@@ -104,16 +104,22 @@ class Pieza(ABC):
         pos_ant_pieza : tuple[int,int] = self.posicion
         self.posicion = (x, y)
         tablero[pos_ant_pieza[0]][pos_ant_pieza[1]].pieza = None
-        
+
         pieza_enemgio = tablero[x][y].pieza
+        if pieza_enemgio is not None:
+            indice = enemigo.piezas.index(pieza_enemgio)
+
         tablero[x][y].pieza = self
-        if tablero.amenazas(enemigo,*pos_rey):
-            print("Error. Tu movimiento provoca o no impide un jaque")
-            tablero.restaurar_estado(tablero_antiguo)
-            return False
 
         if pieza_enemgio is not None and pieza_enemgio.posicion == self.posicion:
             enemigo.piezas.remove(pieza_enemgio)
+
+        if tablero.amenazas(enemigo,*pos_rey):
+            print("Error. Tu movimiento provoca o no impide un jaque")
+            tablero.restaurar_estado(tablero_antiguo)
+            if pieza_enemgio is not None and pieza_enemgio not in enemigo.piezas:
+                enemigo.piezas.insert(pieza_enemgio,indice)
+            return False
 
         if tablero.en_passant is not None and self.posicion == tablero.en_passant[1] and str(self) in ['P','p']:
             peon_enemigo = tablero[x + 1 if self.posicion else x - 1][y].pieza
@@ -125,7 +131,6 @@ class Pieza(ABC):
         if abs(pos_ant_pieza[0] - self.posicion[0]) == 2 and str(tablero[self.posicion[0]][self.posicion[1]]) in ['P','p']:
             en_passant : tuple[int,int] = (pos_ant_pieza[0] - 1 if self.color else pos_ant_pieza[0] + 1, self.posicion[1])
             tablero.en_passant = [traduccion_inversa(en_passant),en_passant]
-            print("En_passant: ", tablero.en_passant)
             return True
 
         tablero.en_passant = None

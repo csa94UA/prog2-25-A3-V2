@@ -33,18 +33,24 @@ Funciones:
     - comprobar_tablas(tablero : "Tablero", jugador_actual : "Jugador", enemigo : "Jugador") -> bool:
     Comprueba si se ha producido un empate (por el momento solo devuelve True si solo hay en el tablero los reyes).
 """
+import random
+from wsgiref.util import request_uri
 
 from Piezas import Caballo, Alfil, Rey, Reina, Peon, Torre, Pieza
 from Piezas.error_creacion_pieza import ErrorCrearPieza
 from Partidas.error_partidas import ErrorPartida
 from Jugador import Jugador
 from random import randint
-from typing import Union
+from typing import Union, Any
 from Partidas.aflabeto_FEN import digitar_movimiento, transformacion_a_LAN_hipersimplificado, traduccion_inversa, \
-    traducir_movimiento_ia
+    traducir_movimiento_ia, traduccion_posicion
 from Tablero import Tablero
 from app import movimiento_ia
+from stockfish import Stockfish
+import time
 
+stockfish = Stockfish(path="./stockeje", depth=10)
+stockfish.update_engine_parameters({"MultiPV": 5})
 
 def partida(jugador1 : Jugador, jugador2 : Jugador, bot : bool = False) -> Union["Jugador",None]:
     """
@@ -89,12 +95,7 @@ def partida(jugador1 : Jugador, jugador2 : Jugador, bot : bool = False) -> Union
 
         # Pedimos el movimiento del jugador / IA
         if jugador_actual.nombre == "StockFish" and bot:
-            print(tablero.traduccion_FEN(tablero.contador))
-            san = movimiento_ia(tablero.traduccion_FEN(tablero.contador))
-
-            lan_hipersimplificado = detectar_pieza(san, jugador_actual) + transformacion_a_LAN_hipersimplificado(san)
-
-            movimiento = traducir_movimiento_ia(lan_hipersimplificado)
+            movimiento = movimiento_digitado_por_IA(tablero, jugador_actual)
         else:
             movimiento = digitar_movimiento(jugador_actual.color)
 
@@ -105,10 +106,9 @@ def partida(jugador1 : Jugador, jugador2 : Jugador, bot : bool = False) -> Union
             # Si no se ha logrado evitar el jaque, se regresa al principio
             if not intento:
                 continue
-            act_en_passant = True
 
         # Comprobamos si quieren hacer enroque. Si es así se simula y se comprueba su validez
-        if type(movimiento[2]) == int and movimiento[2] in [1,2]:
+        if type(movimiento[2]) == int and movimiento[2] in [1,2] and not jaque:
 
             bandera, pieza = comprobar_enroque(movimiento, jugador_actual, enemigo, tablero)
 
@@ -122,7 +122,7 @@ def partida(jugador1 : Jugador, jugador2 : Jugador, bot : bool = False) -> Union
             act_en_passant = True
 
         # Busca la pieza en esa posicion. Si no la encuentra, dará un mensaje de error y repetirá el movimiento
-        if not(type(movimiento[2]) == int and movimiento[2] in [1,2]):
+        if not(type(movimiento[2]) == int and movimiento[2] in [1,2]) and not jaque:
             intento, pieza = comprobar_movimiento(movimiento, jugador_actual, enemigo, tablero)
 
             if not intento:
@@ -131,7 +131,7 @@ def partida(jugador1 : Jugador, jugador2 : Jugador, bot : bool = False) -> Union
         #En caso de que sea un peon y se haya digitado una promoción, debemos comprobar si es válida. En caso afirmativo
         #transformamos ese peon a la pieza deseada
 
-        if str(movimiento[2]).isalpha():
+        if str(movimiento[2]).isalpha() and not jaque:
 
             intento : bool = comprobar_promocion(pieza, movimiento[2], jugador_actual, tablero)
 
@@ -282,42 +282,51 @@ def encontrar_pieza(jugador : "Jugador", origen : tuple[int]) -> Union["Pieza",N
 
     return None
 
-def detectar_pieza(san : str, jugador_actual : "Jugador") -> str:
-
-    origen = san[:2]
-
+def movimiento_digitado_por_IA(tablero : "Tablero", jugador_actual : "Jugador") -> tuple:
     try:
-        if origen[0] in 'abcdefgh':
-            pieza = next((p for p in jugador_actual.piezas if traduccion_inversa(p.posicion[0], "columna") == origen[1]), None)
+        #lan = movimiento_ia(tablero.traduccion_FEN(tablero.contador))
+        #if lan == '404':
+        stockfish.set_fen_position(tablero.traduccion_FEN(tablero.contador))
+        lan : str = random.choice(stockfish.get_top_moves())['Move']
+        #time.sleep(1)
 
-            if not pieza:
-                raise ErrorPartida("No se ha encontrado la pieza de origen","traducir movimiento SAN")
-
-            coordenadas : str = traduccion_inversa(pieza.posicion)
-
-        elif origen[1] in '12345678' or (origen[1] in 'abcdefgh' and san[2] not in '12345678'):
-            piezas = [pieza for pieza in jugador_actual.piezas if str(pieza) == origen[0]]
-            if not piezas:
-                raise ErrorPartida("No se ha encontrado la pieza de origen","traducir movimiento SAN")
-
-            if not len(piezas) == 1:
-                posicion = 'fila' if origen[1] in '12345678' else 'columna'
-                pieza = next((p for p in piezas if traduccion_inversa(p.posicion[0], posicion) == origen[1]), None)
-
-                if not pieza:
-                    raise ErrorPartida("No se ha encontrado la pieza de origen", "traducir movimiento SAN")
-
-                coordenadas : str = traduccion_inversa(pieza.posicion)
-            else:
-                coordenadas: str = traduccion_inversa(piezas[0].posicion)
-        else:
-            coordenadas : str = ""
-
-    except ErrorPartida as e:
-        print(e)
-        return ''
+    except Exception:
+        print("Problemas con movimiento IA StockFish: No se ha podido obtener su movimiento. Se procederá a realizar un movimiento"
+              "aleatorio")
+        movimiento = movimimiento_aleatorio_IA(tablero, jugador_actual)
+        time.sleep(3)
+        return movimiento
     else:
-        return coordenadas
+        lan_hipersimplificado = comprobar_enroque_IA(transformacion_a_LAN_hipersimplificado(lan), tablero)
+        time.sleep(1)
+
+        movimiento = traducir_movimiento_ia(lan_hipersimplificado)
+
+        return movimiento
+
+def movimimiento_aleatorio_IA(tablero : "Tablero", jugador_actual : "Jugador") -> tuple[tuple, tuple, int] | tuple[
+    tuple[int, Any], tuple[int, Any], int | Any]:
+    promocion = ['R','N','B','Q'] if jugador_actual.color else ['r','n','b','q']
+
+    while True:
+        pieza = random.choice(jugador_actual.piezas)
+        movimientos : list = list(pieza.movimiento_valido(tablero))
+        if movimientos:
+            break
+
+    if str(pieza).upper() == 'K':
+        movimientos.append(((),(),1))
+        movimientos.append(((),(),2))
+
+    movimiento = random.choice(movimientos)
+
+    if str(pieza).upper() == 'P' and movimiento[0] in [0,7]:
+        return pieza.posicion, movimiento, random.choice(promocion)
+
+    if len(movimiento) == 3:
+        return movimiento
+
+    return pieza.posicion, movimiento, 0
 
 def comprobar_enroque(movimiento : tuple, jugador_actual : "Jugador", enemigo : "Jugador", tablero : "Tablero") -> (bool, "Torre"):
     """
@@ -446,6 +455,17 @@ def comprobar_mov_enroque(tablero : "Tablero", enemigo : "Jugador", rey : "Rey",
         print("Enroque exitoso")
 
         return True
+
+def comprobar_enroque_IA(san : list[str,str] | str, tablero : "Tablero") -> str:
+    if type(san) == str:
+        return san
+
+    posicion = traducir_movimiento_ia(san[1])[0]
+
+    if isinstance(tablero[posicion[0]][posicion[1]].pieza,Rey):
+        return san[0]
+
+    return san[1]
 
 def comprobar_movimiento(movimiento : tuple, jugador_actual : "Jugador", enemigo : "Jugador", tablero : "Tablero") -> (bool,"Pieza"):
     """
@@ -695,6 +715,12 @@ def comprobar_tablas(tablero : "Tablero", jugador_actual : "Jugador", enemigo : 
                 return False
 
 if __name__ == "__main__":
-    jug1 = Jugador("Carlos",1000)
-    jug2 = Jugador("Jorgis",2300)
-    partida(jug1,jug2)
+
+    jug1 = Jugador("StockFish",1000)
+    jug2 = Jugador("StockFish",2300)
+    partida(jug1, jug2, True)
+    """
+    print(Tablero.creacion_con_FEN('rnbqk2r/pp3ppp/5n2/3p4/1b2p3/2N3P1/PP1PPPBP/R1BQK1NR b KQkq - 0 14'))
+    stockfish.set_fen_position("rnbqk2r/pp3ppp/5n2/3p4/1b2p3/2N3P1/PP1PPPBP/R1BQK1NR b KQkq - 0 14")
+    print("Mejor movimiento:", stockfish.get_best_move())
+    """

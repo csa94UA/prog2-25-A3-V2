@@ -64,8 +64,13 @@ class Caballo(Pieza):
         movimientos = []
 
         for fila, columna in movimientos_posibles:
-            if tablero.limite(fila, columna) and not tablero[fila][columna].ocupado:
-                movimientos.append((fila,columna))
+            if not tablero.limite(fila, columna):
+                continue
+
+            if tablero[fila][columna].pieza is not None and tablero[fila][columna].pieza.color == self.color:
+                continue
+
+            movimientos.append((fila,columna))
 
         return movimientos
 

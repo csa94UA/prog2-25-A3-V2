@@ -83,6 +83,7 @@ class Casilla:
         simbolo : str
             Simbolo de la pieza.
         """
+        from Piezas import Caballo, Alfil, Rey, Torre, Reina, Peon
 
         match(simbolo.upper()):
             case 'K':
