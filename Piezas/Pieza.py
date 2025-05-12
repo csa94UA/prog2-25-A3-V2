@@ -79,8 +79,6 @@ class Pieza(ABC):
         bool
             Si la pieza ha logrado llegar a su destino
         """
-        pos_rey = jugador.encontrar_rey()
-
         x = destino[0]
         y = destino[1]
 
@@ -106,19 +104,24 @@ class Pieza(ABC):
         tablero[pos_ant_pieza[0]][pos_ant_pieza[1]].pieza = None
 
         pieza_enemgio = tablero[x][y].pieza
+        print("Enemigo: ",pieza_enemgio)
+        print("Victima: ",self)
         if pieza_enemgio is not None:
             indice = enemigo.piezas.index(pieza_enemgio)
 
         tablero[x][y].pieza = self
+        print(f"Tablero en {pos_ant_pieza[0]}, {pos_ant_pieza[1]}: ", tablero[pos_ant_pieza[0]][pos_ant_pieza[1]].pieza)
+        print(f"Tablero en {x}, {y}: ",tablero[x][y].pieza)
 
         if pieza_enemgio is not None and pieza_enemgio.posicion == self.posicion:
             enemigo.piezas.remove(pieza_enemgio)
 
-        if tablero.amenazas(enemigo,*pos_rey):
+        if tablero.amenazas(enemigo,*jugador.encontrar_rey()):
             print("Error. Tu movimiento provoca o no impide un jaque")
             tablero.restaurar_estado(tablero_antiguo)
             if pieza_enemgio is not None and pieza_enemgio not in enemigo.piezas:
-                enemigo.piezas.insert(pieza_enemgio,indice)
+                print("Pieza enemigo:", pieza_enemgio)
+                enemigo.piezas.insert(indice,pieza_enemgio)
             return False
 
         if tablero.en_passant is not None and self.posicion == tablero.en_passant[1] and str(self) in ['P','p']:

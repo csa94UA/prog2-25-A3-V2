@@ -22,7 +22,7 @@ def crear_partida() -> None:
         print("Credenciales invalidas")
         return None
 
-    opcion : str = input("Desea jugar contra la IA? (S/N)")
+    opcion : str = input("Desea jugar contra la IA? (S/N) ")
     if opcion.isalpha() and opcion.upper() in ['S','N']:
         jug2_nombre : str = "StockFish"
         bot = True
@@ -77,9 +77,11 @@ def acceder_elementos_api() -> None:
 
         match opcion:
             case 1:
-                usuario = input("Ingrese el nombre de usuario: ")
-                contraseña = input("Ingrese la contraseña: ")
-                respuesta = requests.post(f"{URL}/signup?user={usuario}&password={contraseña}")
+                usuario : str = input("Ingrese el nombre de usuario: ")
+                correo : str = input(f"Ingrese su correo electronico {usuario}: ")
+                pais : str = input("¿De qué país eres?: ")
+                contraseña : str = input("Ingrese la contraseña: ")
+                respuesta = requests.post(f"{URL}/signup?user={usuario}&password={contraseña}&email={correo}&pais={pais}")
                 print(f"Estado: {respuesta.status_code}.  {respuesta.text}")
             case 2:
                 usuario = input("Ingrese el nombre de usuario: ")
@@ -109,6 +111,7 @@ def acceder_elementos_api() -> None:
                 print(f"Estado: {respuesta.status_code}.  {respuesta.text}")
             case 8:
                 print("Volviendo al menú principal.")
+                requests.put(f"{URL}/save")
                 break
             case _:
                 print("Opción incorrecta o invalida")

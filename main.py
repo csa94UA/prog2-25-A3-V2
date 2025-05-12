@@ -1,36 +1,66 @@
 from flask import Flask, request
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required,get_jwt_identity, get_jwt
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
 import hashlib
 from typing import Union
+from Base_de_datos.base_datos import *
 
 app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = "ContraseñaSuperSecreta"
 jwt = JWTManager(app)
 
-users = {}
-data = {}
+users = cargar_usuarios()
+data = {
+    "Partidas_finalizadas" : cargar_partidas_finalizadas(),
+    "Partidas_sin_acabar" : cargar_patidas_sin_finalizar()
+}
 
 @app.route('/signup', methods=['POST'])
 def singup() -> tuple[str,int]:
-    user = request.args.get('user', '')
-    if user in users:
-        return f"Usuario {user} ya existe", 409
-    else:
-        contraseña = request.args.get('password', '')
-        hashed = hashlib.sha256(contraseña.encode()).hexdigest()
-        users[user] = hashed
-        return f"Usuario {user} registrado", 200
+    nombre = request.args.get('user')
+    contraseña = request.args.get('password')
+    correo = request.args.get('email')
+    pais = request.args.get('pais')
+
+    if not all([nombre, contraseña, correo, pais]):
+        return "Faltan campos", 400
+
+    if nombre in users["nombre"]:
+        return f"Usuario {nombre} ya existe", 409
+
+    hashed = hashlib.sha256(contraseña.encode()).hexdigest()
+    users.loc[3] = [3,nombre, hashed, correo]
+
+    return f"Usuario {nombre} registrado", 200
 
 @app.route('/login', methods=['GET'])
 def login():
-    user = request.args.get('user', '')
+    nombre = request.args.get('user', '')
     contraseña = request.args.get('password', '')
     hashed = hashlib.sha256(contraseña.encode()).hexdigest()
 
-    if user in users and users[user] == hashed:
-        return create_access_token(identity=user), 200
+    if not nombre or not contraseña:
+        return f"Faltan campos: nombre y/o contraseña",400
+
+    fila = users[users['nombre'] == nombre]
+
+    if fila.empty:
+        return "Usuario no encontrado", 404
+
+    contraseña = fila.iloc[0]['contraseña']
+
+    if contraseña == hashed:
+        return create_access_token(identity=nombre), 200
     else:
         return f"Usuario o contraseña incorrectos", 401
+
+@app.route('/save', methods=['PUT'])
+def save() -> None:
+    guardar_tablas(users, "usuarios")
+    guardar_tablas(data["Partidas_finalizadas"], "partidas_finalizadas")
+    guardar_tablas(data["Partidas_sin_acabar"], "partidas_sin_acabar")
+
+    return None
+
 
 @app.route('/data', methods=['GET'])
 @jwt_required()

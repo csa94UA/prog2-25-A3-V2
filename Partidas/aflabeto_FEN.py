@@ -44,7 +44,7 @@ def digitar_movimiento(color : int) -> None | tuple[tuple, tuple, int] | tuple[
     while True:
         try:
             #Pedimos al usuario que digite un movimiento
-            mov : str = input("\nDigite movimiento: \n")
+            mov : str = input("\nDigite movimiento (para detener partida digite parar y para rendirse digite fin): \n")
 
             #Si se digita un movimiento muy largo se considera invalido
             if len(mov) > 6:
@@ -53,6 +53,12 @@ def digitar_movimiento(color : int) -> None | tuple[tuple, tuple, int] | tuple[
         except ErrorPartida as e:
             print(e)
             continue
+
+        #Si digita que quiere irse temporalmente de la partida o se rinde
+        if mov.upper() == 'PARAR':
+            return (),(),3
+        if mov.upper() == 'FIN':
+            return (),(),4
 
         #Si se digitan enroques solo se devuelve su clave (2 es largo y 1 corto)
         if mov == '0-0-0':
@@ -175,7 +181,7 @@ def transformacion_a_LAN_hipersimplificado(mov : str) -> list[str] | str | Any:
 
         break
 
-    if mov_sep[-1].upper() in 'rnbq':
+    if mov_sep[-1].upper() in 'RNBQ':
         mov_sep.insert(-1,'=')
 
     mov : str = ''
@@ -213,5 +219,21 @@ def traduccion_inversa(posicion : Union[tuple[int,int], int], donde : Optional[s
 
     return columnas[posicion[1]] + str(8 - posicion[0])
 
+def traduccion_total_inversa(movimiento : tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]) -> str:
+    if str(movimiento[2]) in '12':
+        return '0-0-0' if movimiento[2] == 2 else '0-0'
+
+    inicio : str = traduccion_inversa(movimiento[0])
+    fin : str = traduccion_inversa(movimiento[1])
+    promocion : str = ''
+
+    if movimiento[2] != 0:
+        promocion = f'={movimiento[2]}'
+
+    return inicio + fin + promocion
+
 if __name__ == '__main__':
-    print(digitar_movimiento(0))
+    #print(traducir_movimiento_ia(transformacion_a_LAN_hipersimplificado(input("Movimiento: "))))
+    #print(digitar_movimiento(1))
+    print(traduccion_total_inversa(traducir_movimiento_ia(transformacion_a_LAN_hipersimplificado(input("Movimiento: ")))))
+    print(traduccion_total_inversa(digitar_movimiento(1)))

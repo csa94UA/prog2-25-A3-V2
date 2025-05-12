@@ -8,9 +8,8 @@ BASE = "https://lichess.org/api"
 def movimiento_ia(fen : str) -> tuple[str, int] | str:
     parametros = {
         "fen": fen,
-        "multiPv": 3
+        "multiPv": 5
     }
-    print(f'{BASE}/cloud-eval?fen={fen}&multiPv=3')
     try:
         r = requests.get(f"{BASE}/cloud-eval", headers=HEADERS, params=parametros)
         r.raise_for_status()
