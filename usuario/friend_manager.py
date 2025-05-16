@@ -6,7 +6,20 @@ from usuario.usuario import Usuario
 from juego.sesion_juego import SesionDeJuego # Todavía no implementado :P 
 from config import PATH_SOLICITUDES,PATH_RETOS
 
-def _ruta_retos(username): # Se dará uso para enviar retos de jugar partidas entre amigos
+def _ruta_retos(username: str) -> str:
+    """
+    Devuelve la ruta del archivo de retos del usuario.
+
+    Parámetros:
+    -----------
+    username : str
+        ID del usuario.
+
+    Retorna:
+    --------
+    str
+        Ruta al archivo JSON que contiene los retos pendientes.
+    """
     return os.path.join(PATH_RETOS, f"{username}.json")
 
 
@@ -17,7 +30,7 @@ def _ruta_solicitudes(username: str) -> str:
     Parámetros:
     -----------
     username : str
-        Nombre del usuario.
+        ID del usuario.
 
     Retorna:
     --------
@@ -246,3 +259,174 @@ def mostrar_amigos(usuario_id: str) -> Dict[str, Union[List[str], str, Dict[str,
             lista_amigos.append(datos_amigo.username)
 
     return {"amigos": lista_amigos}
+
+
+def enviar_reto_a_amigo(retador_username: str, username_amigo: str) -> None:
+    """
+    Envía un reto de partida al amigo especificado si no hay uno pendiente.
+
+    Parámetros:
+    -----------
+    retador_username : str
+        Nombre del usuario que envía el reto.
+    username_amigo : str
+        Nombre del amigo que recibirá el reto.
+
+    Retorna:
+    --------
+    None
+
+    Lanza:
+    ------
+    ValueError
+        Si el usuario se reta a sí mismo, el amigo no existe, no son amigos,
+        o ya se ha enviado un reto previamente.
+    """
+    if username_amigo == retador_username:
+        raise ValueError("No puedes retarte a ti mismo.")
+
+    retador: Optional[Usuario] = Usuario.cargar_por_username(retador_username)
+    amigo: Optional[Usuario] = Usuario.cargar_por_username(username_amigo)
+
+    if not retador or not amigo:
+        raise ValueError("El usuario no existe.")
+
+    if amigo.user_id not in retador.amigos:
+        raise ValueError("Este usuario no es tu amigo.")
+
+    ruta: str = _ruta_retos(amigo.user_id)
+    retos: List[Dict[str, str]] = []
+
+    # Leer retos existentes si hay archivo
+    if os.path.exists(ruta):
+        with open(ruta, "r", encoding="utf-8") as f:
+            retos = json.load(f)
+
+    if any(r["user_id"] == retador.user_id for r in retos):
+        raise ValueError("Ya has enviado un reto a este usuario.")
+
+    retos.append({
+        "retador": retador.username,
+        "user_id": retador.user_id
+    })
+
+    with open(ruta, "w", encoding="utf-8") as f:
+        json.dump(retos, f, indent=4)
+
+
+def aceptar_reto(usuario_username: str, retador_username: str) -> SesionDeJuego:
+    """
+    Acepta un reto enviado por otro usuario e inicia una sesión de juego.
+
+    Parámetros:
+    -----------
+    usuario_username : str
+        Nombre de usuario que acepta el reto.
+    retador_username : str
+        Nombre del usuario que envió el reto.
+
+    Retorna:
+    --------
+    SesionDeJuego
+        Instancia de la sesión de juego entre el usuario y el retador.
+
+    Lanza:
+    ------
+    ValueError
+        Si alguno de los usuarios no existe, no hay retos o no se encuentra el reto especificado.
+    """
+    usuario: Optional[Usuario] = Usuario.cargar_por_username(usuario_username)
+    retador: Optional[Usuario] = Usuario.cargar_por_username(retador_username)
+
+    if not usuario:
+        raise ValueError("El usuario no existe.")
+    if not retador:
+        raise ValueError("El retador no existe.")
+
+    ruta: str = _ruta_retos(usuario.user_id)
+    if not os.path.exists(ruta):
+        raise ValueError("No tienes retos pendientes.")
+
+    with open(ruta, "r", encoding="utf-8") as f:
+        retos: List[Dict[str, str]] = json.load(f)
+
+    seleccionado = next((r for r in retos if r["user_id"] == retador.user_id), None)
+
+    if not seleccionado:
+        raise ValueError("No se encontró el reto del usuario especificado.")
+    
+    # Eliminar el reto aceptado del archivo
+    retos.remove(seleccionado)
+    with open(ruta, "w", encoding="utf-8") as f:
+        json.dump(retos, f, indent=4)
+
+    return SesionDeJuego(retador, usuario)
+
+
+def rechazar_reto(usuario_username: str, retador_username: str) -> None:
+    """
+    Rechaza un reto pendiente de otro usuario.
+
+    Parámetros:
+    -----------
+    usuario_username : str
+        Nombre del usuario que rechaza el reto.
+    retador_username : str
+        Nombre del usuario que envió el reto.
+
+    Lanza:
+    ------
+    ValueError
+        Si alguno de los usuarios no existe, no hay retos o no se encuentra el reto.
+    """
+    usuario: Optional[Usuario] = Usuario.cargar_por_username(usuario_username)
+    retador: Optional[Usuario] = Usuario.cargar_por_username(retador_username)
+
+    if not usuario:
+        raise ValueError("El usuario no existe.")
+    if not retador:
+        raise ValueError("El retador no existe.")
+
+    ruta: str = _ruta_retos(usuario.user_id)
+    if not os.path.exists(ruta):
+        raise ValueError("No tienes retos pendientes.")
+
+    with open(ruta, "r", encoding="utf-8") as f:
+        retos: List[Dict[str, str]] = json.load(f)
+
+    seleccionado = next((r for r in retos if r["user_id"] == retador.user_id), None)
+
+    if not seleccionado:
+        raise ValueError("No se encontró el reto del usuario especificado.")
+
+    # Eliminar el reto rechazado del archivo
+    retos.remove(seleccionado)
+    with open(ruta, "w", encoding="utf-8") as f:
+        json.dump(retos, f, indent=4)
+
+
+def obtener_retos(username: str) -> List[Dict[str, str]]:
+    """
+    Devuelve la lista de retos pendientes para un usuario.
+
+    Parámetros:
+    -----------
+    username : str
+        Nombre de usuario.
+
+    Retorna:
+    --------
+    List[Dict[str, str]]
+        Lista de retos pendientes con datos de los retadores.
+        Si no hay archivo, se retorna una lista vacía.
+    """
+    user: Optional[Usuario] = Usuario.cargar_por_username(username)
+    if not user:
+        return []
+
+    ruta: str = _ruta_retos(user.user_id)
+    if not os.path.exists(ruta):
+        return []
+
+    with open(ruta, "r", encoding="utf-8") as f:
+        return json.load(f)
