@@ -1,1 +1,3 @@
-PATH_PARTIDAS = "data/partidas"
+PATH_PARTIDAS:str = "data/partidas"
+
+PATH_USUARIOS: str = "data/usuarios"
