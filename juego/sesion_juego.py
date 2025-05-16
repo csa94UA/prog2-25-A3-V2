@@ -12,7 +12,7 @@ from juego.validador_movimiento import ValidadorMovimiento
 from utiles.file_menager import guardar_partida
 from utiles.elo import calcular_elo
 from usuario.usuario import Usuario
-
+from juego.usuarioIA import UsuarioIA
 
 class SesionDeJuego:
     """
@@ -58,14 +58,14 @@ class SesionDeJuego:
         self.ganador: Optional[str] = None
         self.movimientos: list = []
 
-    def jugar_turno(self, entrada: Union[str, Tuple[Tuple[int, int], Tuple[int, int]]]) -> Dict[str, Any]:
+    def jugar_turno(self, entrada: Union[str, Tuple[Tuple[int, int], Tuple[int, int]]] = None) -> Dict[str, Any]:
         """
-        Ejecuta un turno con la entrada dada.
+        Ejecuta un turno con la entrada dada. Si es el turno de una IA, se genera el movimiento automáticamente.
 
         Parámetros:
         -----------
-        entrada : str o tupla de dos tuplas de ints
-            Puede ser "abandono" para rendirse o un movimiento (origen, destino).
+        entrada : Union[str, Tuple[Tuple[int, int], Tuple[int, int]]], opcional
+            Movimiento del jugador (origen, destino) o "abandono". Si el jugador es una IA, este parámetro se ignora.
 
         Retorna:
         --------
@@ -74,6 +74,11 @@ class SesionDeJuego:
         """
         if self.terminado:
             return {"error": "La partida ya ha terminado."}
+
+        jugador_actual = self.jugador_blanco if self.turno_actual == "blanco" else self.jugador_negro
+
+        if isinstance(jugador_actual, UsuarioIA):
+            entrada = jugador_actual.elegir_movimiento(self.tablero, self.turno_actual)
 
         if entrada == "abandono":
             return self.rendirse(self.turno_actual)
@@ -86,7 +91,7 @@ class SesionDeJuego:
 
         if not self.validador.movimiento_es_legal(origen, destino, self.turno_actual):
             return {"error": "Movimiento ilegal."}
-
+        
         pieza_destino = self.tablero.casillas[destino[0]][destino[1]]
         self.tablero.mover_pieza((origen, destino))
 
