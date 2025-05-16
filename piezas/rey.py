@@ -45,6 +45,7 @@ class Rey(Pieza):
         """
         super().__init__(color)
         self.se_ha_movido = False
+        self.valor = 1000000 # Valor amuy elevado para similar el infinito
 
     def simbolo(self):
         """

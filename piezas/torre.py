@@ -41,6 +41,7 @@ class Torre(Pieza):
         """
         super().__init__(color)
         self.se_ha_movido = False
+        self.valor = 5.63 # Valor asignado por AlphaZero
 
     def simbolo(self):
         """

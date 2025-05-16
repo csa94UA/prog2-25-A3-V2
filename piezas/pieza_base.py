@@ -113,7 +113,6 @@ class Pieza(ABC):
         """
         clase = self.__class__
         clon = clase(self.color)
-        clon.valor = self.valor
         if hasattr(self, 'se_ha_movido'):
             clon.se_ha_movido = self.se_ha_movido
         return clon

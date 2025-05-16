@@ -29,6 +29,7 @@ class Peon(Pieza):
         """
         super().__init__(color)
         self.se_ha_movido = False
+        self.valor = 1 # Valor básico en todos los sistemas
 
     def simbolo(self) -> str:
         """
