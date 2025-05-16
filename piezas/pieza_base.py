@@ -63,7 +63,7 @@ class Pieza(ABC):
         evitar_jaque : bool, opcional
             Si es True, filtra los movimientos que dejarían al rey en jaque.
         noatacando : bool, opcional
-            Si es True, devuelve movimientos que no impliquen ataques (por ejemplo, para validar protecciones).
+            Variable con única función permitir obtener los verdaderos movimientos ofensivos (el peon no captura hacia delante pero si se mueve en esa dirección).
 
         Retorna:
         --------
