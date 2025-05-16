@@ -10,7 +10,7 @@ Clase:
 
 import json
 from Base_de_datos.operacoines_pandas import upsert_en_curso, finalize_to_csv
-from Base_de_datos.operaciones_sqlite import insert_partida_and_moves
+from Base_de_datos.operaciones_sqlite import añadir_partida_y_movimientos
 from datetime import datetime
 import os
 
@@ -28,17 +28,29 @@ class GuardarPartida:
 
         os.makedirs(DIR_JSON, exist_ok=True)
         self.json_path = os.path.join(DIR_JSON, f"{self.game_id}_temp.json")
+        print("En curso: ", en_curso)
         if not en_curso:
+            print(self.jugadas)
             upsert_en_curso(self.game_id, self.blancas_id, self.negras_id, fen=self.jugadas[-1][1] if self.jugadas else "", turno=0, ultimo_mov="")
-
-            os.makedirs(DIR_JSON, exist_ok=True)
-            self.json_path = os.path.join(DIR_JSON, f"{self.game_id}_temp.json")
             self._guardar_json()
+        else:
+            self.cargar_partida_intermedia()
 
     def __iadd__(self, other: tuple[str, str]):
         self.jugadas.append(other)
         self._guardar_json()
         return self
+
+    def cargar_partida_intermedia(self) -> None:
+        with open(self.json_path, 'rb') as lectura:
+            mucho_bit = lectura.read()
+            mucho_texto = mucho_bit.decode('utf-8')
+            carga = json.loads(mucho_texto)
+            movimientos = carga['movimientos']
+
+        self.jugadas = [(caso['lan'], caso['fen']) for caso in movimientos]
+
+        return None
 
     def agregar_turno(self, mov_LAN: str, fen: str, turno: int):
         self += (mov_LAN, fen)
@@ -53,7 +65,7 @@ class GuardarPartida:
         finalize_to_csv(self.game_id, self.resultado)
 
         movimientos = [(i + 1, lan, fen) for i, (lan, fen) in enumerate(self.jugadas)]
-        insert_partida_and_moves(self.blancas_id, self.negras_id, self.resultado, duracion, movimientos)
+        añadir_partida_y_movimientos(self.blancas_id, self.negras_id, self.resultado, duracion, movimientos)
 
     def resultado_partida(self, resultado : str) -> None:
         self.resultado = resultado

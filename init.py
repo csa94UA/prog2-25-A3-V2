@@ -1,28 +1,31 @@
 import sqlite3
 from Base_de_datos.operaciones_sqlite import insertar_usuario
 import hashlib
+import os
 
 DIR_DATOS = "./Base_de_datos/datos"
 
 def inicializar_bd():
+    os.makedirs(DIR_DATOS, exist_ok=True)
+
     crear_tabla_usuarios()
     crear_tabla_partidas()
     crear_tabla_movimientos()
     crear_tabla_estadisticas()
 
-    contraseña = '123'
-    insertar_usuario("Julio","julio.srp@gmail.com", hashlib.sha256(contraseña.encode()).hexdigest(), "España")
+    insertar_usuario("Julio","julio.srp@gmail.com",hashlib.sha256("123".encode()).hexdigest(), "España")
+    insertar_usuario("Jorge", "susybaka@gmail.com", hashlib.sha256("69".encode()).hexdigest(), "Cataluña")
 
 def crear_tabla_usuarios():
     conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
+    conn.execute('PRAGMA foreign_keys = ON')
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS usuarios (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nombre TEXT NOT NULL UNIQUE,
+            nombre TEXT PRIMARY KEY,
             correo TEXT NOT NULL,
             contraseña TEXT NOT NULL,
-            elo INTEGER DEFAULT 1500,
+            elo INTEGER DEFAULT 300,
             pais TEXT
         )
     ''')
@@ -31,16 +34,17 @@ def crear_tabla_usuarios():
 
 def crear_tabla_partidas():
     conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
+    conn.execute('PRAGMA foreign_keys = ON')
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS partidas (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            jugador_blanco INTEGER NOT NULL,
-            jugador_negro INTEGER NOT NULL,
+            nombre_partida TEXT PRIMARY KEY,
+            jugador_blanco TEXT NOT NULL,
+            jugador_negro TEXT NOT NULL,
             resultado TEXT,
             duracion INTEGER,
-            FOREIGN KEY(jugador_blanco) REFERENCES usuarios(id),
-            FOREIGN KEY(jugador_negro) REFERENCES usuarios(id)
+            FOREIGN KEY(jugador_blanco) REFERENCES usuarios(nombre) ON DELETE CASCADE,
+            FOREIGN KEY(jugador_negro) REFERENCES usuarios(nombre) ON DELETE CASCADE
         )
     ''')
     conn.commit()
@@ -48,15 +52,16 @@ def crear_tabla_partidas():
 
 def crear_tabla_movimientos():
     conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
+    conn.execute('PRAGMA foreign_keys = ON')
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS movimientos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            partida_id INTEGER NOT NULL,
+            partida_id TEXT NOT NULL,
             numero_jugada INTEGER,
             movimiento_LAN TEXT,
             fen TEXT,
-            FOREIGN KEY(partida_id) REFERENCES partidas(id)
+            FOREIGN KEY(partida_id) REFERENCES partidas(nombre_partida) ON DELETE CASCADE
         )
     ''')
     conn.commit()
@@ -64,6 +69,7 @@ def crear_tabla_movimientos():
 
 def crear_tabla_estadisticas():
     conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
+    conn.execute('PRAGMA foreign_keys = ON')
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS estadisticas (
@@ -73,10 +79,8 @@ def crear_tabla_estadisticas():
             tablas INTEGER DEFAULT 0,
             mejores_aperturas TEXT,
             peor_apertura TEXT,
-            FOREIGN KEY(usuario_id) REFERENCES usuarios(id)
+            FOREIGN KEY(usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
         )
     ''')
     conn.commit()
     conn.close()
-
-inicializar_bd()

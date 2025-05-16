@@ -105,7 +105,7 @@ class Tablero:
                 j += 1
 
 
-        self.turno = 1 if fen[1] == 'w' else 0
+        self.turno = 0 if fen[1] == 'w' else 1
         if fen[2] == '':
             self.enroque = None
         else:
@@ -116,7 +116,7 @@ class Tablero:
         else:
             self.en_passant = (fen[3],traduccion_posicion(fen[3]))
 
-        self.contador = int(fen[4])
+        self.contador = int(fen[5])
 
         return self
 

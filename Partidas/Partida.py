@@ -40,17 +40,16 @@ from Piezas import Caballo, Alfil, Rey, Reina, Peon, Torre, Pieza
 from Piezas.error_creacion_pieza import ErrorCrearPieza
 from Partidas.error_partidas import ErrorPartida
 from Jugador import Jugador
-from random import randint
 from Base_de_datos.guardar_partida import GuardarPartida
 from typing import Union, Any
 from Partidas.aflabeto_FEN import digitar_movimiento, transformacion_a_LAN_hipersimplificado, traducir_movimiento_ia, \
     traduccion_total_inversa
 from Tablero import Tablero
-from app import movimiento_ia
+from Lichess import movimiento_ia
 from stockfish import Stockfish
 import time
 
-stockfish = Stockfish(path="./stockeje", depth=10)
+stockfish = Stockfish(path="./Partidas/stockeje", depth=10)
 stockfish.update_engine_parameters({"MultiPV": 5})
 DIR_DATOS = "Base_de_datos/datos/"
 mov_LAN = ''
@@ -82,7 +81,7 @@ def partida(jugador1 : Jugador, jugador2 : Jugador, /, bot : bool = False,*, en_
     if en_curso:
         cargado, tablero = inicializacion_partida_en_curso(jugador1, jugador2, tablero)
         jaque = True if tablero.amenazas(jugador2, *jugador1.encontrar_rey()) else False
-        turno = 1
+        turno = tablero.turno
         if not cargado:
             return None
     else:
@@ -112,7 +111,6 @@ def partida(jugador1 : Jugador, jugador2 : Jugador, /, bot : bool = False,*, en_
             movimiento = movimiento_digitado_por_IA(tablero, jugador_actual)
         else:
             movimiento = digitar_movimiento(jugador_actual.color)
-            mov_LAN = traduccion_total_inversa(movimiento)
 
         # Si el jugador quiere salir de la partida
         if type(movimiento[2]) == int and movimiento[2] == 3:
@@ -124,6 +122,8 @@ def partida(jugador1 : Jugador, jugador2 : Jugador, /, bot : bool = False,*, en_
             print(f"{jugador_actual.nombre} decide rendirse")
             jugador_actual = enemigo
             break
+
+        mov_LAN = traduccion_total_inversa(movimiento)
 
         # Si el jugador actual está en jaque se procede a efectuar el caso especial de jaque.
         if jaque:
@@ -172,6 +172,7 @@ def partida(jugador1 : Jugador, jugador2 : Jugador, /, bot : bool = False,*, en_
         # Si está en jaque y resulta que no se puede evitar, entonces se termina la partida.
         if jaque and tablero.jaque_in(rey.posicion[0], rey.posicion[1], enemigo, jugador_actual):
             save_partida.agregar_turno(mov_LAN, tablero.traduccion_FEN(tablero.contador), tablero.turno)
+            tablero.contador += 1
             break
 
         turno = 1 - turno
@@ -194,8 +195,7 @@ def partida(jugador1 : Jugador, jugador2 : Jugador, /, bot : bool = False,*, en_
 
     return jugador_actual
 
-def inicializacion_partida_en_curso(jugador1 : "Jugador", jugador2 : "Jugador", tablero : "Tablero") -> tuple[
-    bool, Tablero]:
+def inicializacion_partida_en_curso(jugador1 : "Jugador", jugador2 : "Jugador", tablero : "Tablero") -> tuple[bool, Tablero]:
 
     try:
         if not os.path.exists(f"{DIR_DATOS}en_curso.csv"):
@@ -221,34 +221,36 @@ def inicializacion_partida_en_curso(jugador1 : "Jugador", jugador2 : "Jugador", 
             match str(pieza):
                 case 'P':
                     if jugador1.color:
-                        jugador1.piezas.append(Peon((i,j),1))
+                        jugador1.piezas.append(tablero[i][j].pieza)
                     else:
-                        jugador2.piezas.append(Peon((i,j),1))
+                        jugador2.piezas.append(tablero[i][j].pieza)
                 case 'B':
                     if jugador1.color:
-                        jugador1.piezas.append(Alfil((i,j),1))
+                        jugador1.piezas.append(tablero[i][j].pieza)
                     else:
-                        jugador2.piezas.append(Alfil((i,j),1))
+                        jugador2.piezas.append(tablero[i][j].pieza)
                 case 'R':
                     if jugador1.color:
-                        jugador1.piezas.append(Torre((i,j),1))
+                        jugador1.piezas.append(tablero[i][j].pieza)
                     else:
-                        jugador2.piezas.append(Torre((i,j),1))
+                        jugador2.piezas.append(tablero[i][j].pieza)
                 case 'N':
                     if jugador1.color:
-                        jugador1.piezas.append(Caballo((i,j),1))
+                        jugador1.piezas.append(tablero[i][j].pieza)
                     else:
-                        jugador2.piezas.append(Caballo((i,j),1))
+                        jugador2.piezas.append(tablero[i][j].pieza)
                 case 'Q':
                     if jugador1.color:
-                        jugador1.piezas.append(Reina((i,j),1))
+                        jugador1.piezas.append(tablero[i][j].pieza)
                     else:
-                        jugador2.piezas.append(Reina((i,j),1))
+                        jugador2.piezas.append(tablero[i][j].pieza)
                 case 'K':
                     if jugador1.color:
-                        jugador1.piezas.append(Rey((i,j),1,jugador2))
+                        jugador1.piezas.append(tablero[i][j].pieza)
+                        tablero[i][j].pieza.enemigo = jugador2
                     else:
-                        jugador2.piezas.append(Rey((i,j),1,jugador1))
+                        jugador2.piezas.append(tablero[i][j].pieza)
+                        tablero[i][j].pieza.enemigo = jugador1
                 case _:
                     raise ErrorPartida(f"No se ha podido guardar una pieza blanca {pieza}({i},{j})",
                        "cargar piezas de partida intermedia")
@@ -257,34 +259,36 @@ def inicializacion_partida_en_curso(jugador1 : "Jugador", jugador2 : "Jugador", 
             match str(pieza):
                 case 'p':
                     if jugador1.color == 0:
-                        jugador1.piezas.append(Peon((i, j), 0))
+                        jugador1.piezas.append(tablero[i][j].pieza)
                     else:
-                        jugador2.piezas.append(Peon((i, j), 0))
+                        jugador2.piezas.append(tablero[i][j].pieza)
                 case 'b':
                     if jugador1.color == 0:
-                        jugador1.piezas.append(Alfil((i, j), 0))
+                        jugador1.piezas.append(tablero[i][j].pieza)
                     else:
-                        jugador2.piezas.append(Alfil((i, j), 0))
+                        jugador2.piezas.append(tablero[i][j].pieza)
                 case 'r':
                     if jugador1.color == 0:
-                        jugador1.piezas.append(Torre((i, j), 0))
+                        jugador1.piezas.append(tablero[i][j].pieza)
                     else:
-                        jugador2.piezas.append(Torre((i, j), 0))
+                        jugador2.piezas.append(tablero[i][j].pieza)
                 case 'n':
                     if jugador1.color == 0:
-                        jugador1.piezas.append(Caballo((i, j), 0))
+                        jugador1.piezas.append(tablero[i][j].pieza)
                     else:
-                        jugador2.piezas.append(Caballo((i, j), 0))
+                        jugador2.piezas.append(tablero[i][j].pieza)
                 case 'q':
                     if jugador1.color == 0:
-                        jugador1.piezas.append(Reina((i, j), 0))
+                        jugador1.piezas.append(tablero[i][j].pieza)
                     else:
-                        jugador2.piezas.append(Reina((i, j), 0))
+                        jugador2.piezas.append(tablero[i][j].pieza)
                 case 'k':
                     if jugador1.color == 0:
-                        jugador1.piezas.append(Rey((i, j), 0, jugador2))
+                        jugador1.piezas.append(tablero[i][j].pieza)
+                        tablero[i][j].pieza.enemigo = jugador2
                     else:
-                        jugador2.piezas.append(Rey((i, j), 0, jugador1))
+                        jugador2.piezas.append(tablero[i][j].pieza)
+                        tablero[i][j].pieza.enemigo = jugador1
                 case _:
                     raise ErrorPartida(f"No se ha podido guardar una pieza negra {pieza}({i},{j})",
                                        "cargar piezas de partida intermedia")
@@ -316,13 +320,9 @@ def inicializacion_partida(jugador1 : "Jugador", jugador2 : "Jugador", tablero :
         Retorna la inicialización de la variable jaque y el turno del jugador, siendo 1 turno de blancas y 0 el de negras.
     """
 
-    # Establecemos un inicio de turno aleatorio
-    if randint(0, 1000) < 499:
-        jugador1.color = 1
-        jugador2.color = 0
-    else:
-        jugador2.color = 1
-        jugador1.color = 0
+    # Establecemos los colores
+    jugador1.color = 1
+    jugador2.color = 0
 
     # Insertamos las piezas en el tablero y en el inventario del jugador
     jugador1.piezas = crear_piezas(jugador1.color, tablero, jugador1, jugador2)
@@ -419,7 +419,6 @@ def encontrar_pieza(jugador : "Jugador", origen : tuple[int]) -> Union["Pieza",N
     return None
 
 def movimiento_digitado_por_IA(tablero : "Tablero", jugador_actual : "Jugador") -> tuple:
-    global mov_LAN
     try:
         lan = movimiento_ia(tablero.traduccion_FEN(tablero.contador))
         if lan == '404':
@@ -430,14 +429,10 @@ def movimiento_digitado_por_IA(tablero : "Tablero", jugador_actual : "Jugador") 
         print("Problemas con movimiento IA StockFish: No se ha podido obtener su movimiento. Se procederá a realizar un movimiento"
               "aleatorio")
         movimiento = movimimiento_aleatorio_IA(tablero, jugador_actual)
-        mov_LAN = traduccion_total_inversa(movimiento)
-        print(mov_LAN)
         time.sleep(3)
         return movimiento
     else:
         lan_hipersimplificado = comprobar_enroque_IA(transformacion_a_LAN_hipersimplificado(lan), tablero)
-        mov_LAN = lan_hipersimplificado
-        print(mov_LAN)
         time.sleep(1)
 
         movimiento = traducir_movimiento_ia(lan_hipersimplificado)
@@ -854,10 +849,14 @@ def comprobar_tablas(tablero : "Tablero", jugador_actual : "Jugador", enemigo : 
                 return False
 
 if __name__ == "__main__":
-
+    """
     jug1 = Jugador("StockFish",1000)
     jug2 = Jugador("StockFish",2300)
     partida(jug1, jug2, True, en_curso=True)
+    """
+    jug1 = Jugador("Jorgis",1412)
+    jug2 = Jugador("Carlitos",1032)
+    partida(jug1, jug2, en_curso=False)
     """
     print(Tablero.creacion_con_FEN('rnbqk2r/pp3ppp/5n2/3p4/1b2p3/2N3P1/PP1PPPBP/R1BQK1NR b KQkq - 0 14'))
     stockfish.set_fen_position("rnbqk2r/pp3ppp/5n2/3p4/1b2p3/2N3P1/PP1PPPBP/R1BQK1NR b KQkq - 0 14")
