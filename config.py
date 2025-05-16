@@ -1,0 +1,1 @@
+PATH_PARTIDAS = "data/partidas"

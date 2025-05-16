@@ -10,7 +10,12 @@ Clases:
 """
 
 from typing import List, Optional, Tuple, Dict, Union
-
+from piezas.peon import Peon
+from piezas.torre import Torre
+from piezas.caballo import Caballo
+from piezas.alfil import Alfil
+from piezas.reina import Reina
+from piezas.rey import Rey
 
 class Tablero:
     """
@@ -51,27 +56,56 @@ class Tablero:
     def colocar_piezas_iniciales(self) -> None:
         """
         Coloca las piezas en sus posiciones iniciales en el tablero.
-
-        (Este método debe ser implementado en otro momento).
         """
-        pass
+        self.casillas[7][0] = Torre("blanco")
+        self.casillas[7][1] = Caballo("blanco")
+        self.casillas[7][2] = Alfil("blanco")
+        self.casillas[7][3] = Reina("blanco")
+        self.casillas[7][4] = Rey("blanco")
+        self.casillas[7][5] = Alfil("blanco")
+        self.casillas[7][6] = Caballo("blanco")
+        self.casillas[7][7] = Torre("blanco")
+        for col in range(8):
+            self.casillas[6][col] = Peon("blanco")
+        self.casillas[0][0] = Torre("negro")
+        self.casillas[0][1] = Caballo("negro")
+        self.casillas[0][2] = Alfil("negro")
+        self.casillas[0][3] = Reina("negro")
+        self.casillas[0][4] = Rey("negro")
+        self.casillas[0][5] = Alfil("negro")
+        self.casillas[0][6] = Caballo("negro")
+        self.casillas[0][7] = Torre("negro")
+        for col in range(8):
+            self.casillas[1][col] = Peon("negro")
 
     def mover_pieza(
-        self, origenydestino: Tuple[Tuple[int, int], Tuple[int, int]]
+        self,
+        origenydestino: Tuple[Tuple[int, int], Tuple[int, int]],
+        promocion: Optional[str] = None
     ) -> Dict[str, Union[bool, str, Tuple[int, int]]]:
         """
-        Mueve una pieza en el tablero desde la posición de origen hasta el destino, validando la legalidad.
+        Intenta mover una pieza del tablero desde una posición de origen a una de destino,
+        validando la legalidad del movimiento, incluyendo enroque, captura al paso y promoción.
 
         Parámetros:
         -----------
         origenydestino : Tuple[Tuple[int, int], Tuple[int, int]]
             Coordenadas de origen y destino del movimiento.
 
+        promocion : Optional[str]
+            En caso de que se requiera promoción de peón, especifica la pieza deseada ("dama", "torre", "alfil", "caballo").
+
         Retorna:
         --------
         Dict[str, Union[bool, str, Tuple[int, int]]]
-            Diccionario que indica si el movimiento fue exitoso y detalles relevantes.
+            Diccionario con información sobre el resultado del movimiento:
+                - "exito": bool
+                - "error": str, si hubo fallo
+                - "requiere_promocion": bool, si se necesita seleccionar pieza para promoción
+                - "pieza": str, nombre de la pieza movida
+                - "origen" y "destino": coordenadas
         """
+
         origen, destino = origenydestino
         fila_origen, col_origen = origen
         fila_destino, col_destino = destino
@@ -86,11 +120,24 @@ class Tablero:
         if (fila_destino, col_destino) not in movimientos_validos:
             return {"exito": False, "error": "Movimiento no válido para la pieza."}
 
-        # Enroque (sin implementar)
-        pass
+        # Enroque
+        if isinstance(pieza, Rey) and abs(col_destino - col_origen) == 2:
+            fila = fila_origen
+            if col_destino == 6:  # Enroque corto
+                torre = self.casillas[fila][7]
+                self.casillas[fila][5] = torre
+                self.casillas[fila][7] = None
+                torre.se_ha_movido = True
+            elif col_destino == 2:  # Enroque largo
+                torre = self.casillas[fila][0]
+                self.casillas[fila][3] = torre
+                self.casillas[fila][0] = None
+                torre.se_ha_movido = True
 
-        # Captura al paso (sin implementar)
-        pass
+        # Captura al paso
+        if isinstance(pieza, Peon) and col_origen != col_destino and self.casillas[fila_destino][col_destino] is None:
+            fila_captura = fila_origen
+            self.casillas[fila_captura][col_destino] = None
 
         # Movimiento normal
         self.casillas[fila_destino][col_destino] = pieza
@@ -99,8 +146,18 @@ class Tablero:
         if hasattr(pieza, "se_ha_movido"):
             pieza.se_ha_movido = True
 
-        # Promoción de peón (sin implementar)
-        pass
+        # Promoción de peón
+        if isinstance(pieza, Peon):
+            if (pieza.color == "blanco" and fila_destino == 0) or (pieza.color == "negro" and fila_destino == 7):
+                if promocion is None:
+                    return {
+                        "exito": False,
+                        "error": "Se requiere una pieza para promoción: dama, torre, alfil o caballo.",
+                        "requiere_promocion": True
+                    }
+                resultado_promocion = self.promocionar_peon(fila_destino, col_destino, pieza.color, promocion)
+                if resultado_promocion is not True:
+                    return {"exito": False, "error": resultado_promocion}
 
         self.ultimo_movimiento = ((fila_origen, col_origen), (fila_destino, col_destino), pieza)
 
@@ -111,22 +168,48 @@ class Tablero:
             "destino": destino,
         }
 
-    def promocionar_peon(self, fila: int, columna: int, color: str) -> None:
+    def promocionar_peon(self, fila: int, columna: int, color: str, eleccion: str) -> Union[bool, str]:
         """
-        Promociona un peón ubicado en la fila y columna especificadas.
+        Promociona un peón en la posición dada a una nueva pieza, según la elección del usuario.
 
         Parámetros:
         -----------
         fila : int
-            Fila del peón a promocionar.
-        columna : int
-            Columna del peón a promocionar.
-        color : str
-            Color de la nueva pieza (usualmente se convierte en dama).
+            Fila en la que se encuentra el peón a promocionar.
 
-        (Este método debe ser implementado).
+        columna : int
+            Columna en la que se encuentra el peón a promocionar.
+
+        color : str
+            Color del peón ("blanco" o "negro").
+
+        eleccion : str
+            Pieza a la que se desea promocionar ("dama", "torre", "alfil", "caballo").
+
+        Retorna:
+        --------
+        Union[bool, str]
+            True si la promoción fue exitosa, o un mensaje de error si la opción es inválida.
         """
-        pass
+
+        eleccion = eleccion.strip().lower()
+        if eleccion == "dama":
+            from piezas.reina import Reina
+            self.casillas[fila][columna] = Reina(color)
+        elif eleccion == "torre":
+            from piezas.torre import Torre
+            self.casillas[fila][columna] = Torre(color)
+        elif eleccion == "alfil":
+            from piezas.alfil import Alfil
+            self.casillas[fila][columna] = Alfil(color)
+        elif eleccion == "caballo":
+            from piezas.caballo import Caballo
+            self.casillas[fila][columna] = Caballo(color)
+        else:
+            return "Opción no válida. Elige dama, torre, alfil o caballo."
+
+        return True
+
 
     def interpretar_entrada(self, entrada: str) -> Optional[Tuple[Tuple[int, int], Tuple[int, int]]]:
         """
@@ -241,8 +324,24 @@ class Tablero:
         pieza = self.casillas[fila_origen][col_origen]
         if pieza is None:
             return False
+        if isinstance(pieza, Rey):
+            if abs(col_destino - col_origen) == 2:
+                fila = fila_origen
+                if col_destino == 6:
+                    torre = self.casillas[fila][7]
+                    self.casillas[fila][5] = torre
+                    self.casillas[fila][7] = None
+                elif col_destino == 2:
+                    torre = self.casillas[fila][0]
+                    self.casillas[fila][3] = torre
+                    self.casillas[fila][0] = None
+
+        if isinstance(pieza, Peon) and col_origen != col_destino and self.casillas[fila_destino][col_destino] is None:
+            fila_captura = fila_origen
+            self.casillas[fila_captura][col_destino] = None
 
         self.casillas[fila_origen][col_origen] = None
         self.casillas[fila_destino][col_destino] = pieza
+        
 
         return True
