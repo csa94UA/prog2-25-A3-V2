@@ -36,7 +36,7 @@ class Alfil(Pieza):
             'blanco' o 'negro'.
         """
         super().__init__(color)
-        self.valor = 3.33 # Valor asignado por AlphaZero
+        self.valor = 333 # Valor asignado por AlphaZero
 
     def simbolo(self) -> str:
         """

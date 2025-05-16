@@ -25,7 +25,7 @@ class Reina(Pieza):
             'blanco' o 'negro'
         """
         super().__init__(color)
-        self.valor = 9.5 # Valor asignado por AlphaZero
+        self.valor = 950 # Valor asignado por AlphaZero
 
     def simbolo(self) -> str:
         """
