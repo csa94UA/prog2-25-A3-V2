@@ -20,6 +20,7 @@ funciones:
     Elimina el usuario del mismo nombre en la base de datos
 """
 import sqlite3
+import json
 
 DIR_DATOS = "Base_de_datos/datos/"
 DIR_JSON = 'Base_de_datos/datos/archivos_json'
@@ -186,7 +187,7 @@ def añadir_partida_y_movimientos(blancas_id : str, negras_id : str, resultado :
 
     return None
 
-def obtener_partida_usuario(nombre : str, game_id : int) -> dict:
+def obtener_partida_usuario(game_id : str) -> dict:
     """
     Funcion encargada de devolvar una partida concreta al usuario
 
@@ -207,12 +208,12 @@ def obtener_partida_usuario(nombre : str, game_id : int) -> dict:
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('''
-      SELECT p.id, p.jugador_blanco, p.jugador_negro, p.resultado, p.duracion, p.nombre_partida
+      SELECT p.jugador_blanco, p.jugador_negro, p.resultado, p.duracion, p.nombre_partida,
        ub.nombre as nombre_blanco, un.nombre AS nombre_negro FROM partidas p
        JOIN usuarios ub ON p.jugador_blanco == ub.nombre
        JOIN usuarios un ON p.jugador_negro == un.nombre
       WHERE p.nombre_partida = ?
-    ''', (nombre, nombre, game_id))
+    ''', (game_id,))
     partidas = c.fetchone()
     conn.close()
     return partidas
@@ -288,7 +289,7 @@ def crear_partida_en_bd(jugador_blanco : str, jugador_negro : str) -> None:
 
     return None
 
-def eliminar_partida(nombre : str, game_id : str) -> None:
+def eliminar_partida_en_bd(nombre : str, game_id : str) -> None:
     """
     Parametros:
     -----------
@@ -312,7 +313,11 @@ if __name__ == '__main__':
     datos = buscar_usuario("Julio")
     print(datos.keys())
     partidas = obtener_lista_partidas_usuario("Julio")
-    for partida in partidas:
+    print(partidas)
+    print(len(partidas))
+    print(partidas[0]['nombre_partida'])
+    for i,partida in enumerate(partidas):
+        print(f"{i + 1}. Partida: {partida['nombre_partida']}")
         print(partida.keys())
         print("jugador_blanco: ",partida['jugador_blanco'])
         print('Jugador_negro: ',partida['jugador_negro'])
@@ -320,6 +325,7 @@ if __name__ == '__main__':
         print('Nombre partida: ', partida['nombre_partida'])
     movimiento = obtener_datos_partida("JuliovsJorge")
     print(movimiento)
+    partida = obtener_partida_usuario("JuliovsJorge")
     datos: dict = {
         'jugador_blanco': partida['jugador_blanco'],
         'jugador_negro': partida['jugador_negro'],
@@ -327,4 +333,6 @@ if __name__ == '__main__':
         'resultado': partida['resultado'],
         'movimientos': movimiento
     }
-    #eliminar_partida("Julio","JuliovsJorge")
+    with open(f'{DIR_JSON}/{partida['nombre_partida']}.json', 'w') as escritura:
+        json.dump(datos, escritura, indent=4)
+    #eliminar_partida("Julio","JuliovsJulio")

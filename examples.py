@@ -1,3 +1,4 @@
+import json
 import os.path
 from random import randint
 from typing import Optional
@@ -21,8 +22,9 @@ def mostrar_menu() -> None:
     print("6. Crear partida")
     print("7. Cargar partida")
     print("8. Ver partida")
-    print("9. Mirar documentación del juego (muy recomendado)")
-    print("10. Salir")
+    print("9. Eliminar partida")
+    print("10. Mirar documentación del juego (muy recomendado)")
+    print("11. Salir")
 
     return None
 
@@ -54,13 +56,11 @@ def crear_partida(token : str, cargar = False) -> None:
         if randint(0, 1000) < 499:
             jugador1.color = 1
             jugador2.color = 0
-            contrincante = jugador2.nombre
         else:
             jugador1.color = 0
             jugador2.color = 1
-            contrincante = jugador1.nombre
-        print("Malo de la peli: ",contrincante)
-        respuesta = requests.post(f'{URL}/partida?contrincante={contrincante}&color={jugador1.color}',
+        print("Malo de la peli: ",jugador2.nombre)
+        respuesta = requests.post(f'{URL}/partida?contrincante={jugador2.nombre}&color={jugador1.color}',
                                   headers= {'Authorization': 'Bearer ' + (token if token else '')})
         print(f"Estado: {respuesta.status_code}.  {respuesta.text}")
         if respuesta.status_code == 200:
@@ -84,20 +84,16 @@ def crear_partida(token : str, cargar = False) -> None:
     return None
 
 def ver_partida(token : str) -> None:
-    respuesta = requests.get(f'{URL}/partida', headers= {'Authorization': 'Bearer ' + (token if token else '')})
-    if respuesta.status_code != 200:
-        print(f"Estado: {respuesta.status_code}.  {respuesta.text}")
-        return None
+    partidas = mostrar_partidas(token)
 
-    print("Se han encontrado las siguientes partidas: \n")
-    print("0. Salir")
-    print(f"{i+1}. Partida: {partida['nombre_partida']}" for i,partida in enumerate(respuesta.text))
+    if partidas is None:
+        return None
 
     while True:
         try:
             opcion = int(input("Digite el número de la partida que desea ver: "))
 
-            if not (-1 < opcion < len(respuesta.text)):
+            if not (-1 < opcion <= len(partidas)):
                 print("Opcion incorrecta")
                 continue
 
@@ -113,7 +109,7 @@ def ver_partida(token : str) -> None:
     if opcion == 0:
         return None
 
-    game_id = respuesta.text[opcion]['nombre_juego']
+    game_id = partidas[opcion - 1]['nombre_partida']
 
     respuesta = requests.get(f'{URL}/partida/json?id={game_id}', headers={'Authorization': 'Bearer ' + (token if token else '')})
     print(f"Estado: {respuesta.status_code}.  {respuesta.text}")
@@ -124,6 +120,53 @@ def ver_partida(token : str) -> None:
 
     return None
 
+def eliminar_partida(token : str) -> None:
+    partidas = mostrar_partidas(token)
+
+    if partidas is None:
+        return None
+
+    while True:
+        try:
+            opcion = int(input("Digite el número de la partida que desea ver: "))
+
+            if not (-1 < opcion <= len(partidas)):
+                print("Opcion incorrecta")
+                continue
+
+        except ValueError:
+            print("No has digitado un número")
+            continue
+        except TypeError:
+            print("No has digitado un número")
+            continue
+
+        break
+
+    if opcion == 0:
+        return None
+
+    game_id = partidas[opcion - 1]['nombre_partida']
+
+    respuesta = requests.delete(f'{URL}/partida?id={game_id}',headers={'Authorization': 'Bearer ' + (token if token else '')})
+    print(f"Estado: {respuesta.status_code}.  {respuesta.text}")
+
+    return None
+
+def mostrar_partidas(token : str) -> list[dict] | None:
+    respuesta = requests.get(f'{URL}/partida', headers={'Authorization': 'Bearer ' + (token if token else '')})
+    if respuesta.status_code != 200:
+        print(f"Estado: {respuesta.status_code}.  {respuesta.text}")
+        return None
+
+    partidas = json.loads(respuesta.text)
+
+    print("Se han encontrado las siguientes partidas: \n")
+    print("0. Salir")
+    for i, partida in enumerate(partidas):
+        print(f"{i + 1}. Partida: {partida['nombre_partida']}")
+
+    return partidas
 
 def verificar_usuario(usuario : str, contraseña : str) -> bool:
     respuesta = requests.get(f"{URL}/login?user={usuario}&password={contraseña}")
@@ -143,7 +186,7 @@ def menu() -> None:
     while True:
         mostrar_menu()
         opcion = input("¿Qué opción desea? ")
-        if opcion.isdigit() and 0 < int(opcion) < 11:
+        if opcion.isdigit() and 0 < int(opcion) < 12:
             opcion = int(opcion)
         else:
             print("No has digitado una opción correcta.")
@@ -182,6 +225,8 @@ def menu() -> None:
             case 8:
                 ver_partida(token)
             case 9:
+                eliminar_partida(token)
+            case 10:
                 mostrar_documentacion_juego()
             case _:
                 print("Saliendo")

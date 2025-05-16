@@ -65,6 +65,7 @@ class GuardarPartida:
         finalize_to_csv(self.game_id, self.resultado)
 
         movimientos = [(i + 1, lan, fen) for i, (lan, fen) in enumerate(self.jugadas)]
+        print(movimientos)
         añadir_partida_y_movimientos(self.blancas_id, self.negras_id, self.resultado, duracion, movimientos)
 
     def resultado_partida(self, resultado : str) -> None:

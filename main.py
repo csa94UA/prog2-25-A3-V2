@@ -104,17 +104,21 @@ def obtener_partida_json() -> tuple[str,int]:
     nombre = get_jwt_identity()
     game_id = request.args.get('id', '')
 
+    print("Game_id: ",game_id)
+
     if not game_id:
         return 'Falta id partida', 400
 
     if not os.path.exists(f'{DIR_JSON}'):
         os.makedirs(DIR_JSON, exist_ok=True)
 
-    partida = obtener_partida_usuario(nombre, game_id)
+    partida = obtener_partida_usuario(game_id)
+    print(partida.keys())
     if not partida:
         return f'No se ha encontrado partidas de {nombre}', 404
 
     movimientos = obtener_datos_partida(game_id)
+    print(movimientos)
     if not movimientos:
         return f'No se han encontrado datos de la partida', 404
 
@@ -127,7 +131,7 @@ def obtener_partida_json() -> tuple[str,int]:
     }
 
     with open(f'{DIR_JSON}/{game_id}', 'w') as escritura:
-        json.dump(datos, escritura, ident=4)
+        json.dump(datos, escritura, indent=4)
 
     return 'Se ha exportado correctamente', 200
 
@@ -138,11 +142,11 @@ def crear_partida() -> tuple[str,int]:
     color = request.args.get('color', '')
     usuario = get_jwt_identity()
 
-    jugador_blanco = usuario if color else contrincante
-    jugador_negro = contrincante if color else usuario
-
     if not contrincante:
         return 'Falta contrincante', 400
+
+    jugador_blanco = usuario if color else contrincante
+    jugador_negro = contrincante if color else usuario
 
     crear_partida_en_bd(jugador_blanco, jugador_negro)
 
@@ -151,14 +155,14 @@ def crear_partida() -> tuple[str,int]:
 @app.route('/partida', methods=['DELETE'])
 @jwt_required()
 def eliminar_partida() -> tuple[str,int]:
-    game_id = request.args.get()
+    game_id = request.args.get('id', '')
     usuario = get_jwt_identity()
 
     if not game_id:
         return 'Falta id partida', 400
 
     try:
-        eliminar_partida(usuario, game_id)
+        eliminar_partida_en_bd(usuario, game_id)
     except sqlite3.InternalError:
         return 'No se ha podido eliminar la partida', 404
 
@@ -166,7 +170,7 @@ def eliminar_partida() -> tuple[str,int]:
 
 @app.route('/partida', methods=['GET'])
 @jwt_required()
-def obtener_partidas() -> tuple[str,int] | tuple[list[dict],int]:
+def obtener_partidas():
     usuario = get_jwt_identity()
 
     partidas = obtener_lista_partidas_usuario(usuario)
@@ -174,7 +178,7 @@ def obtener_partidas() -> tuple[str,int] | tuple[list[dict],int]:
     if not partidas:
         return f'No se han encontrado partidas de {usuario}', 404
 
-    return partidas, 200
+    return [dict(partida) for partida in partidas], 200
 
 if __name__ == "__main__":
     inicializar_bd()

@@ -1,8 +1,7 @@
 {
     "jugador_blanco": "Julio",
     "jugador_negro": "Jorge",
-    "fecha_inicio": "2025-05-16T15:44:12.485715",
-    "fecha_fin": "2025-05-16T15:44:25.850152",
+    "duracion": 13,
     "resultado": "1-0",
     "movimientos": [
         {

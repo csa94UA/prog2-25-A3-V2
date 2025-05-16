@@ -171,8 +171,8 @@ def partida(jugador1 : Jugador, jugador2 : Jugador, /, bot : bool = False,*, en_
 
         # Si está en jaque y resulta que no se puede evitar, entonces se termina la partida.
         if jaque and tablero.jaque_in(rey.posicion[0], rey.posicion[1], enemigo, jugador_actual):
-            save_partida.agregar_turno(mov_LAN, tablero.traduccion_FEN(tablero.contador), tablero.turno)
             tablero.contador += 1
+            save_partida.agregar_turno(mov_LAN, tablero.traduccion_FEN(tablero.contador), tablero.turno)
             break
 
         turno = 1 - turno
@@ -189,7 +189,7 @@ def partida(jugador1 : Jugador, jugador2 : Jugador, /, bot : bool = False,*, en_
         save_partida.finalizar("1-0" if jugador_actual.nombre == jugador1.nombre else "0-1")
         print(f"Ha ganado el jugador {jugador_actual.nombre}")
         print("Felicidades!!!!!")
-    if str(movimiento[2]) != '3':
+    elif str(movimiento[2]) != '3':
         save_partida.finalizar("0-0")
 
 
