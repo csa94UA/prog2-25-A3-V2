@@ -1,5 +1,5 @@
 """
-Módulo para la ejecución de diversos comandos sqlite
+Módulo dedicado a la ejecución de diversos comandos sqlite
 
 Proporciona funciones para almacenar, modificar o eliminar informacion de la base de datos de sqlite
 
@@ -18,6 +18,24 @@ funciones:
 
     - elminar_usuario(nombre : str)
     Elimina el usuario del mismo nombre en la base de datos
+
+    - añadir_partida_y_movimientos(blancas_id : str, negras_id : str, resultado : str, duracion : int, lista_mov : list[int,str,str])
+    Añade los movimientos y la información de la partida
+
+    - obtener_partida_usuario(game_id : str)
+    Busca la partida con ese id
+
+    - obtener_lista_partidas_usuario(nombre : str)
+    Busca todas las partidas del usuario
+
+    - obtener_datos_partida(game_id : str)
+    Busca todos los movimientos / situaciones de esa partida
+
+    - crear_partida_en_bd(jugador_blanco : str, jugador_negro : str)
+    Inicializa una nueva partida
+
+    - eliminar_partida_en_bd(nombre : str, game_id : str)
+    Elimina la partida de la base de datos
 """
 import sqlite3
 import json
@@ -88,7 +106,7 @@ def modificar_usuario(nombre : str, campo : str, valor : str) -> None:
 
     return None
 
-def buscar_usuario(nombre) -> dict:
+def buscar_usuario(nombre : str) -> dict:
     """
     Función encargada de buscar el usuario y devolver TODOS sus datos
 
@@ -110,7 +128,7 @@ def buscar_usuario(nombre) -> dict:
     conn.close()
     return usuario
 
-def obtener_datos_usuario(nombre):
+def obtener_datos_usuario(nombre : str) -> dict:
     """
     Función encargada de obtener los datos del usuario (exceptuando su contraseña)
 
@@ -132,7 +150,7 @@ def obtener_datos_usuario(nombre):
     conn.close()
     return usuario
 
-def eliminar_usuario(nombre) -> None:
+def eliminar_usuario(nombre : str) -> None:
     """
     Función encargada de eliminar el perfil del usuario
 
@@ -147,7 +165,7 @@ def eliminar_usuario(nombre) -> None:
     conn.commit()
     conn.close()
 
-def añadir_partida_y_movimientos(blancas_id : str, negras_id : str, resultado : str, duracion : int, lista_mov : list[int,str,str]):
+def añadir_partida_y_movimientos(blancas_id : str, negras_id : str, resultado : str, duracion : int, lista_mov : list[int,str,str]) -> None:
     """
     Función encargada de guardar una partida finalizada en las tablas correspondientes de la base de datos
 
@@ -193,10 +211,7 @@ def obtener_partida_usuario(game_id : str) -> dict:
 
     Parametros:
     ----------
-    nombre : str
-        Nombre del usuario
-
-    game_id : int
+    game_id : str
         Id del juego
 
     Retorna:
@@ -246,9 +261,11 @@ def obtener_lista_partidas_usuario(nombre : str) -> list[dict]:
 
 def obtener_datos_partida(game_id : str) -> list[dict]:
     """
+    Funcion encargada de devolver todas los movimientos de la partida
+
     Parametros:
     -----------
-    game_id : int
+    game_id : str
         Id del juego
 
     Retorna:
@@ -270,6 +287,8 @@ def obtener_datos_partida(game_id : str) -> list[dict]:
 
 def crear_partida_en_bd(jugador_blanco : str, jugador_negro : str) -> None:
     """
+    Funcion que inicializa una partida nueva en la base de datos
+
     Parametros:
     ----------
     jugador_blanco : str
@@ -291,6 +310,8 @@ def crear_partida_en_bd(jugador_blanco : str, jugador_negro : str) -> None:
 
 def eliminar_partida_en_bd(nombre : str, game_id : str) -> None:
     """
+    Funcion que elimina una partida de la base de datos
+
     Parametros:
     -----------
     nombre : str

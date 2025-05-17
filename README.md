@@ -69,10 +69,14 @@ Rutas Principales
 
 * GET /perfil: Muestra datos del perfil del usuario.
 
-* PUT /perfil: Modificar perfil del usuario
+* PUT /perfil: Modificar perfil del usuario.
 
-* GET /data/: Obtener un dato por ID.
+* DELETE /perfil: Eliminar perfil del usuario.
 
-* PUT /data/: Actualizar un dato por ID.
+* GET /partida/json: Obtener partida en json.
 
-* DELETE /data/: Eliminar un dato por ID.
+* POST /partida: Inicializar nueva partida.
+
+* DELETE /partida: Eliminar partida existente.
+
+* GET /partida: Obtener partidas existentes.

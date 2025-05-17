@@ -15,6 +15,15 @@ class ErrorPartida(Exception):
     """
     Excepcion personalizada para que salte un mensaje de error durante el manejo de una partida
 
+    Atributos:
+    ---------
+    error : str
+        Mensaje de error personalizado
+
+    problema : Union["Pieza",str,None]
+        Muestra el causante del error. Si es una pieza se muestra dicha pieza. De manera predeterminada está en None si
+        no ha detectoda quien o que ha coausado el problema
+
     Métodos:
     --------
     __init__(self, pieza : "Pieza", error : str, *args) -> None:
@@ -32,7 +41,7 @@ class ErrorPartida(Exception):
         error : str
             Mensaje del error o problema exacto.
 
-        problema : Optional["Pieza",str]
+        problema : Optional["Pieza",str,None]
             Causante del error. Puede ser una pieza o algo más concreto (jugador, error al comprobar tablas, etc).
 
         args

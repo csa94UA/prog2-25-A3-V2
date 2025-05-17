@@ -8,17 +8,32 @@ Funciones:
     - partida(jugador1 : Jugador, jugador2 : Jugador) -> Jugador:
     Simula la partida y determina el ganador. Es la funcion nucleo de todo el programa.
 
-    - crear_piezas(color : bool, tablero : Tablero) -> list[Pieza]:
+    - inicializacion_partida_en_curso(jugador1 : "Jugador", jugador2 : "Jugador", tablero : "Tablero") -> tuple[bool, Tablero]
+    Inicializa una partida en curso
+
+    - crear_piezas(color : int, tablero : Tablero, jugador : "Jugador", enemigo : "Jugador") -> list["Pieza"]:
     Inicializa el tablero y las fichas de cada jugador.
 
-    - encontrar_pieza(tablero : "Tablero", jugador : "Jugador", origen : tuple[int]) -> Union["Pieza",None]:
+    - encontrar_pieza(jugador : "Jugador", origen : tuple[int]) -> Union["Pieza",None]:
     Busca la pieza digitada dentro de del conjunto de piezas del jugador. Si lo encuentra devuelve dicha pieza.
 
-    - comprobar_enroque_corto(tablero : "Tablero", enemigo : "Jugador", rey : "Rey", torre : "Torre") -> bool:
-    En caso de digitar un enroque corto comprueba si es posible.
+    - movimiento_digitado_por_IA(tablero : "Tablero", jugador_actual : "Jugador") -> tuple
+    Obtiene el movimiento de la IA. Si no lo loggra obtiene un movimiento aleatorio
 
-    - comprobar_enroque_largo(tablero : "Tablero", enemigo : "Jugador", rey : "Rey", torre : "Torre") -> bool:
-    Igual que con el enroque corto solo que para el caso de enroque largo.
+    - movimimiento_aleatorio_IA(tablero : "Tablero", jugador_actual : "Jugador") -> tuple
+    Realiza un mobimiento aleatorio en caso de que la IA falle
+
+    - comprobar_enroque(movimiento : tuple, jugador_actual : "Jugador", enemigo : "Jugador", tablero : "Tablero") -> (bool, "Torre")
+    Comprueba si es posible hacer el enroque
+
+    - comprobar_mov_enroque(tablero : "Tablero", enemigo : "Jugador", rey : "Rey", torre : "Torre", enroque : int) -> bool
+    Realiza el enroque corto o largo, según que torre se haya escogido
+
+    - comprobar_enroque_IA(san : list[str,str] | str, tablero : "Tablero") -> str
+    Comprueba si la IA ha digitado realmente un enroque
+
+    - comprobar_movimiento(movimiento : tuple, jugador_actual : "Jugador", enemigo : "Jugador", tablero : "Tablero") -> (bool,"Pieza")
+    Comprueba si el movimiento digitado es válido
 
     - comprobar_promocion(pieza : "Peon", promocion : Union[str,int], jugador_actual : "Jugador") -> bool:
     Comprueba si la promocion es valido. En caso afirmativo se intercambia el peon por la pieza deseada (dentro de
@@ -41,7 +56,7 @@ from Piezas.error_creacion_pieza import ErrorCrearPieza
 from Partidas.error_partidas import ErrorPartida
 from Jugador import Jugador
 from Base_de_datos.guardar_partida import GuardarPartida
-from typing import Union, Any
+from typing import Union
 from Partidas.aflabeto_FEN import digitar_movimiento, transformacion_a_LAN_hipersimplificado, traducir_movimiento_ia, \
     traduccion_total_inversa
 from Tablero import Tablero
@@ -49,7 +64,7 @@ from Lichess import movimiento_ia
 from stockfish import Stockfish
 import time
 
-stockfish = Stockfish(path="./Partidas/stockeje", depth=10)
+stockfish = Stockfish(path="Partidas/stockeje", depth=10)
 stockfish.update_engine_parameters({"MultiPV": 5})
 DIR_DATOS = "Base_de_datos/datos/"
 mov_LAN = ''
@@ -61,9 +76,17 @@ def partida(jugador1 : Jugador, jugador2 : Jugador, /, bot : bool = False,*, en_
 
     Parametros:
     -----------
-    jugador_1 : Jugador -> Representa el primer jugador
+    jugador_1 : Jugador
+        Representa el primer jugador
 
-    jugador_2 : Jugador -> Representa el segundo jugador
+    jugador_2 : Jugador
+        Representa el segundo jugador
+
+    bot : bool
+        Valor booleano que mide si estás jugando contra un bot
+
+    en_curso : bool
+        Valor booleano que marca si está simulando una partida en cuso.
 
     Retorna:
     ----------
@@ -196,6 +219,25 @@ def partida(jugador1 : Jugador, jugador2 : Jugador, /, bot : bool = False,*, en_
     return jugador_actual
 
 def inicializacion_partida_en_curso(jugador1 : "Jugador", jugador2 : "Jugador", tablero : "Tablero") -> tuple[bool, Tablero]:
+    """
+    Función que inicializa una partida en curso
+
+    Parametros:
+    -----------
+    jugador1 : Jugador
+        Uno de los jugadores.
+
+    jugador2 : Jugador
+        Otro de los jugadores.
+
+    tablero : Tablero
+        Tablero en sí para inicializar las posiciones de las piezas.
+
+    Retorna:
+    ----------
+    (bool, tablero)
+        Retorna un valor booleano que marca si se ha cargado con éxtio y el tablero ya inicializado.
+    """
 
     try:
         if not os.path.exists(f"{DIR_DATOS}en_curso.csv"):
@@ -342,9 +384,11 @@ def crear_piezas(color : int, tablero : Tablero, jugador : "Jugador", enemigo : 
 
     Parametros:
     -----------
-    color : int -> Color del jugador a quien se le van a crear las piezas.
+    color : int
+        Color del jugador a quien se le van a crear las piezas.
 
-    tablero : Tablero -> Tablero en sí para guardar la posición de las piezas creadas.
+    tablero : Tablero
+        Tablero en sí para guardar la posición de las piezas creadas.
 
     Retorna:
     ----------
@@ -400,15 +444,15 @@ def encontrar_pieza(jugador : "Jugador", origen : tuple[int]) -> Union["Pieza",N
 
     Parametros:
     -----------
-    tablero : Tablero -> Tablero en sí. Solo está para comprobar si es exactamente esa pieza.
+    jugador : Jugador
+        Jugador que ha digitado el movimiento.
 
-    jugador : Jugador -> Jugador que ha digitado el movimiento.
-
-    origen : tuple[int] -> Es la posicion origen digitada por el jugador.
+    origen : tuple[int]
+        Es la posicion origen digitada por el jugador.
 
     Retorna:
     ----------
-    Pieza
+    Union["Pieza",None]
         Retorna la pieza que coincide su posicion con la posicion origen digitada. Si no se encuentra devuelve None.
     """
 
@@ -419,6 +463,23 @@ def encontrar_pieza(jugador : "Jugador", origen : tuple[int]) -> Union["Pieza",N
     return None
 
 def movimiento_digitado_por_IA(tablero : "Tablero", jugador_actual : "Jugador") -> tuple:
+    """
+    Función encargado de obtener el movimiento de la IA. Primero llama a lichess a traves de /cloud-eval. Si falla se pasa
+    a preguntar a Stockfish. Por último, si por alguna razón también falla StoskFish, se realiza un movimiento aleatorio.
+
+    Parametros:
+    -----------
+    tablero : Tablero
+        Tablero en sí
+
+    jugador_actual : Jugador
+        Representa a la IA
+
+    Retorna:
+    ----------
+    tuple
+        Retorna la tupla (inicio, fin, especial) que representa el movimiento completo de la IA sobre una pieza concreta.
+    """
     try:
         lan = movimiento_ia(tablero.traduccion_FEN(tablero.contador))
         if lan == '404':
@@ -439,7 +500,23 @@ def movimiento_digitado_por_IA(tablero : "Tablero", jugador_actual : "Jugador") 
 
         return movimiento
 
-def movimimiento_aleatorio_IA(tablero : "Tablero", jugador_actual : "Jugador") -> tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]:
+def movimimiento_aleatorio_IA(tablero : "Tablero", jugador_actual : "Jugador") -> tuple:
+    """
+    Función que hace un movmiento aleatorio en caso de que las IA fallen
+
+    Parametros:
+    -----------
+    tablero : Tablero
+        Tablero en sí
+
+    jugador_actual : Jugador
+        Jugador que representa a la IA
+
+    Retorna:
+    ----------
+    tuple
+        Retorna la tupla (inicio, fin, especial) que representa el movimiento completo de la IA sobre una pieza concreta.
+    """
     promocion = ['R','N','B','Q'] if jugador_actual.color else ['r','n','b','q']
 
     while True:
@@ -534,13 +611,17 @@ def comprobar_mov_enroque(tablero : "Tablero", enemigo : "Jugador", rey : "Rey",
 
     Parametros:
     -----------
-    tablero : Tablero -> Tablero en sí. De ella se obtienen las casillas intermedias entre el rey y la torre.
+    tablero : Tablero
+        Tablero en sí. De ella se obtienen las casillas intermedias entre el rey y la torre.
 
-    enemigo : Jugador -> Jugador de color contrario. Usado para comprobar si sus piezas amenazan las casillas intermedias.
+    enemigo : Jugador
+        Jugador de color contrario. Usado para comprobar si sus piezas amenazan las casillas intermedias.
 
-    rey : Rey -> Rey del jugador actual. Necesario para poder comprobar si puede hacer enroque.
+    rey : Rey
+        Rey del jugador actual. Necesario para poder comprobar si puede hacer enroque.
 
-    torre : Torre -> Torre del jugador actual. Necesario para poder comprobar si puede hacer enroque.
+    torre : Torre
+        Torre del jugador actual. Necesario para poder comprobar si puede hacer enroque.
 
     enroque : int
         Marca el tipo de enroque siendo 2 un enroque largo y 1 un enroque corto
@@ -548,7 +629,7 @@ def comprobar_mov_enroque(tablero : "Tablero", enemigo : "Jugador", rey : "Rey",
     Retorna:
     ----------
     bool
-        Devuelve True si se ha producido el eroque corto
+        Devuelve True si se ha producido el enroque (ya sea corto o largo)
     """
     try:
         # Comprobamos si ambos pueden hacer enroque
@@ -591,6 +672,25 @@ def comprobar_mov_enroque(tablero : "Tablero", enemigo : "Jugador", rey : "Rey",
         return True
 
 def comprobar_enroque_IA(san : list[str,str] | str, tablero : "Tablero") -> str:
+    """
+    Función encargado de comprobar si el movimiento de la IA es un enroque. Esto es debido a que no digitan 0-0-0 o 0-0
+    sino un movimiento normal y corriente que en una situacion concreta se entiende que es enroque.
+
+    Parametros:
+    -----------
+    san : list[str,str] | str
+        Obtiene el str de la funcion transfomración_a_LAN_hipersimiplificado. A veces es una lista que contiene el moivimiento
+        normal o el posible enroque
+
+    tablero : Tablero
+        Tablero en sí
+
+    Retorna:
+    ----------
+    str
+        retorna el movimiento correcto
+    """
+
     if type(san) == str:
         return san
 
@@ -653,11 +753,17 @@ def comprobar_promocion(pieza : "Pieza", promocion : Union[str,int], jugador_act
 
     Parametros:
     -----------
-    pieza : Peon -> Es el peon que se va a promocionar.
+    pieza : Peon
+        Es el peon que se va a promocionar.
 
-    promocion : Union[str,int] -> Promocion digitado por el usuario.
+    promocion : Union[str,int]
+        Promocion digitado por el usuario.
 
-    jugador_actual : Jugador -> Dueño del peon que se va a promocionar
+    jugador_actual : Jugador
+        Dueño del peon que se va a promocionar
+
+    tablero : Tablero
+        Tablero en sí
 
     Retorna:
     ----------
@@ -720,13 +826,17 @@ def comprobar_jaque_enemigo(tablero : "Tablero", jugador_actual : "Jugador", ene
 
     Parametros:
     -----------
-    tablero : Tablero -> Tablero en sí.
+    tablero : Tablero
+        Tablero en sí.
 
-    jugador_actual : Jugador -> Jugador que ha realizado el jaque.
+    jugador_actual : Jugador
+        Jugador que ha realizado el jaque.
 
-    enemgio : Jugador -> Dueño del rey que se ha puesto en jaque.
+    enemgio : Jugador
+        Dueño del rey que se ha puesto en jaque.
 
-    pieza : Pieza -> Pieza que ha sido movido y que podria haber puesto en jaque al enemigo
+    pieza : Union["Pieza",None]
+        Pieza que ha sido movido y que podria haber puesto en jaque al enemigo
 
     Retorna:
     ----------
@@ -758,13 +868,17 @@ def caso_jaque(tablero : "Tablero", jugador_actual : "Jugador", enemigo : "Jugad
 
     Parametros:
     -----------
-    tablero : Tablero -> Tablero en sí.
+    tablero : Tablero
+        Tablero en sí.
 
-    jugador_actual : Jugador -> Jugador que ha recibido el jaque
+    jugador_actual : Jugador
+        Jugador que ha recibido el jaque
 
-    enemgio : Jugador -> Jugador que ha hecho jaque
+    enemgio : Jugador
+        Jugador que ha hecho jaque
 
-    movimiento : tuple -> Movimiento digitado por el jugador actual
+    movimiento : tuple
+        Movimiento digitado por el jugador actual
 
     Retorna:
     ----------
@@ -810,11 +924,14 @@ def comprobar_tablas(tablero : "Tablero", jugador_actual : "Jugador", enemigo : 
 
     Parametros:
     -----------
-    tablero : Tablero -> Tablero en sí.
+    tablero : Tablero
+        Tablero en sí.
 
-    jugador_actual : Jugador -> Jugador que ha realizado el jaque.
+    jugador_actual : Jugador
+        Jugador que ha realizado el jaque.
 
-    enemgio : Jugador -> Dueño del rey que se ha puesto en jaque.
+    enemgio : Jugador
+        Dueño del rey que se ha puesto en jaque.
 
     Retorna:
     ----------
@@ -827,7 +944,6 @@ def comprobar_tablas(tablero : "Tablero", jugador_actual : "Jugador", enemigo : 
 
         # Si por alguna razon no se encuentra se considera invalido (aunque nunca debería pasar esto).
         if rey is None:
-            bandera = True
             raise ErrorPartida("No se ha encontrado el rey del jugador", "buscar rey del jugador")
 
     except ErrorPartida as e:
@@ -847,6 +963,8 @@ def comprobar_tablas(tablero : "Tablero", jugador_actual : "Jugador", enemigo : 
             movimientos = pieza.movimiento_valido(tablero) if not isinstance(pieza, Rey) else []
             if movimientos:
                 return False
+
+        return False
 
 if __name__ == "__main__":
     """

@@ -8,9 +8,7 @@ Clases:
     - Casilla
 """
 
-from typing import Union, TYPE_CHECKING
-#if TYPE_CHECKING:
-#    from Piezas import Caballo, Alfil, Rey, Torre, Reina, Pieza, Peon
+from typing import Union
 
 class Casilla:
     """
@@ -20,24 +18,38 @@ class Casilla:
     -----------
     fila : int
         Fila en la que se encuentra la casilla
+
     columna : int
         Columna en la que se encuentra la casilla
+
     ocupado : bool
         Marca si está ocupado
+
     pieza : Union[Pieza,None]
         Contiene la pieza que ocupa la casilla
+
     amenazado : bool
         Valor booleano que representa si alguna pieza puede ir a la casilla
 
     Métodos:
     -----------
-    conquistado(Pieza) -> None:
+    __init__(self, fila : int, columna : int) -> None
+        Inicializa una nueva casilla
+
+    conquistado(Pieza) -> None
         Actualiza los atributos de la casilla al ser tomada por una pieza.
-    representacion() -> str:
+
+    tranformacion_a_pieza(self, fila : int, columna : int, simbolo : str) -> None
+        Inicializa la casilla con la clase correspondiente. Usado en el formato FEN
+
+    __str__(self) -> str
         Representa la pieza que ocupa la casilla según la clase de pieza que sea y su color.
+
+    __repr__(self) -> str
+        Otorga información tecnica de la casilla para trazas y análisis.
     """
 
-    def __init__(self, fila : int, columna : int):
+    def __init__(self, fila : int, columna : int) -> None:
         """
         Inicializa una instacia de la clase Casilla
 
@@ -45,6 +57,7 @@ class Casilla:
         -----------
         fila : int
             Fila que ocupa la casilla
+
         columna : int
             Columna que ocupa la casilla
         """

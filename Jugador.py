@@ -11,6 +11,55 @@ from Piezas import Caballo, Alfil, Rey, Torre, Reina, Pieza, Peon
 from typing import Union, Self
 
 class Jugador:
+    """
+    Clase que repersenta al jugador
+
+    Atributos:
+    ----------
+    nombre : str
+        Nombre del jugador
+
+    puntuacion : int
+        Puntuacion del jugador (similar a su nivel)
+
+    color : Union[int,None]
+        Color del jugador. Al inicializarse no se define su color
+
+    piezas : list
+        Representa las piezas del jugador
+
+    cantidad : dict
+        Diccionario que marca la cantidad de cada tipo de pieza que tiene
+
+    Métodos:
+    --------
+    __init__(self, nombre : str, puntuacion : int) -> None
+        Inicializa un nuevo jugador
+
+    añadir_pieza(self, pieza : Pieza) -> None
+        Actualiza la cantidad de piezas de su inventario
+
+    eliminar_pieza(self, pieza : Pieza) -> None
+        Elimina la pieza de su inventario
+
+    encontrar_rey(self) -> tuple[int,int]
+        Busca la posición del rey
+
+    __len__(self) -> int
+        Mide cuantas piezas le quedan en su inventario
+
+    __bool__(self) -> bool
+        Comprueba si solo tiene el rey
+
+    __sub__(self, other : "Pieza") -> "Jugador"
+        Elimina una pieza de su invetario con la resta. También se aplica con __isub()__ y __rsub__()
+
+    __add__(self, other : "Pieza") -> "Jugador"
+        Añade una nueva pieza a su inventario con la suma. También se aplica con __iadd__() y __radd__()
+
+    __repr__(self) -> str
+        Devuelve la información del jugador de manera técnica (para trazas y análisis)
+    """
 
     def __init__(self, nombre : str, puntuacion : int) -> None:
         """
@@ -20,6 +69,7 @@ class Jugador:
         -----------
         nombre : str
             Nombre del jugador
+
         puntuacion : bool
             Puntuacion que tiene el jugador. Refleja el nivel del jugador
         """

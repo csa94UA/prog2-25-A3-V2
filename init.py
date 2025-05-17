@@ -1,3 +1,21 @@
+"""
+Modulo encargado de inicializar todas las tablas de la base de datos en caso de no existir. También se incluyen algunos
+datos ya digitados para probar.
+
+Funcoines:
+    - inicializar_bd()
+    Inicializa la base de datos con todas las tablas
+
+    - crear_tabla_usuarios()
+    Inicializa la tabla Usuarios
+
+    - crear_tabla_partidas()
+    Inicializa la tabla Partidas
+
+    - crear_tabla_movimientos()
+    Inicializa la tabla movimientos
+"""
+
 import sqlite3
 from Base_de_datos.operaciones_sqlite import insertar_usuario
 import hashlib
@@ -5,18 +23,25 @@ import os
 
 DIR_DATOS = "./Base_de_datos/datos"
 
-def inicializar_bd():
+def inicializar_bd() -> None:
+    """
+    Funcion encargada de inicializar la base de datos en caso de no existir.
+    """
     os.makedirs(DIR_DATOS, exist_ok=True)
 
     crear_tabla_usuarios()
     crear_tabla_partidas()
     crear_tabla_movimientos()
-    crear_tabla_estadisticas()
 
     insertar_usuario("Julio","julio.srp@gmail.com",hashlib.sha256("123".encode()).hexdigest(), "España")
     insertar_usuario("Jorge", "susybaka@gmail.com", hashlib.sha256("69".encode()).hexdigest(), "Cataluña")
 
-def crear_tabla_usuarios():
+    return None
+
+def crear_tabla_usuarios() -> None:
+    """
+    Función encargada de inicializar la tabla Usuarios.
+    """
     conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
     conn.execute('PRAGMA foreign_keys = ON')
     cursor = conn.cursor()
@@ -32,7 +57,12 @@ def crear_tabla_usuarios():
     conn.commit()
     conn.close()
 
-def crear_tabla_partidas():
+    return None
+
+def crear_tabla_partidas() -> None:
+    """
+    Función encargada de inicializar la tabla Partidas.
+    """
     conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
     conn.execute('PRAGMA foreign_keys = ON')
     cursor = conn.cursor()
@@ -50,7 +80,12 @@ def crear_tabla_partidas():
     conn.commit()
     conn.close()
 
-def crear_tabla_movimientos():
+    return None
+
+def crear_tabla_movimientos() -> None:
+    """
+    Función encargada de inicializar la tabla Movimientos.
+    """
     conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
     conn.execute('PRAGMA foreign_keys = ON')
     cursor = conn.cursor()
@@ -67,20 +102,4 @@ def crear_tabla_movimientos():
     conn.commit()
     conn.close()
 
-def crear_tabla_estadisticas():
-    conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
-    conn.execute('PRAGMA foreign_keys = ON')
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS estadisticas (
-            usuario_id INTEGER PRIMARY KEY,
-            victorias INTEGER DEFAULT 0,
-            derrotas INTEGER DEFAULT 0,
-            tablas INTEGER DEFAULT 0,
-            mejores_aperturas TEXT,
-            peor_apertura TEXT,
-            FOREIGN KEY(usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
-        )
-    ''')
-    conn.commit()
-    conn.close()
+    return None

@@ -14,6 +14,17 @@ class ErrorCrearPieza(Exception):
     """
     Excepcion personalizada para que salte un mensaje de error al crear una pieza.
 
+    Atributos:
+    ----------
+    pieza : "Pieza"
+        Pieza que ha provocado el error
+
+    error : str
+        Mensaje de error personalizado
+
+    bandera : bool
+        Valor booleano que imprime el error junto con la pieza que ha causado el error si es True. Por defecto es False
+
     Métodos:
     --------
     __init__(self, pieza : "Pieza", error : str, *args) -> None:
@@ -34,6 +45,9 @@ class ErrorCrearPieza(Exception):
 
         error : str
             Mensaje del error o problema exacto.
+
+        bandera : bool
+            Valor booleano que marca si el error lo ha cometido una pieza o no
 
         args
             Resto de argumentos innecesarios para nuestra clase.

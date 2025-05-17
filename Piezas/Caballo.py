@@ -18,28 +18,43 @@ class Caballo(Pieza):
     -----------
     posicion : list[int,int]
         Posicíon concreta del caballo
+
     color : bool
         Color del caballo (1 es blanco y 0 es negro)
+
     capturado : bool
         Marca si está capturado el caballo
+
     valor : int
         Valor del caballo
+
     movimientos : list[(int,int)]
         Lista de movimientos válidos del caballo
 
     Métodos:
     -----------
+    __init__(self, posicion : tuple[int,int], color : int) -> None
+        Inicializa un nuevo Caballo
+
     movimiento_valido() -> list[(int,int)]
         Devuelve el conjunto de posiciones validas que puede tener.
+
+    __str__(self) -> str
+        Devuelve la representación del Caballo (teniendo en cuenta su color)
+
+    __repr__(self) -> str
+        Muesta información técnica del Caballo
     """
 
     def __init__(self, posicion : tuple[int,int], color : int) -> None:
         """
         Inicializa una instacia de la clase Caballo
+
         Parámetros:
         -----------
         posicion : list[int,int]
             Posicíon concreta del caballo
+
         color : bool
             Color del caballo (1 es blanco y 0 es negro)
         """
@@ -48,10 +63,12 @@ class Caballo(Pieza):
     def movimiento_valido(self, tablero: "Tablero") -> list[(int,int)]:
         """
         Comprueba todos los movimientos válidos del caballo
+
         Parametros:
         -----------
         tabelro : Tablero
             Tablero en sí
+
         Retorna:
         --------
         list[tuple(int,int)]

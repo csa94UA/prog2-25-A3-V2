@@ -6,7 +6,17 @@ Además, incluye una serie de facilidades para desplazarse entre movimientos, vi
 turnos que tiene la partida, etc.
 
 Funciones:
+    visualizar_partida_antigua(game_id : str) -> None
+        Muestra la partida completa.
 
+    cargar_partida_json(game_id : str) -> Optional[dict]
+        Busca y carga todas las partidas del mismo nombre
+
+    enlistar_partidas_json() -> list[str]
+        Filtra los archivos para recoger solo los archivos .json y _temp.json
+
+    visualizar_y_seleccionar_partidas() -> None
+        Mini menu no implementado en el proyecto final para seleccionar la partida que desee el usuario
 """
 from typing import Optional
 from Tablero import Tablero
@@ -16,6 +26,15 @@ import os
 DIR_JSON = 'Base_de_datos/datos/archivos_json'
 
 def visualizar_partida_antigua(game_id : str) -> None:
+    """
+    Funcion encargada de visualizar por consola una partida antigua (ya sea finalizada o en curso). Permite ver cada momento
+    de la partida y el movimiento digitado.
+
+    Parametros:
+    ----------
+    game_id : str
+        Nombre de la partida
+    """
     partida = cargar_partida_json(game_id)
     jugadas = partida.get('movimientos', [])
     fens = [jugada["fen"] for jugada in jugadas]
@@ -48,6 +67,19 @@ def visualizar_partida_antigua(game_id : str) -> None:
     return None
 
 def cargar_partida_json(game_id : str) -> Optional[dict]:
+    """
+    Carga la partida con el mismo nombre. Tiene preferencia el archivo que no tiene _temp.json
+
+    Parametros:
+    ----------
+    game_id : str
+        Nombre de la partida
+
+    Retorna:
+    --------
+     Optional[dict]
+        Devuelve el diccionario con toda la información de la partida. Si no lo encuentra no devuelve nada.
+    """
     if not os.path.exists(f"{DIR_JSON}/{game_id}.json"):
         game_id += '_temp'
     try:
@@ -58,9 +90,20 @@ def cargar_partida_json(game_id : str) -> Optional[dict]:
         return None
 
 def enlistar_partidas_json() -> list[str]:
+    """
+    Retorna todos los nombres de partidas filtrando archivos que no son _temp.json o .json
+
+    Retorna:
+    --------
+     list[str]
+        Devuelve una lista de los nombres de todas las partidas jugadas.
+    """
     return [fichero[:-5] for fichero in os.listdir(DIR_JSON) if fichero.endswith('_temp.json') or fichero.endswith('.json')]
 
 def visualizar_y_seleccionar_partidas() -> None:
+    """
+    Funcion que muestra un mini menu para mostrar todas las partidas jugadas y seleccionar la que desea
+    """
     partidas = enlistar_partidas_json()
     if not partidas:
         print("No se han encontrado partidas\n")

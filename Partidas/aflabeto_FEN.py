@@ -5,13 +5,23 @@ Este modulo proporciona funciones para la traducción del formato LAN simplifica
 simplificación de otros formatos LAN y manejo de errores.
 
 Funciones:
-    - digitar_movimiento() -> tuple:
+    - digitar_movimiento(color : int) -> None | tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]
     Piede al usuario digitar su movimiento en formato LAN simplificado y devuelve el movimiento correspondiente.
 
     - separar_datos(mov : str) -> tuple:
     Separa la entrada de datos en sus partes correspondientes
-    - traducción_LAN(mov : str) -> str:
-    Simplifica el formato LAN de entrada a nuestro formato ultrasimplificado.
+
+    traducir_movimiento_ia(mov : str) -> tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]
+        Transfomra el movimiento de la IA en formato LAN hipersimplificado al movimiento correspondiente
+
+    - transformacion_a_LAN_hipersimplificado(mov : str) -> list[str] | str | Any:
+        Simplifica el formato LAN de entrada a nuestro formato ultrasimplificado.
+
+    - traduccion_inversa(posicion : Union[tuple[int,int], int], donde : Optional[str] = None) -> str
+        Traduce una posición o posiciones a coordenadas del tablero
+
+    - traduccion_total_inversa(movimiento : tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]) -> str
+        Traduce todo el movimiento de la pieza al formato LAN hipersimplificado
 """
 
 from typing import Any, Optional, Union
@@ -20,15 +30,15 @@ from Partidas.error_partidas import ErrorPartida
 traduccion = {'a' : 0, 'b' : 1, 'c' : 2, 'd' : 3,
                   'e' : 4, 'f' : 5, 'g' : 6, 'h' : 7}
 
-def digitar_movimiento(color : int) -> None | tuple[tuple, tuple, int] | tuple[
-    tuple[int, Any], tuple[int, Any], int | Any]:
+def digitar_movimiento(color : int) -> None | tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]:
     """
     Función encargada de leer por consola el movimiento digitado por el jugador en formato LAN hipersimplificado.
 
     Parametros:
     -----------
-    color : bool -> Representa el color del jugador que digita el movimiento. Es importante para tener en cuenta su
-    persepctiva del tablero con la perspectiva que tiene el tablero dentro del código.
+    color : bool
+        Representa el color del jugador que digita el movimiento. Es importante para tener en cuenta su
+        persepctiva del tablero con la perspectiva que tiene el tablero dentro del código.
 
     Retorna:
     -----------
@@ -128,6 +138,21 @@ def separar_datos(mov : str) -> tuple:
         return mov[0:2],mov[2:],None
 
 def traducir_movimiento_ia(mov : str) -> tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]:
+    """
+    Traduce el movimiento de la IA a coordenadas que se pueden manejar en el programa. Funciona igual que digitar_movimiento()
+    solo que en este caso se elimina toda comprobación de entrada de datos.
+
+    Parametros:
+    -----------
+    mov : str
+        Movimiento de la IA que ya ha sido transfomrado a LAN hipersimplificado
+
+    Retorna:
+    -------
+    tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]
+        Retorna lo mismo que digitar_movimiento(). Es una tupla de esta forma (inicio,fin,especial), siendo inicio y final
+        coordenadas del tablero en numeros enteros y especial un codigo que representa un movimiento especial (enroque o promocion)
+    """
     if mov == '0-0-0':
         return (), (), 2
     if mov == '0-0':
@@ -146,7 +171,8 @@ def transformacion_a_LAN_hipersimplificado(mov : str) -> list[str] | str | Any:
 
     Parámetros:
     ----------
-    mov : str -> Movimiento digitado por la máquina (que es quien digita en este formato)
+    mov : str
+        Movimiento digitado por la máquina (que es quien digita en este formato)
 
     Retorna:
     ---------
@@ -197,7 +223,6 @@ def traduccion_posicion(posicion : str) -> tuple[int,int]:
     Parámetros:
     ----------
     pos : str
-
         Posición del tablero
 
     Retorna:
@@ -209,6 +234,23 @@ def traduccion_posicion(posicion : str) -> tuple[int,int]:
     return traduccion[posicion[0]],int(posicion[1])
 
 def traduccion_inversa(posicion : Union[tuple[int,int], int], donde : Optional[str] = None) -> str:
+    """
+    Traduce la tupla de coordenadas de numeros enteros a coordenadas del tablero.
+
+    Parametros:
+    ----------
+    posicion : Union[tuple[int,int], int]
+        Entero o enteros que se traducirán a coordenadas del tablero
+
+    donde : Optional[str]
+        Marca que se va a traducir (fila o columna). De manera predeterminada está en None, que quiere decir que se traducirá
+        en par fila-columna (solo si hay tupla de (int,int))
+
+    Retorna:
+    -------
+    str
+        Devuelve la coordenada correpondiente del tablero
+    """
     columnas = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 
     if type(posicion) == int:
@@ -220,6 +262,20 @@ def traduccion_inversa(posicion : Union[tuple[int,int], int], donde : Optional[s
     return columnas[posicion[1]] + str(8 - posicion[0])
 
 def traduccion_total_inversa(movimiento : tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]) -> str:
+    """
+    Traduce todo el movimiento de una pieza al fomrato LAN hipersimplificado. Tambien traduce su movimiento especial (enroque
+    y promociones).
+
+    Parametros:
+    ----------
+    movimiento : tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]
+        Movimiento completo de la pieza
+
+    Retorna:
+    -------
+    str
+        Devuelve la traducción exacta del movimiento de la pieza
+    """
     if str(movimiento[2]) in '12':
         return '0-0-0' if movimiento[2] == 2 else '0-0'
 

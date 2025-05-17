@@ -19,19 +19,32 @@ class Alfil(Pieza):
     -----------
     posicion : list[int,int]
         Posicíon concreta del alfil
+
     color : bool
         Color del alfil (1 es blanco y 0 es negro)
+
     capturado : bool
         Marca si está capturado el alfil
+
     valor : int
         Valor del alfil
+
     movimientos : list[(int,int)]
         Lista de movimientos válidos del alfil
 
     Métodos:
     -----------
+    __init__(self, posicion : tuple[int,int], color : int) -> None
+        Inicializa un nuevo alfil
+
     movimiento_valido() -> list[(int,int)]
         Devuelve el conjunto de posiciones validas que puede tener.
+
+    __str__(self) -> str
+        Devuelve la representación del Alfil (teniendo en cuenta su color)
+
+    __repr__(self) -> str
+        Muesta información técnica del Alfil
     """
 
     def __init__(self, posicion : tuple[int,int], color : int) -> None:
@@ -42,6 +55,7 @@ class Alfil(Pieza):
         -----------
         posicion : list[int,int]
             Posicíon concreta del alfil
+
         color : bool
             Color del alfil (1 es blanco y 0 es negro)
         """
@@ -55,6 +69,7 @@ class Alfil(Pieza):
         -----------
         tabelro : list[list[int]]
             Tablero en sí
+
         Retorna:
         --------
         list[(int,int)]
@@ -135,7 +150,7 @@ class Alfil(Pieza):
         """
         return 'B' if self.color else 'b'
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Metodo especial para mostrar toda la información de la clase
 

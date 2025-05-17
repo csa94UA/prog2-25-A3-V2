@@ -20,21 +20,35 @@ class Pieza(ABC):
     -----------
     posicion : tuple[int,int]
         Posicíon concreta de una pieza
+
     color : bool
         Color de la pieza (1 es blanco y 0 es negro)
+
     capturado : bool
         Marca si está capturada la pieza
+
     valor : int
         Valor de la pieza (según la subclase a la que pertenezca)
+
     movimientos : list[tuple(int,int)]
         Lista de movimientos válidos de la pieza (según su subclase)
 
     Métodos:
     -----------
-    movimiento_valido():
+    __init__(self, posicion: tuple[int,int], color: int) -> None
+        Inicializa una nueva Pieza
+
+    movimiento_valido(self, tablero: "Tablero"):
         Es un metodo abstracto. Obtiene todos los movimientos posibles de una pieza.
-    mover(tuple(int,int)) -> bool:
-        Desplaza la pieza desde su posición hasta el destino.
+
+    mover(self, destino: tuple[int], tablero: "Tablero", jugador : "Jugador", enemigo : "Jugador", especial : Union[str,int]) -> bool:
+        Desplaza la pieza desde su posición hasta el destino haciendo todas las comprobaciones necesarias.
+
+    __str__(self)
+        Metodo abstracto. Devuelve la representación de la pieza.
+
+     __repr__(self) -> str
+        Retorna información tecnica acerca de la pieza. Util para trazas y análisis
     """
 
     def __init__(self, posicion: tuple[int,int], color: int) -> None:
@@ -45,6 +59,7 @@ class Pieza(ABC):
         -----------
         posicion : tuple[int,int]
             Posicíon concreta de una pieza
+
         color : bool
             Color de la pieza (1 es blanco y 0 es negro)
         """
@@ -68,12 +83,14 @@ class Pieza(ABC):
         from Jugador import Jugador
         from Partidas.aflabeto_FEN import traduccion_inversa
         """
-        Desplaza la pieza desde su posición hasta el destino.
+        Desplaza la pieza desde su posición hasta el destino. En ella comprueba todos los casos (autojaque, promoción
+        incorrecta, jaque no evitado, etc).
 
         Parámetros:
         -----------
         destino : tuple(int,int)
             Posición dsetino de la pieza
+        
         Retorna:
         --------
         bool
@@ -148,7 +165,7 @@ class Pieza(ABC):
         """
         pass
     
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Metodo especial para mostrar toda la información de la clase
 
