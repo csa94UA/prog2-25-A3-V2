@@ -104,7 +104,7 @@ class SesionDeJuego:
 
                 if promocion not in ["dama","caballo","alfil","torre"]:
                     promocion = "dama"
-                    
+
         self.tablero.mover_pieza((origen, destino),promocion)
 
         self.movimientos.append({
@@ -277,7 +277,8 @@ class SesionDeJuego:
             "archivo": nombre_archivo,
             "ganador": self.ganador,
             "elo_blanco": self.jugador_blanco.elo,
-            "elo_negro": self.jugador_negro.elo
+            "elo_negro": self.jugador_negro.elo,
+            "tablero":self.tablero.obtener_tablero_como_texto()
         }
 
     def rendirse(self, color_que_se_rinde: str) -> Dict[str, Any]:

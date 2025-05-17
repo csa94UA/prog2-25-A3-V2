@@ -1,0 +1,13 @@
+{
+    "username": "IA_Negra",
+    "password_crypted": "",
+    "user_id": "5c7b3212-488d-458e-9dd5-99979e6b1849",
+    "elo": 1024,
+    "historial": [
+        "partida_20250517_160037.json"
+    ],
+    "partidas_enjuego": [],
+    "amigos": [],
+    "nivel": 3,
+    "es_ia": true
+}
