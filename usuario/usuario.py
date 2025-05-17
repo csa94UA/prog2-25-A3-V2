@@ -19,7 +19,11 @@ class Usuario:
         self,
         username: str,
         password: str,
-        elo: int = 1000
+        elo: int = 1000,
+        user_id: Optional[str] = None,
+        historial: Optional[List[str]] = None,
+        partidas_enjuego: Optional[List] = None,
+        amigos: Optional[List[str]] = None
     ) -> None:
         """
         Inicializa un nuevo usuario.
@@ -31,15 +35,23 @@ class Usuario:
         password : str
             Contraseña del usuario.
         elo : int, opcional
-            Puntuación ELO inicial del usuario (por defecto es 1200).
+            Puntuación ELO inicial del usuario (por defecto es 1000).
+        user_id : Optional[str], opcional
+            ID único del usuario (si no se proporciona, se genera uno nuevo).
+        historial : Optional[List[str]]
+            Historial de partidas.
+        partidas_enjuego : Optional[List]
+            Partidas en curso.
+        amigos : Optional[List[str]]
+            Lista de IDs de amigos.
         """
         self.username: str = username
         self.password: str = password
-        self.user_id: str = generar_id()
+        self.user_id: str = user_id or generar_id()
         self.elo: int = elo
-        self.historial: List[str] = [] # Lista de nombres de archivos de partidas
-        self.partidas_enjuego: List =  [] # Lista de las partidas que esta jugando 
-        self.amigos: List[str] = [] # Lista de IDs de amigos
+        self.historial: List[str] = historial if historial is not None else []
+        self.partidas_enjuego: List = partidas_enjuego if partidas_enjuego is not None else []
+        self.amigos: List[str] = amigos if amigos is not None else []
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -52,7 +64,7 @@ class Usuario:
         """
         return {
             "username": self.username,
-            "password_crypted": self.password,
+            "password": self.password,
             "user_id": self.user_id,
             "elo": self.elo,
             "historial": self.historial,

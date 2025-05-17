@@ -23,7 +23,7 @@ class UsuarioIA(Usuario):
         Instancia del motor de ajedrez encargado de calcular los movimientos.
     """
 
-    def __init__(self, username: str, password: str = "", elo: int = 1000, nivel: int = 3) -> None:
+    def __init__(self, username: str, password: str = "", elo: int = 1000, nivel: int = 3,es_ia:bool =True,**kwargs) -> None:
         """
         Inicializa una instancia de UsuarioIA con su motor de ajedrez correspondiente.
 
@@ -38,9 +38,9 @@ class UsuarioIA(Usuario):
         nivel : int
             Nivel de dificultad de la IA. Puede influir en la profundidad de búsqueda.
         """
-        super().__init__(username=username, password=password, elo=elo)
+        super().__init__(username=username, password=password, elo=elo,**kwargs)
         self.nivel: int = nivel
-        self.es_ia: bool = True
+        self.es_ia: bool = es_ia
         self.ia: IADeAjedrez = IADeAjedrez(self.nivel)  # Inicializa el motor IA con el nivel dado
 
     def to_dict(self) -> Dict[str, Any]:
@@ -112,7 +112,7 @@ class UsuarioIA(Usuario):
                 ruta: str = os.path.join(PATH_USUARIOS, archivo)
                 with open(ruta, "r", encoding="utf-8") as f:
                     datos: Dict[str, Any] = json.load(f)
-                    if datos.get("username") == username and datos.get("tipo") == "ia":
+                    if datos.get("username") == username and datos.get("es_ia"):
                         return cls(**datos)
         return None
     
