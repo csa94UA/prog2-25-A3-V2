@@ -239,7 +239,7 @@ class IADeAjedrez:
         mejor_movimiento: Optional[tuple] = None
         self.transposition_table.clear()
         movimientos = self.generar_movimientos(tablero,self.color)
-
+        self.color_enemigo = "blanco" if "negro" == self.color else "negro"
         if self.es_paso_final(tablero): # Aumenta la profundidad de busqueda en caso de que hayan menos piezas, ya que la respuesta en late game es mas rapida aprovechamos para que sea mas "inteligente"
             profundidad = self.max_profundidad + 1
         else:
