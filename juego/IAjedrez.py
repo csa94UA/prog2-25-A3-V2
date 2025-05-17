@@ -1,4 +1,4 @@
-   
+from typing import Optional 
 from juego.tablero import Tablero
 
 INF = 1000000
@@ -256,8 +256,8 @@ class IADeAjedrez:
         """
         if profundidad == 0:
             return self.evaluar(tablero)
-        
-        movimientos = self.generar_movimientos(tablero, maximizando)
+        color = self.color if maximizando else self.color_enemigo()
+        movimientos = self.generar_movimientos(tablero, color)
         mejor_valor = -INF if maximizando else INF
         
         for origen, movimiento in movimientos:
@@ -278,11 +278,11 @@ class IADeAjedrez:
         return mejor_valor
 
 
-    def encontrar_mejor_movimiento(self, tablero: Tablero)->tuple:
+    def encontrar_mejor_movimiento(self, tablero: Tablero) -> tuple:
         """
         Encuentra el mejor movimiento utilizando el algoritmo de búsqueda Alfa-Beta.
 
-        Parametros:
+        Parámetros:
         -----------
         tablero : Tablero
             El tablero de ajedrez donde se realizará la búsqueda del mejor movimiento.
@@ -290,20 +290,27 @@ class IADeAjedrez:
         Retorna:
         --------
         tuple
-            Devuelve el mejor movimiento encontrado, compuesto por la pieza y el movimiento seleccionado.
+            Devuelve el mejor movimiento encontrado, como una tupla (origen, destino).
+            Si no hay movimientos disponibles, devuelve None.
         """
-        mejor_valor = -INF
-        
-        movimientos = self.generar_movimientos(tablero, True)
-        
-        for origen, movimiento in movimientos:
+        mejor_valor: float = -INF
+        mejor_movimiento: Optional[tuple] = None
+
+        movimientos = self.generar_movimientos(tablero,self.color)
+
+        if not movimientos:
+            return None 
+
+        for origen, destino in movimientos:
             estado_anterior = tablero.guardar_estado()
-            tablero.mover_pieza_tests((origen,movimiento))
+            tablero.mover_pieza_tests((origen, destino))
+
             valor = self.alfa_beta(tablero, self.max_profundidad - 1, -INF, INF, False)
+
             tablero.restaurar_estado(estado_anterior)
-            
+
             if valor > mejor_valor:
                 mejor_valor = valor
-                origen_best, movimiento_best = origen, movimiento
-        
-        return (origen_best, movimiento_best)
+                mejor_movimiento = (origen, destino)
+
+        return mejor_movimiento

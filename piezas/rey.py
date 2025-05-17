@@ -84,7 +84,8 @@ class Rey(Pieza):
         """
         fila, columna = posicion
         movimientos_potenciales = []
-
+        validador = ValidadorMovimiento(tablero)
+        
         # Movimientos normales del rey (una casilla en cualquier dirección)
         direcciones = [
             (-1, -1), (-1, 0), (-1, 1),
@@ -100,12 +101,13 @@ class Rey(Pieza):
                     movimientos_potenciales.append((nueva_fila, nueva_columna))
 
         # Enroque (solo si el rey no se ha movido, no está en jaque y no se ignora)
-        if not self.se_ha_movido and not tablero.validador.esta_en_jaque(self.color) and not noatacando:
-            movimientos_potenciales += self._movimientos_enroque(posicion, tablero)
+        if evitar_jaque:
+            if not self.se_ha_movido and not validador.esta_en_jaque(self.color) and not noatacando:
+                movimientos_potenciales += self._movimientos_enroque(posicion, tablero)
 
         # Filtrar movimientos que dejarían al rey en jaque
         resguardo = tablero.guardar_estado()
-        validador = ValidadorMovimiento(tablero)
+        
         movimientos_legales = validador.filtrar_movimientos_legales(posicion, movimientos_potenciales, evitar_jaque)
         tablero.restaurar_estado(resguardo)
 

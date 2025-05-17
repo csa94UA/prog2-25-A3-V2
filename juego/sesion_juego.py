@@ -138,7 +138,8 @@ class SesionDeJuego:
                 "msg": mensaje,
                 "estado": "terminado",
                 "ganador": self.ganador,
-                "archivo": nombre_archivo
+                "archivo": nombre_archivo,
+                "movimiento":f"({origen},{destino})"
             }
 
     def _oponente(self) -> str:

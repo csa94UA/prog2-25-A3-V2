@@ -1,0 +1,27 @@
+{
+    "jugador_blanco": {
+        "user_id": "33f58456-f1f1-4aa9-9df1-91ddc9441bb3",
+        "username": "IA_Blanca(blanco)"
+    },
+    "jugador_negro": {
+        "user_id": "cc027172-784d-49b4-846e-9a9fa61d317c",
+        "username": "IA_Negra(negro)"
+    },
+    "ganador": null,
+    "movimientos": [
+        {
+            "origen": [
+                6,
+                4
+            ],
+            "destino": [
+                4,
+                4
+            ],
+            "pieza": "Peon",
+            "color": "blanco",
+            "captura": null
+        }
+    ],
+    "fecha": "2025-05-17 11:47:43.797687"
+}
