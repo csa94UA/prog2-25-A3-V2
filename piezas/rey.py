@@ -101,7 +101,7 @@ class Rey(Pieza):
                     movimientos_potenciales.append((nueva_fila, nueva_columna))
 
         # Enroque (solo si el rey no se ha movido, no está en jaque y no se ignora)
-        if not self.se_ha_movido:
+        if not evitar_jaque and not noatacando and not self.se_ha_movido:
             fila_rey = 7 if self.color == 'blanco' else 0
 
             # Enroque corto (torre en columna 7)
