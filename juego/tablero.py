@@ -16,6 +16,7 @@ from piezas.caballo import Caballo
 from piezas.alfil import Alfil
 from piezas.reina import Reina
 from piezas.rey import Rey
+from piezas.pieza_base import Pieza
 
 class Tablero:
     """
@@ -52,6 +53,7 @@ class Tablero:
         self.casillas: List[List[Optional[object]]] = [[None for _ in range(8)] for _ in range(8)]
         self.ultimo_movimiento: Optional[Tuple[Tuple[int, int], Tuple[int, int], object]] = None
         self.colocar_piezas_iniciales()
+        self.historial_movimientos = []  # Stack de cambios
 
     def colocar_piezas_iniciales(self) -> None:
         """
@@ -194,16 +196,12 @@ class Tablero:
 
         eleccion = eleccion.strip().lower()
         if eleccion == "dama":
-            from piezas.reina import Reina
             self.casillas[fila][columna] = Reina(color)
         elif eleccion == "torre":
-            from piezas.torre import Torre
             self.casillas[fila][columna] = Torre(color)
         elif eleccion == "alfil":
-            from piezas.alfil import Alfil
             self.casillas[fila][columna] = Alfil(color)
         elif eleccion == "caballo":
-            from piezas.caballo import Caballo
             self.casillas[fila][columna] = Caballo(color)
         else:
             return "Opción no válida. Elige dama, torre, alfil o caballo."
@@ -345,3 +343,61 @@ class Tablero:
         
 
         return True
+    
+    def hacer_movimiento(self, origen: Tuple[int, int], destino: Tuple[int, int]) -> None:
+        """
+        Realiza un movimiento de una pieza en el tablero y guarda la información necesaria 
+        para revertirlo posteriormente.
+
+        Args:
+            origen (Tuple[int, int]): Coordenada (fila, columna) de origen.
+            destino (Tuple[int, int]): Coordenada (fila, columna) de destino.
+        """
+        fila_o, col_o = origen
+        fila_d, col_d = destino
+
+        pieza_origen: Optional[Pieza] = self.casillas[fila_o][col_o]
+        pieza_capturada: Optional[Pieza] = self.casillas[fila_d][col_d]
+
+        # Guardamos el movimiento para poder deshacerlo
+        self.historial_movimientos.append((origen, destino, pieza_origen, pieza_capturada))
+
+        # Realizamos el movimiento
+        self.casillas[fila_d][col_d] = pieza_origen
+        self.casillas[fila_o][col_o] = None
+
+    def deshacer_último_movimiento(self) -> None:
+        """
+        Revierte el último movimiento realizado en el tablero.
+        Si no hay movimientos para deshacer, no hace nada.
+        """
+        if not self.historial_movimientos:
+            return
+
+        origen, destino, pieza_origen, pieza_capturada = self.historial_movimientos.pop()
+
+        fila_o, col_o = origen
+        fila_d, col_d = destino
+
+        # Restauramos el estado anterior del tablero
+        self.casillas[fila_o][col_o] = pieza_origen
+        self.casillas[fila_d][col_d] = pieza_capturada
+
+    def generar_hash(self) -> str:
+        """
+        Genera una representación en forma de cadena del estado actual del tablero.
+        Útil para implementaciones de tablas de transposición o almacenamiento en caché.
+
+        Returns:
+            str: Cadena que representa el estado del tablero.
+        """
+        piezas: List[str] = []
+
+        for fila in self.casillas:
+            for p in fila:
+                if p:
+                    piezas.append(f"{p.__class__.__name__[0]}{p.color[0]}")
+                else:
+                    piezas.append("..")  # Casilla vacía
+
+        return ''.join(piezas)

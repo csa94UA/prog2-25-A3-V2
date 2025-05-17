@@ -77,6 +77,7 @@ class IADeAjedrez:
         self.max_profundidad = max_profundidad
         self.color = None
         self.color_enemigo = "blanco" if "negro" == self.color else "negro"
+        self.transposition_table: dict[str, float] = {}
 
     def valor_posicional(self, pieza, fila: int, col: int, fase_juego: str="medio") -> int:
         tablas = {
@@ -124,68 +125,6 @@ class IADeAjedrez:
         movimientos = self.generar_movimientos(tablero, color)
         return len(movimientos)
 
-    def peones_doblados(self, tablero: Tablero, color: str) -> int:
-        # Detecta peones doblados en columnas, penaliza
-        columnas = {c:0 for c in range(8)}
-        for fila in range(8):
-            for col in range(8):
-                pieza = tablero.casillas[fila][col]
-                if pieza and pieza.__class__.__name__ == "peon" and pieza.color == color:
-                    columnas[col] += 1
-        doblados = sum(1 for c in columnas if columnas[c] > 1)
-        return doblados
-
-    def peones_aislados(self, tablero: Tablero, color: str) -> int:
-        # Penaliza peones sin peones en columnas adyacentes
-        columnas_con_peon = set()
-        for fila in range(8):
-            for col in range(8):
-                p = tablero.casillas[fila][col]
-                if p and p.__class__.__name__ == "peon" and p.color == color:
-                    columnas_con_peon.add(col)
-
-        aislados = 0
-        for c in columnas_con_peon:
-            if (c-1 not in columnas_con_peon) and (c+1 not in columnas_con_peon):
-                aislados += 1
-        return aislados
-
-    def peones_pasados(self, tablero: Tablero, color: str) -> int:
-        # Premia peones pasados (no tienen peones enemigos en la misma columna ni adyacentes por delante)
-        def tiene_peon_enemigo_adelante(fila, col):
-            paso = 1 if color == "blanco" else -1
-            for r in range(fila + paso, 8 if color == "blanco" else -1, paso):
-                for dc in [-1,0,1]:
-                    c = col + dc
-                    if 0 <= c < 8:
-                        p = tablero.casillas[r][c]
-                        if p and p.__class__.__name__ == "peon" and p.color != color:
-                            return True
-            return False
-
-        pasados = 0
-        for fila in range(8):
-            for col in range(8):
-                p = tablero.casillas[fila][col]
-                if p and p.__class__.__name__ == "peon" and p.color == color:
-                    if not tiene_peon_enemigo_adelante(fila, col):
-                        pasados += 1
-        return pasados
-
-
-    def control_centro(self, tablero: Tablero, color: str) -> int:
-        # Premia si el jugador controla el centro (d4,d5,e4,e5)
-        centro = [(3,3),(3,4),(4,3),(4,4)]
-        valor = 0
-        for (f,c) in centro:
-            p = tablero.casillas[f][c]
-            if p:
-                if p.color == color:
-                    valor += 20
-                else:
-                    valor -= 20
-        return valor
-
     def generar_movimientos(self, tablero:Tablero,color:str)->list:
         """
         Genera todos los movimientos válidos para un jugador de un color dado.
@@ -222,10 +161,6 @@ class IADeAjedrez:
         valor += self.evaluar_posicional(tablero, fase_juego)
 
         valor += (self.movilidad(tablero, self.color) - self.movilidad(tablero, self.color_enemigo)) * 10
-        valor -= (self.peones_doblados(tablero, self.color) - self.peones_doblados(tablero, self.color_enemigo)) * 25
-        valor -= (self.peones_aislados(tablero, self.color) - self.peones_aislados(tablero, self.color_enemigo)) * 20
-        valor += (self.peones_pasados(tablero, self.color) - self.peones_pasados(tablero, self.color_enemigo)) * 30
-        valor += self.control_centro(tablero, self.color)
 
         return valor
 
@@ -252,17 +187,25 @@ class IADeAjedrez:
         float
             El valor de la mejor jugada encontrada en el árbol de búsqueda.
         """
+        tablero_hash = tablero.generar_hash()
+
+        if (tablero_hash, profundidad, maximizando) in self.transposition_table:
+            return self.transposition_table[(tablero_hash, profundidad, maximizando)]
+        
         if profundidad == 0:
-            return self.evaluar(tablero)
-        color = self.color if maximizando else self.color_enemigo()
+            evaluacion = self.evaluar(tablero)
+            self.transposition_table[(tablero_hash, profundidad, maximizando)] = evaluacion
+            return evaluacion
+
+        color = self.color if maximizando else self.color_enemigo
         movimientos = self.generar_movimientos(tablero, color)
+        movimientos.sort(key=lambda mov: tablero.casillas[mov[1][0]][mov[1][1]] is not None, reverse=True) # ordeno movimientos para primero los que pueden eliminar algo para podar mejor los movimientos
         mejor_valor = -INF if maximizando else INF
         
         for origen, movimiento in movimientos:
-            estado_anterior = tablero.guardar_estado()
-            tablero.mover_pieza_tests((origen,movimiento))
+            tablero.hacer_movimiento(origen, movimiento)
             valor = self.alfa_beta(tablero, profundidad - 1, alfa, beta, not maximizando)
-            tablero.restaurar_estado(estado_anterior)
+            tablero.deshacer_último_movimiento()
             
             if maximizando:
                 mejor_valor = max(mejor_valor, valor)
@@ -273,6 +216,7 @@ class IADeAjedrez:
             
             if beta <= alfa:
                 break
+        self.transposition_table[(tablero_hash, profundidad, maximizando)] = mejor_valor
         return mejor_valor
 
 
@@ -293,19 +237,24 @@ class IADeAjedrez:
         """
         mejor_valor: float = -INF
         mejor_movimiento: Optional[tuple] = None
-
+        self.transposition_table.clear()
         movimientos = self.generar_movimientos(tablero,self.color)
+
+        if self.es_paso_final(tablero): # Aumenta la profundidad de busqueda en caso de que hayan menos piezas, ya que la respuesta en late game es mas rapida aprovechamos para que sea mas "inteligente"
+            profundidad = self.max_profundidad + 1
+        else:
+            profundidad = self.max_profundidad
 
         if not movimientos:
             return None 
 
         for origen, destino in movimientos:
-            estado_anterior = tablero.guardar_estado()
-            tablero.mover_pieza_tests((origen, destino))
 
-            valor = self.alfa_beta(tablero, self.max_profundidad - 1, -INF, INF, False)
+            tablero.hacer_movimiento(origen, destino)
 
-            tablero.restaurar_estado(estado_anterior)
+            valor = self.alfa_beta(tablero,profundidad - 1, -INF, INF, False)
+
+            tablero.deshacer_último_movimiento()
 
             if valor > mejor_valor:
                 mejor_valor = valor

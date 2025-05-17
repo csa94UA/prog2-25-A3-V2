@@ -61,7 +61,7 @@ class SesionDeJuego:
         self.movimientos: list = []
         self.archivos_temporales: list[str] = []
 
-    def jugar_turno(self, entrada: Union[str, Tuple[Tuple[int, int], Tuple[int, int]]] = None) -> Dict[str, Any]:
+    def jugar_turno(self, entrada: Union[str, Tuple[Tuple[int, int], Tuple[int, int]]] = None,promocion = None) -> Dict[str, Any]:
         """
         Ejecuta un turno con la entrada dada. Si es el turno de una IA, se genera el movimiento automáticamente.
 
@@ -83,7 +83,7 @@ class SesionDeJuego:
         if isinstance(jugador_actual, UsuarioIA):
             entrada = jugador_actual.elegir_movimiento(self.tablero, self.turno_actual)
 
-        if entrada == "abandono":
+        if entrada == "abandono" or entrada == None:
             return self.rendirse(self.turno_actual)
 
         origen, destino = entrada
@@ -96,7 +96,16 @@ class SesionDeJuego:
             return {"error": "Movimiento ilegal."}
         
         pieza_destino = self.tablero.casillas[destino[0]][destino[1]]
-        self.tablero.mover_pieza((origen, destino))
+
+        if pieza.__class__.__name__ == "peon":
+            if (pieza.color == "blanco" and destino[0] == 0) or (pieza.color == "negro" and destino[0] == 7):
+                if promocion is None:
+                    promocion = "dama"
+
+                if promocion not in ["dama","caballo","alfil","torre"]:
+                    promocion = "dama"
+                    
+        self.tablero.mover_pieza((origen, destino),promocion)
 
         self.movimientos.append({
             "origen": origen,

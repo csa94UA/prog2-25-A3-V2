@@ -1,0 +1,79 @@
+{
+    "jugador_blanco": {
+        "user_id": "6e9c8fc0-676b-4bf3-8864-89917d40df94",
+        "username": "IA_Blanca(blanco)"
+    },
+    "jugador_negro": {
+        "user_id": "1915ab9b-8b39-4fc9-92dd-cd2d7992a237",
+        "username": "IA_Negra(negro)"
+    },
+    "ganador": null,
+    "movimientos": [
+        {
+            "origen": [
+                6,
+                4
+            ],
+            "destino": [
+                5,
+                4
+            ],
+            "pieza": "Peon",
+            "color": "blanco",
+            "captura": null
+        },
+        {
+            "origen": [
+                0,
+                1
+            ],
+            "destino": [
+                2,
+                2
+            ],
+            "pieza": "Caballo",
+            "color": "negro",
+            "captura": null
+        },
+        {
+            "origen": [
+                7,
+                5
+            ],
+            "destino": [
+                3,
+                1
+            ],
+            "pieza": "Alfil",
+            "color": "blanco",
+            "captura": null
+        },
+        {
+            "origen": [
+                1,
+                0
+            ],
+            "destino": [
+                2,
+                0
+            ],
+            "pieza": "Peon",
+            "color": "negro",
+            "captura": null
+        },
+        {
+            "origen": [
+                3,
+                1
+            ],
+            "destino": [
+                2,
+                2
+            ],
+            "pieza": "Alfil",
+            "color": "blanco",
+            "captura": "Caballo"
+        }
+    ],
+    "fecha": "2025-05-17 15:22:53.402905"
+}
