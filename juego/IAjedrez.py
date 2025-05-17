@@ -97,7 +97,7 @@ class IADeAjedrez:
 
     def es_paso_final(self, tablero: Tablero) -> bool:
         piezas_totales = sum(1 for fila in tablero.casillas for c in fila if c)
-        return piezas_totales <= 12 
+        return piezas_totales <= 14 
 
     def evaluar_material(self, tablero: Tablero) -> int:
         valor = 0
