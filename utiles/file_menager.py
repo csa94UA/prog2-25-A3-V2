@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Any, Dict, List
 
 # Directorio donde se almacenan las partidas
-from config import PATH_PARTIDAS
+from config import PATH_PARTIDAS,PATH_PARTIDAS_TEMP
 
 def guardar_partida(partida_data: Dict[str, Any], temporal: bool = False) -> str:
     """
@@ -33,9 +33,9 @@ def guardar_partida(partida_data: Dict[str, Any], temporal: bool = False) -> str
     if temporal:
         nombre_archivo += "_temp"
     nombre_archivo += ".json"
-
+    camino = PATH_PARTIDAS_TEMP if temporal else PATH_PARTIDAS
     # Ruta completa del archivo
-    ruta = os.path.join(PATH_PARTIDAS, nombre_archivo)
+    ruta = os.path.join(camino, nombre_archivo)
 
     try:
         with open(ruta, "w", encoding="utf-8") as f:

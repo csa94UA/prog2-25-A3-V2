@@ -17,8 +17,8 @@ def simular_partida(ia_vs_ia: bool = True) -> None:
         Si es False, se simula un jugador humano (realmente automático).
     """
     if ia_vs_ia:
-        jugador_blanco: Usuario = UsuarioIA(username="IA_Blanca", nivel=1)
-        jugador_negro: Usuario = UsuarioIA(username="IA_Negra", nivel=2)
+        jugador_blanco: Usuario = UsuarioIA(username="IA_Blanca", nivel=3)
+        jugador_negro: Usuario = UsuarioIA(username="IA_Negra", nivel=3)
 
 
     sesion: SesionDeJuego = SesionDeJuego(jugador_blanco, jugador_negro)
@@ -36,7 +36,8 @@ def simular_partida(ia_vs_ia: bool = True) -> None:
         print(resultado.get("msg"))
         if "alerta" in resultado:
             print(">>", resultado["alerta"])
-        print(resultado["movimiento"])
+        for x in resultado.get("tablero"):
+            print(x)
         if resultado["estado"] == "terminado":
             print("\n== Partida terminada ==")
             print("Ganador:", resultado.get("ganador"))

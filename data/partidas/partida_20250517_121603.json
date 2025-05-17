@@ -1,10 +1,10 @@
 {
     "jugador_blanco": {
-        "user_id": "33f58456-f1f1-4aa9-9df1-91ddc9441bb3",
+        "user_id": "cd9c7658-5fbe-4cd0-b2e3-9c0b8565976a",
         "username": "IA_Blanca(blanco)"
     },
     "jugador_negro": {
-        "user_id": "cc027172-784d-49b4-846e-9a9fa61d317c",
+        "user_id": "d513ec2e-3abc-421f-ae6e-d6d326b0f7be",
         "username": "IA_Negra(negro)"
     },
     "ganador": "negro",
@@ -114,7 +114,7 @@
             "captura": "Peon"
         }
     ],
-    "fecha": "2025-05-17 11:47:53.280023",
+    "fecha": "2025-05-17 12:16:03.968362",
     "tablero_final": [
         [
             {

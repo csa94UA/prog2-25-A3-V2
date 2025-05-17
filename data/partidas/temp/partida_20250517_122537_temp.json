@@ -1,10 +1,10 @@
 {
     "jugador_blanco": {
-        "user_id": "33f58456-f1f1-4aa9-9df1-91ddc9441bb3",
+        "user_id": "e42c00c7-bfc3-4aee-9b42-f09b4d2ee959",
         "username": "IA_Blanca(blanco)"
     },
     "jugador_negro": {
-        "user_id": "cc027172-784d-49b4-846e-9a9fa61d317c",
+        "user_id": "b49989a3-d3a9-4fd1-8922-ae10dd544d3b",
         "username": "IA_Negra(negro)"
     },
     "ganador": null,
@@ -12,11 +12,11 @@
         {
             "origen": [
                 6,
-                4
+                3
             ],
             "destino": [
                 4,
-                4
+                3
             ],
             "pieza": "Peon",
             "color": "blanco",
@@ -28,26 +28,13 @@
                 4
             ],
             "destino": [
-                3,
+                2,
                 4
             ],
             "pieza": "Peon",
             "color": "negro",
             "captura": null
-        },
-        {
-            "origen": [
-                7,
-                3
-            ],
-            "destino": [
-                3,
-                7
-            ],
-            "pieza": "Reina",
-            "color": "blanco",
-            "captura": null
         }
     ],
-    "fecha": "2025-05-17 11:47:45.600680"
+    "fecha": "2025-05-17 12:25:37.221356"
 }

@@ -76,9 +76,7 @@ class IADeAjedrez:
     def __init__(self,max_profundidad: int=3) -> None:
         self.max_profundidad = max_profundidad
         self.color = None
-
-    def color_enemigo(self):
-        return "blanco" if "negro" == self.color else "negro"
+        self.color_enemigo = "blanco" if "negro" == self.color else "negro"
 
     def valor_posicional(self, pieza, fila: int, col: int, fase_juego: str="medio") -> int:
         tablas = {
@@ -223,10 +221,10 @@ class IADeAjedrez:
         valor += self.evaluar_material(tablero)
         valor += self.evaluar_posicional(tablero, fase_juego)
 
-        valor += (self.movilidad(tablero, self.color) - self.movilidad(tablero, self.color_enemigo())) * 10
-        valor -= (self.peones_doblados(tablero, self.color) - self.peones_doblados(tablero, self.color_enemigo())) * 25
-        valor -= (self.peones_aislados(tablero, self.color) - self.peones_aislados(tablero, self.color_enemigo())) * 20
-        valor += (self.peones_pasados(tablero, self.color) - self.peones_pasados(tablero, self.color_enemigo())) * 30
+        valor += (self.movilidad(tablero, self.color) - self.movilidad(tablero, self.color_enemigo)) * 10
+        valor -= (self.peones_doblados(tablero, self.color) - self.peones_doblados(tablero, self.color_enemigo)) * 25
+        valor -= (self.peones_aislados(tablero, self.color) - self.peones_aislados(tablero, self.color_enemigo)) * 20
+        valor += (self.peones_pasados(tablero, self.color) - self.peones_pasados(tablero, self.color_enemigo)) * 30
         valor += self.control_centro(tablero, self.color)
 
         return valor

@@ -1,14 +1,40 @@
 {
     "jugador_blanco": {
-        "user_id": "33f58456-f1f1-4aa9-9df1-91ddc9441bb3",
+        "user_id": "6ce94c1d-0161-4b6e-a403-61f4290d9d2f",
         "username": "IA_Blanca(blanco)"
     },
     "jugador_negro": {
-        "user_id": "cc027172-784d-49b4-846e-9a9fa61d317c",
+        "user_id": "3e547171-acff-4e9e-8905-64aace59fc20",
         "username": "IA_Negra(negro)"
     },
     "ganador": null,
     "movimientos": [
+        {
+            "origen": [
+                6,
+                3
+            ],
+            "destino": [
+                4,
+                3
+            ],
+            "pieza": "Peon",
+            "color": "blanco",
+            "captura": null
+        },
+        {
+            "origen": [
+                1,
+                4
+            ],
+            "destino": [
+                2,
+                4
+            ],
+            "pieza": "Peon",
+            "color": "negro",
+            "captura": null
+        },
         {
             "origen": [
                 6,
@@ -21,46 +47,7 @@
             "pieza": "Peon",
             "color": "blanco",
             "captura": null
-        },
-        {
-            "origen": [
-                1,
-                4
-            ],
-            "destino": [
-                3,
-                4
-            ],
-            "pieza": "Peon",
-            "color": "negro",
-            "captura": null
-        },
-        {
-            "origen": [
-                7,
-                3
-            ],
-            "destino": [
-                3,
-                7
-            ],
-            "pieza": "Reina",
-            "color": "blanco",
-            "captura": null
-        },
-        {
-            "origen": [
-                0,
-                3
-            ],
-            "destino": [
-                1,
-                4
-            ],
-            "pieza": "Reina",
-            "color": "negro",
-            "captura": null
         }
     ],
-    "fecha": "2025-05-17 11:47:48.890230"
+    "fecha": "2025-05-17 12:20:58.775051"
 }

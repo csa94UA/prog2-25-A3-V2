@@ -84,7 +84,7 @@ class Rey(Pieza):
         """
         fila, columna = posicion
         movimientos_potenciales = []
-        validador = ValidadorMovimiento(tablero)
+        
         
         # Movimientos normales del rey (una casilla en cualquier dirección)
         direcciones = [
@@ -101,84 +101,24 @@ class Rey(Pieza):
                     movimientos_potenciales.append((nueva_fila, nueva_columna))
 
         # Enroque (solo si el rey no se ha movido, no está en jaque y no se ignora)
-        if evitar_jaque:
-            if not self.se_ha_movido and not validador.esta_en_jaque(self.color) and not noatacando:
-                movimientos_potenciales += self._movimientos_enroque(posicion, tablero)
+        if not self.se_ha_movido:
+            fila_rey = 7 if self.color == 'blanco' else 0
 
-        # Filtrar movimientos que dejarían al rey en jaque
+            # Enroque corto (torre en columna 7)
+            torre_corta = tablero.casillas[fila_rey][7]
+            if isinstance(torre_corta, Torre) and not torre_corta.se_ha_movido:
+                if all(tablero.casillas[fila_rey][c] is None for c in [5, 6]):
+                    movimientos_potenciales.append((fila_rey, 6))
+
+            # Enroque largo (torre en columna 0)
+            torre_larga = tablero.casillas[fila_rey][0]
+            if isinstance(torre_larga, Torre) and not torre_larga.se_ha_movido:
+                if all(tablero.casillas[fila_rey][c] is None for c in [1, 2, 3]):
+                    movimientos_potenciales.append((fila_rey, 2))
+
         resguardo = tablero.guardar_estado()
-        
+        validador = ValidadorMovimiento(tablero)
         movimientos_legales = validador.filtrar_movimientos_legales(posicion, movimientos_potenciales, evitar_jaque)
         tablero.restaurar_estado(resguardo)
 
         return movimientos_legales
-
-    def _movimientos_enroque(self, posicion, tablero):
-        """
-        Calcula los movimientos legales de enroque para el rey.
-
-        Parámetros:
-        -----------
-        posicion : tuple (fila, columna)
-            Posición actual del rey.
-        tablero : objeto Tablero
-            Estado actual del tablero.
-
-        Retorna:
-        --------
-        list de tuplas (fila, columna)
-            Posibles posiciones finales del rey tras enroque.
-        """
-        fila_rey = 0 if self.color == 'blanco' else 7
-        movimientos_enroque = []
-
-        # Enroque corto (torre en la columna 7)
-        torre_derecha = tablero.casillas[fila_rey][7]
-        if (
-            isinstance(torre_derecha, Torre) and
-            not torre_derecha.se_ha_movido and
-            all(tablero.casillas[fila_rey][c] is None for c in [5, 6])
-        ):
-            if not self._pasa_por_jaque(tablero, posicion, [(fila_rey, 5), (fila_rey, 6)]):
-                movimientos_enroque.append((fila_rey, 6))
-
-        # Enroque largo (torre en la columna 0)
-        torre_izquierda = tablero.casillas[fila_rey][0]
-        if (
-            isinstance(torre_izquierda, Torre) and
-            not torre_izquierda.se_ha_movido and
-            all(tablero.casillas[fila_rey][c] is None for c in [1, 2, 3])
-        ):
-            if not self._pasa_por_jaque(tablero, posicion, [(fila_rey, 3), (fila_rey, 2)]):
-                movimientos_enroque.append((fila_rey, 2))
-
-        return movimientos_enroque
-
-    def _pasa_por_jaque(self, tablero, origen, casillas_enroque):
-        """
-        Verifica si alguna casilla por la que pasa o termina el rey durante
-        el enroque está bajo amenaza (en jaque).
-
-        Parámetros:
-        -----------
-        tablero : objeto Tablero
-            Estado actual del tablero.
-        origen : tuple (fila, columna)
-            Posición actual del rey.
-        casillas_enroque : list de tuplas
-            Casillas por las que el rey pasaría al enrocar.
-
-        Retorna:
-        --------
-        bool
-            True si alguna casilla está en jaque, False en caso contrario.
-        """
-        color = self.color
-        resguardo = tablero.guardar_estado()
-        for casilla in casillas_enroque:
-            tablero.mover_pieza_tests((origen, casilla))
-            if tablero.validador.esta_en_jaque(color):
-                tablero.restaurar_estado(resguardo)
-                return True
-            tablero.restaurar_estado(resguardo)
-        return False

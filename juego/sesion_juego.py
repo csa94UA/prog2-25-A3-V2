@@ -4,6 +4,7 @@ Módulo que define la clase SesionDeJuego para gestionar partidas de ajedrez ent
 Contiene toda la lógica de juego, movimientos, validaciones, estado y guardado de partidas.
 """
 
+import os
 from datetime import datetime
 from typing import Tuple, Union, Dict, Any, Optional
 
@@ -13,6 +14,7 @@ from utiles.file_menager import guardar_partida
 from utiles.elo import calcular_elo
 from usuario.usuario import Usuario
 from juego.usuarioIA import UsuarioIA
+from config import PATH_PARTIDAS_TEMP
 
 class SesionDeJuego:
     """
@@ -57,6 +59,7 @@ class SesionDeJuego:
         self.terminado: bool = False
         self.ganador: Optional[str] = None
         self.movimientos: list = []
+        self.archivos_temporales: list[str] = []
 
     def jugar_turno(self, entrada: Union[str, Tuple[Tuple[int, int], Tuple[int, int]]] = None) -> Dict[str, Any]:
         """
@@ -131,7 +134,9 @@ class SesionDeJuego:
                 "estado": "continuar",
                 "turno_siguiente": self.turno_actual,
                 "temp_guardado": temp_result,
-                "alerta": mensaje
+                "alerta": mensaje,
+                "movimiento":f"({origen},{destino})",
+                "tablero":self.tablero.obtener_tablero_como_texto()
             }
         else:
             return {
@@ -139,7 +144,8 @@ class SesionDeJuego:
                 "estado": "terminado",
                 "ganador": self.ganador,
                 "archivo": nombre_archivo,
-                "movimiento":f"({origen},{destino})"
+                "movimiento":f"({origen},{destino})",
+                "tablero":self.tablero.obtener_tablero_como_texto()
             }
 
     def _oponente(self) -> str:
@@ -256,7 +262,7 @@ class SesionDeJuego:
 
         self.jugador_blanco.guardar()
         self.jugador_negro.guardar()
-
+        self.limpiar_archivos_temporales()
         return {
             "msg": "Partida finalizada y guardada con éxito",
             "archivo": nombre_archivo,
@@ -304,6 +310,16 @@ class SesionDeJuego:
         try:
             datos = self.obtener_datos_partida(include_final=False)
             nombre_archivo = guardar_partida(datos, temporal=True)
+            self.archivos_temporales.append(nombre_archivo)
             return {"msg": "Estado temporal guardado correctamente.", "archivo": nombre_archivo}
         except Exception as e:
             return {"error": f"No se pudo guardar el estado temporal: {str(e)}"}
+
+    def limpiar_archivos_temporales(self) -> None:
+        """
+        Elimina los archivos temporales creados durante la sesión de juego.
+        """
+        for archivo in self.archivos_temporales:
+            ruta = os.path.join(PATH_PARTIDAS_TEMP, archivo)
+            if os.path.exists(ruta):
+                os.remove(ruta)
