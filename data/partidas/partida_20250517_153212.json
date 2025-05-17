@@ -1,0 +1,594 @@
+{
+    "jugador_blanco": {
+        "user_id": "d98772d3-dc23-4f0a-8ade-497b6b237403",
+        "username": "IA_Blanca(blanco)"
+    },
+    "jugador_negro": {
+        "user_id": "e5d36cf4-85a6-4f53-aa09-53f5a0b38f2a",
+        "username": "IA_Negra(negro)"
+    },
+    "ganador": "blanco",
+    "movimientos": [
+        {
+            "origen": [
+                6,
+                4
+            ],
+            "destino": [
+                5,
+                4
+            ],
+            "pieza": "Peon",
+            "color": "blanco",
+            "captura": null
+        },
+        {
+            "origen": [
+                0,
+                1
+            ],
+            "destino": [
+                2,
+                2
+            ],
+            "pieza": "Caballo",
+            "color": "negro",
+            "captura": null
+        },
+        {
+            "origen": [
+                7,
+                3
+            ],
+            "destino": [
+                5,
+                5
+            ],
+            "pieza": "Reina",
+            "color": "blanco",
+            "captura": null
+        },
+        {
+            "origen": [
+                0,
+                0
+            ],
+            "destino": [
+                0,
+                1
+            ],
+            "pieza": "Torre",
+            "color": "negro",
+            "captura": null
+        },
+        {
+            "origen": [
+                7,
+                1
+            ],
+            "destino": [
+                5,
+                2
+            ],
+            "pieza": "Caballo",
+            "color": "blanco",
+            "captura": null
+        },
+        {
+            "origen": [
+                0,
+                1
+            ],
+            "destino": [
+                0,
+                0
+            ],
+            "pieza": "Torre",
+            "color": "negro",
+            "captura": null
+        },
+        {
+            "origen": [
+                7,
+                5
+            ],
+            "destino": [
+                5,
+                3
+            ],
+            "pieza": "Alfil",
+            "color": "blanco",
+            "captura": null
+        },
+        {
+            "origen": [
+                0,
+                0
+            ],
+            "destino": [
+                0,
+                1
+            ],
+            "pieza": "Torre",
+            "color": "negro",
+            "captura": null
+        },
+        {
+            "origen": [
+                5,
+                5
+            ],
+            "destino": [
+                3,
+                3
+            ],
+            "pieza": "Reina",
+            "color": "blanco",
+            "captura": null
+        },
+        {
+            "origen": [
+                0,
+                1
+            ],
+            "destino": [
+                0,
+                0
+            ],
+            "pieza": "Torre",
+            "color": "negro",
+            "captura": null
+        },
+        {
+            "origen": [
+                6,
+                0
+            ],
+            "destino": [
+                5,
+                0
+            ],
+            "pieza": "Peon",
+            "color": "blanco",
+            "captura": null
+        },
+        {
+            "origen": [
+                1,
+                4
+            ],
+            "destino": [
+                2,
+                4
+            ],
+            "pieza": "Peon",
+            "color": "negro",
+            "captura": null
+        },
+        {
+            "origen": [
+                3,
+                3
+            ],
+            "destino": [
+                2,
+                4
+            ],
+            "pieza": "Reina",
+            "color": "blanco",
+            "captura": "Peon"
+        },
+        {
+            "origen": [
+                0,
+                3
+            ],
+            "destino": [
+                1,
+                4
+            ],
+            "pieza": "Reina",
+            "color": "negro",
+            "captura": null
+        },
+        {
+            "origen": [
+                2,
+                4
+            ],
+            "destino": [
+                4,
+                4
+            ],
+            "pieza": "Reina",
+            "color": "blanco",
+            "captura": null
+        },
+        {
+            "origen": [
+                1,
+                3
+            ],
+            "destino": [
+                3,
+                3
+            ],
+            "pieza": "Peon",
+            "color": "negro",
+            "captura": null
+        },
+        {
+            "origen": [
+                5,
+                2
+            ],
+            "destino": [
+                3,
+                3
+            ],
+            "pieza": "Caballo",
+            "color": "blanco",
+            "captura": "Peon"
+        },
+        {
+            "origen": [
+                1,
+                5
+            ],
+            "destino": [
+                3,
+                5
+            ],
+            "pieza": "Peon",
+            "color": "negro",
+            "captura": null
+        },
+        {
+            "origen": [
+                3,
+                3
+            ],
+            "destino": [
+                1,
+                2
+            ],
+            "pieza": "Caballo",
+            "color": "blanco",
+            "captura": "Peon"
+        },
+        {
+            "origen": [
+                0,
+                4
+            ],
+            "destino": [
+                0,
+                3
+            ],
+            "pieza": "Rey",
+            "color": "negro",
+            "captura": null
+        },
+        {
+            "origen": [
+                4,
+                4
+            ],
+            "destino": [
+                4,
+                7
+            ],
+            "pieza": "Reina",
+            "color": "blanco",
+            "captura": null
+        },
+        {
+            "origen": [
+                0,
+                3
+            ],
+            "destino": [
+                1,
+                2
+            ],
+            "pieza": "Rey",
+            "color": "negro",
+            "captura": "Caballo"
+        },
+        {
+            "origen": [
+                4,
+                7
+            ],
+            "destino": [
+                4,
+                2
+            ],
+            "pieza": "Reina",
+            "color": "blanco",
+            "captura": null
+        },
+        {
+            "origen": [
+                1,
+                4
+            ],
+            "destino": [
+                5,
+                0
+            ],
+            "pieza": "Reina",
+            "color": "negro",
+            "captura": "Peon"
+        },
+        {
+            "origen": [
+                6,
+                1
+            ],
+            "destino": [
+                5,
+                0
+            ],
+            "pieza": "Peon",
+            "color": "blanco",
+            "captura": "Reina"
+        },
+        {
+            "origen": [
+                0,
+                2
+            ],
+            "destino": [
+                2,
+                4
+            ],
+            "pieza": "Alfil",
+            "color": "negro",
+            "captura": null
+        },
+        {
+            "origen": [
+                4,
+                2
+            ],
+            "destino": [
+                2,
+                2
+            ],
+            "pieza": "Reina",
+            "color": "blanco",
+            "captura": "Caballo"
+        },
+        {
+            "origen": [
+                1,
+                2
+            ],
+            "destino": [
+                0,
+                1
+            ],
+            "pieza": "Rey",
+            "color": "negro",
+            "captura": null
+        },
+        {
+            "origen": [
+                2,
+                2
+            ],
+            "destino": [
+                2,
+                4
+            ],
+            "pieza": "Reina",
+            "color": "blanco",
+            "captura": "Alfil"
+        },
+        {
+            "origen": [
+                0,
+                5
+            ],
+            "destino": [
+                2,
+                3
+            ],
+            "pieza": "Alfil",
+            "color": "negro",
+            "captura": null
+        },
+        {
+            "origen": [
+                2,
+                4
+            ],
+            "destino": [
+                2,
+                3
+            ],
+            "pieza": "Reina",
+            "color": "blanco",
+            "captura": "Alfil"
+        },
+        {
+            "origen": [
+                0,
+                1
+            ],
+            "destino": [
+                0,
+                2
+            ],
+            "pieza": "Rey",
+            "color": "negro",
+            "captura": null
+        },
+        {
+            "origen": [
+                2,
+                3
+            ],
+            "destino": [
+                1,
+                2
+            ],
+            "pieza": "Reina",
+            "color": "blanco",
+            "captura": null
+        }
+    ],
+    "fecha": "2025-05-17 15:32:12.571955",
+    "tablero_final": [
+        [
+            {
+                "tipo": "Torre",
+                "color": "negro"
+            },
+            null,
+            {
+                "tipo": "Rey",
+                "color": "negro"
+            },
+            null,
+            null,
+            null,
+            {
+                "tipo": "Caballo",
+                "color": "negro"
+            },
+            {
+                "tipo": "Torre",
+                "color": "negro"
+            }
+        ],
+        [
+            {
+                "tipo": "Peon",
+                "color": "negro"
+            },
+            {
+                "tipo": "Peon",
+                "color": "negro"
+            },
+            {
+                "tipo": "Reina",
+                "color": "blanco"
+            },
+            null,
+            null,
+            null,
+            {
+                "tipo": "Peon",
+                "color": "negro"
+            },
+            {
+                "tipo": "Peon",
+                "color": "negro"
+            }
+        ],
+        [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+        ],
+        [
+            null,
+            null,
+            null,
+            null,
+            null,
+            {
+                "tipo": "Peon",
+                "color": "negro"
+            },
+            null,
+            null
+        ],
+        [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+        ],
+        [
+            {
+                "tipo": "Peon",
+                "color": "blanco"
+            },
+            null,
+            null,
+            {
+                "tipo": "Alfil",
+                "color": "blanco"
+            },
+            {
+                "tipo": "Peon",
+                "color": "blanco"
+            },
+            null,
+            null,
+            null
+        ],
+        [
+            null,
+            null,
+            {
+                "tipo": "Peon",
+                "color": "blanco"
+            },
+            {
+                "tipo": "Peon",
+                "color": "blanco"
+            },
+            null,
+            {
+                "tipo": "Peon",
+                "color": "blanco"
+            },
+            {
+                "tipo": "Peon",
+                "color": "blanco"
+            },
+            {
+                "tipo": "Peon",
+                "color": "blanco"
+            }
+        ],
+        [
+            {
+                "tipo": "Torre",
+                "color": "blanco"
+            },
+            null,
+            {
+                "tipo": "Alfil",
+                "color": "blanco"
+            },
+            null,
+            {
+                "tipo": "Rey",
+                "color": "blanco"
+            },
+            null,
+            {
+                "tipo": "Caballo",
+                "color": "blanco"
+            },
+            {
+                "tipo": "Torre",
+                "color": "blanco"
+            }
+        ]
+    ]
+}
