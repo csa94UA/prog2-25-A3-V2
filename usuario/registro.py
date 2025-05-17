@@ -1,6 +1,7 @@
 import bcrypt
 from typing import Optional
 from usuario.usuario import Usuario
+from juego.usuarioIA import UsuarioIA
 
 def hashear_password(password: str) -> str:
     """
@@ -71,7 +72,10 @@ def iniciar_sesion(username: str, password: str) -> Usuario:
 
     if not usuario:
         raise ValueError("Usuario no encontrado.")
-
+    
+    if isinstance(usuario, UsuarioIA):
+        raise ValueError("Las cuentas de IA no pueden iniciar sesión.")
+    
     if not verificar_password(password, usuario.password):
         raise ValueError("Contraseña incorrecta.")
 

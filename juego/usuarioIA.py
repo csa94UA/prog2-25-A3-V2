@@ -1,9 +1,9 @@
-from typing import Any, Dict
+from typing import Any, Dict,Optional
 import os
 import json
 
 from usuario.usuario import Usuario
-from juego.IAjedrez import IADeAjedrez           # Motor de ajedrez de la IA (por añadir ._.)
+from juego.IAjedrez import IADeAjedrez
 from config import PATH_USUARIOS                 # Ruta donde se guardan los archivos de usuario
 
 
@@ -91,6 +91,31 @@ class UsuarioIA(Usuario):
                 return cls(**datos)
             else:
                 raise ValueError("El usuario no es una IA")
+            
+
+    @classmethod
+    def cargar_por_username(cls, username: str) -> Optional["UsuarioIA"]:
+        """
+        Busca y carga una cuenta de IA por su nombre de usuario.
+
+        Parámetros:
+        -----------
+        username : str
+            Nombre de usuario a buscar.
+
+        Retorna:
+        --------
+        UsuarioIA o None si no se encuentra o no es IA.
+        """
+        for archivo in os.listdir(PATH_USUARIOS):
+            if archivo.endswith(".json"):
+                ruta: str = os.path.join(PATH_USUARIOS, archivo)
+                with open(ruta, "r", encoding="utf-8") as f:
+                    datos: Dict[str, Any] = json.load(f)
+                    if datos.get("username") == username and datos.get("tipo") == "ia":
+                        return cls(**datos)
+        return None
+    
 
     def elegir_movimiento(self, tablero: Any, color: str) -> Any:
         """

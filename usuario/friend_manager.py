@@ -3,7 +3,8 @@ import json
 from typing import Dict, List, Optional, Union
 
 from usuario.usuario import Usuario
-from juego.sesion_juego import SesionDeJuego # Todavía no implementado :P 
+from juego.usuarioIA import UsuarioIA
+from juego.sesion_juego import SesionDeJuego 
 from config import PATH_SOLICITUDES,PATH_RETOS
 
 def _ruta_retos(username: str) -> str:
@@ -59,7 +60,11 @@ def enviar_solicitud_amistad(remitente: Usuario, destinatario_username: str) -> 
     destinatario: Optional[Usuario] = Usuario.cargar_por_username(destinatario_username)
     if not destinatario:
         return {"error": "El usuario no existe."}
-
+    
+    # Impedir solicitudes a cuentas IA
+    if isinstance(destinatario, UsuarioIA):
+        return {"error": "No puedes enviar solicitudes de amistad a una cuenta de IA."}
+    
     if remitente.user_id in destinatario.amigos:
         return {"mensaje": f"{destinatario_username} ya es tu amigo."}
 
@@ -290,6 +295,10 @@ def enviar_reto_a_amigo(retador_username: str, username_amigo: str) -> None:
 
     if not retador or not amigo:
         raise ValueError("El usuario no existe.")
+
+    # Si es IA, iniciar automáticamente la partida
+    if isinstance(amigo, UsuarioIA):
+        return SesionDeJuego(retador, amigo)
 
     if amigo.user_id not in retador.amigos:
         raise ValueError("Este usuario no es tu amigo.")
