@@ -401,3 +401,49 @@ class Tablero:
                     piezas.append("..")  # Casilla vacía
 
         return ''.join(piezas)
+    
+    def restaurar_estado_lista(self, lista: List[List[Optional[Dict[str, str]]]]) -> None:
+        """
+        Restaura el estado del tablero a partir de una lista bidimensional que representa 
+        cada casilla con un diccionario que indica el tipo y color de la pieza, o None si está vacía.
+
+        Parámetros:
+        -----------
+        lista : List[List[Optional[Dict[str, str]]]]
+            Lista 2D que representa el tablero. Cada elemento puede ser:
+            - Un diccionario con las claves "tipo" (str) y "color" (str) que identifican 
+            la pieza que debe colocarse en esa casilla.
+            - None, si la casilla está vacía.
+
+        Retorna:
+        --------
+        None
+
+        Efecto:
+        --------
+        Modifica el atributo `self.casillas` asignando instancias de las clases de piezas 
+        correspondientes en las posiciones indicadas por la lista. Si un elemento es None, 
+        deja la casilla vacía (None).
+        """
+        for x, fila in enumerate(lista):
+            for y, dicc in enumerate(fila):
+                if dicc is not None:
+                    tipo: str = dicc["tipo"]
+                    color: str = dicc["color"]
+                    if tipo == "peon":
+                        self.casillas[x][y] = Peon(color)
+                    elif tipo == "torre":
+                        self.casillas[x][y] = Torre(color)
+                    elif tipo == "caballo":
+                        self.casillas[x][y] = Caballo(color)
+                    elif tipo == "alfil":
+                        self.casillas[x][y] = Alfil(color)
+                    elif tipo == "dama":
+                        self.casillas[x][y] = Reina(color)
+                    elif tipo == "rey":
+                        self.casillas[x][y] = Rey(color)
+                    else:
+                        # En caso de que llegue un tipo desconocido
+                        self.casillas[x][y] = None
+                else:
+                    self.casillas[x][y] = None

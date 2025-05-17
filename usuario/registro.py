@@ -46,7 +46,7 @@ def registrar_usuario(username: str, password: str) -> Usuario:
 
     Lanza:
     ------
-    ValueError si el nombre ya está en uso o la contraseña es débil.
+    ValueError si el nombre ya está  en uso o la contraseña es débil.
     """
     if Usuario.cargar_por_username(username):
         raise ValueError("El nombre de usuario ya está en uso.")

@@ -7,3 +7,7 @@ PATH_SOLICITUDES: str = "data/usuarios/solicitudes"
 PATH_RETOS: str = "data/usuarios/retos"
 
 PATH_PARTIDAS_TEMP:str = "data/partidas/temp"
+
+JWT_PASSWORD: str = "leoncomegambas"
+
+PATH_CHATS: str = "data/chats"

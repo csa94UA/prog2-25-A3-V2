@@ -1,11 +1,29 @@
 import os
 import json
 from typing import Dict, List, Optional, Union
+from datetime import datetime
 
 from usuario.usuario import Usuario
 from juego.usuarioIA import UsuarioIA
 from juego.sesion_juego import SesionDeJuego 
-from config import PATH_SOLICITUDES,PATH_RETOS
+from config import PATH_SOLICITUDES, PATH_RETOS, PATH_CHATS
+
+
+def _ruta_chat(user1_id: str, user2_id: str) -> str:
+    """
+    Construye la ruta única del archivo JSON que almacena el chat entre dos usuarios.
+    Los IDs se ordenan para evitar duplicados en diferente orden.
+
+    Args:
+        user1_id (str): ID del primer usuario.
+        user2_id (str): ID del segundo usuario.
+
+    Returns:
+        str: Ruta del archivo de chat.
+    """
+    ids_ordenados: List[str] = sorted([user1_id, user2_id])
+    return os.path.join(PATH_CHATS, f"{ids_ordenados[0]}_{ids_ordenados[1]}.json")
+
 
 def _ruta_retos(username: str) -> str:
     """
@@ -439,3 +457,78 @@ def obtener_retos(username: str) -> List[Dict[str, str]]:
 
     with open(ruta, "r", encoding="utf-8") as f:
         return json.load(f)
+    
+def enviar_mensaje(emisor: Usuario, receptor_username: str, contenido: str) -> Dict[str, str]:
+    """
+    Envía un mensaje desde un usuario emisor a otro receptor, solo si ambos son amigos.
+    El mensaje se guarda en un archivo JSON correspondiente al chat entre ambos.
+
+    Args:
+        emisor (Usuario): Instancia del usuario que envía el mensaje.
+        receptor_username (str): Nombre de usuario del receptor.
+        contenido (str): Texto del mensaje a enviar.
+
+    Returns:
+        Dict[str, str]: Diccionario con el resultado de la operación:
+            - En caso de éxito: {"mensaje": "Mensaje enviado correctamente."}
+            - En caso de error: {"error": "Descripción del error"}
+    """
+    receptor: Optional[Usuario] = Usuario.cargar_por_username(receptor_username)
+    if receptor is None:
+        return {"error": "El receptor no existe."}
+
+    if receptor.user_id not in emisor.amigos:
+        return {"error": "No puedes enviar mensajes a alguien que no es tu amigo."}
+
+    ruta: str = _ruta_chat(emisor.user_id, receptor.user_id)
+    chat: List[Dict[str, str]] = []
+
+    if os.path.exists(ruta):
+        with open(ruta, "r", encoding="utf-8") as f:
+            chat = json.load(f)
+
+    mensaje: Dict[str, str] = {
+        "emisor": emisor.username,
+        "receptor": receptor.username,
+        "contenido": contenido,
+        "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S")
+    }
+
+    chat.append(mensaje)
+
+    with open(ruta, "w", encoding="utf-8") as f:
+        json.dump(chat, f, indent=4)
+
+    return {"mensaje": "Mensaje enviado correctamente."}
+
+
+def obtener_chat(usuario: Usuario, otro_username: str) -> Union[List[Dict[str, str]], Dict[str, str]]:
+    """
+    Obtiene el historial completo de mensajes entre el usuario y otro usuario amigo.
+    Devuelve un listado de mensajes o un error si no son amigos o el usuario no existe.
+
+    Args:
+        usuario (Usuario): Instancia del usuario que solicita el chat.
+        otro_username (str): Nombre de usuario del otro participante del chat.
+
+    Returns:
+        Union[List[Dict[str, str]], Dict[str, str]]:
+            - Lista de mensajes (cada mensaje es un dict con claves: emisor, receptor, contenido, timestamp)
+            - Diccionario con error en caso de que el otro usuario no exista o no sean amigos.
+    """
+    otro: Optional[Usuario] = Usuario.cargar_por_username(otro_username)
+    if otro is None:
+        return {"error": "El otro usuario no existe."}
+
+    if otro.user_id not in usuario.amigos:
+        return {"error": "No puedes ver el chat con alguien que no es tu amigo."}
+
+    ruta: str = _ruta_chat(usuario.user_id, otro.user_id)
+
+    if not os.path.exists(ruta):
+        return []
+
+    with open(ruta, "r", encoding="utf-8") as f:
+        chat: List[Dict[str, str]] = json.load(f)
+
+    return chat

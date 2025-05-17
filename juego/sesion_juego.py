@@ -3,10 +3,10 @@ Módulo que define la clase SesionDeJuego para gestionar partidas de ajedrez ent
 
 Contiene toda la lógica de juego, movimientos, validaciones, estado y guardado de partidas.
 """
-
+import json
 import os
 from datetime import datetime
-from typing import Tuple, Union, Dict, Any, Optional
+from typing import Tuple, Union, Dict, Any, Optional,Type
 
 from juego.tablero import Tablero
 from juego.validador_movimiento import ValidadorMovimiento
@@ -318,7 +318,7 @@ class SesionDeJuego:
             Mensaje de éxito o error al guardar el estado temporal.
         """
         try:
-            datos = self.obtener_datos_partida(include_final=False)
+            datos = self.obtener_datos_partida(include_final=True)
             nombre_archivo = guardar_partida(datos, temporal=True)
             self.archivos_temporales.append(nombre_archivo)
             return {"msg": "Estado temporal guardado correctamente.", "archivo": nombre_archivo}
@@ -333,3 +333,46 @@ class SesionDeJuego:
             ruta = os.path.join(PATH_PARTIDAS_TEMP, archivo)
             if os.path.exists(ruta):
                 os.remove(ruta)
+
+    @classmethod
+    def cargar_desde_guardado(cls: Type["SesionDeJuego"], nombre_archivo: str) -> "SesionDeJuego":
+        """
+        Carga una sesión de juego desde un archivo JSON previamente guardado.
+
+        Parámetros:
+        -----------
+        nombre_archivo : str
+            Nombre del archivo de la partida guardada (ej. partida_temp_A_vs_B.json)
+
+        Retorna:
+        --------
+        SesionDeJuego
+            Instancia reconstruida de la partida.
+
+        Lanza:
+        ------
+        FileNotFoundError
+            Si el archivo especificado no existe.
+        """
+        ruta = os.path.join(PATH_PARTIDAS_TEMP, nombre_archivo)
+        if not os.path.exists(ruta):
+            raise FileNotFoundError(f"No se encontró el archivo de partida: {nombre_archivo}")
+
+        with open(ruta, "r", encoding="utf-8") as f:
+            datos: Dict[str, Any] = json.load(f)
+
+        # Cargar jugadores (Usuario o UsuarioIA)
+        jugador_blanco = Usuario.cargar(datos["jugador_blanco"]["user_id"])
+        jugador_negro = Usuario.cargar(datos["jugador_negro"]["user_id"])
+
+        # Crear la instancia sin iniciar desde cero
+        instancia = cls(jugador_blanco, jugador_negro)
+        instancia.turno_actual = datos["turno_actual"]
+        instancia.terminado = datos["terminado"]
+        instancia.ganador = datos["ganador"]
+        instancia.movimientos = datos["movimientos"]
+
+        # Restaurar estado del tablero
+        instancia.tablero.restaurar_estado_lista(datos["tablero_final"])
+
+        return instancia
