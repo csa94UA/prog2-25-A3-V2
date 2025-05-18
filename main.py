@@ -224,14 +224,6 @@ def obtener_partida_json() -> tuple[str,int]:
         'resultado': partida['resultado'],
         'movimientos': movimientos
     }
-    print(os.path.exists(f'{DIR_JSON}/{game_id}.json'))
-
-    print(datos)
-    print(movimientos)
-
-    if os.path.exists(f'{DIR_JSON}/{game_id}.json'):
-        os.remove(f'{DIR_JSON}/{game_id}.json')
-        print("Eliminando mierda")
 
     with open(f'{DIR_JSON}/{game_id}.json', 'w') as escritura:
         json.dump(datos, escritura, indent=4)

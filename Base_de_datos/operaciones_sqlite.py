@@ -193,6 +193,7 @@ def añadir_partida_y_movimientos(blancas_id : str, negras_id : str, resultado :
     """
     nombre_partida = f'{blancas_id}vs{negras_id}'
     eliminar_partida_en_bd(blancas_id, nombre_partida)
+    crear_partida_en_bd(blancas_id, negras_id)
     conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
     conn.execute('PRAGMA foreign_keys = ON')
     c = conn.cursor()
@@ -336,15 +337,13 @@ def eliminar_partida_en_bd(nombre : str, game_id : str) -> None:
         Id del juego
     """
     try:
-        print(nombre)
-        print(game_id)
         conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
         conn.execute('PRAGMA foreign_keys = ON')
         c = conn.cursor()
         c.execute('''
            DELETE FROM movimientos WHERE partida_id=?
         ''', (game_id,))
-        print(obtener_datos_partida(game_id))
+
         c.execute('''
            DELETE FROM partidas WHERE nombre_partida=? and (jugador_blanco=? or jugador_negro=?)
         ''', (game_id, nombre, nombre))
