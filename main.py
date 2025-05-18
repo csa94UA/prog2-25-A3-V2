@@ -32,10 +32,6 @@ Funciones:
 
     - obtener_partidas() -> tuple[str,int] | tuple[list[dict],int]
     Retorna un conjunto de partidas del usuario que están almacenadas en la base de datos
-
-Ejemplo de uso
----------------
->>> python main.py
 """
 
 import os
@@ -207,8 +203,6 @@ def obtener_partida_json() -> tuple[str,int]:
     nombre = get_jwt_identity()
     game_id = request.args.get('id', '')
 
-    print("Game_id: ",game_id)
-
     if not game_id:
         return 'Falta id partida', 400
 
@@ -216,12 +210,10 @@ def obtener_partida_json() -> tuple[str,int]:
         os.makedirs(DIR_JSON, exist_ok=True)
 
     partida = obtener_partida_usuario(game_id)
-    print(partida.keys())
     if not partida:
         return f'No se ha encontrado partidas de {nombre}', 404
 
     movimientos = obtener_datos_partida(game_id)
-    print(movimientos)
     if not movimientos:
         return f'No se han encontrado datos de la partida', 404
 
@@ -232,8 +224,16 @@ def obtener_partida_json() -> tuple[str,int]:
         'resultado': partida['resultado'],
         'movimientos': movimientos
     }
+    print(os.path.exists(f'{DIR_JSON}/{game_id}.json'))
 
-    with open(f'{DIR_JSON}/{game_id}', 'w') as escritura:
+    print(datos)
+    print(movimientos)
+
+    if os.path.exists(f'{DIR_JSON}/{game_id}.json'):
+        os.remove(f'{DIR_JSON}/{game_id}.json')
+        print("Eliminando mierda")
+
+    with open(f'{DIR_JSON}/{game_id}.json', 'w') as escritura:
         json.dump(datos, escritura, indent=4)
 
     return 'Se ha exportado correctamente', 200

@@ -537,7 +537,6 @@ class Tablero:
             if (fila,columna) in pieza.movimiento_valido(self):
                 if not (columna == pieza.posicion[1] and str(pieza).upper() == 'P'):
                     casillas.append((pieza.posicion, pieza))
-        print(f"Amenazas para {self[fila][columna].pieza}: ", casillas)
         return casillas
 
     def casillas_amenazadas(self, amenazadores : list, fila : int, columna : int) -> list:
@@ -599,21 +598,16 @@ class Tablero:
         """
 
         pieza_aux : Optional["Pieza"] = self[fila][columna].pieza
-        print("Pieza que se podría matar: ",pieza_aux)
         if pieza_aux is None:
-            print("No era una pieza")
             return True
 
         indice : int = enemigo.piezas.index(pieza_aux)
         enemigo.piezas.remove(pieza_aux)
 
         self[fila][columna].pieza = rey
-        print("El rey que va a matar: ",rey)
 
         pos_aux_rey = rey.posicion
         rey.posicion = (fila,columna)
-
-        print(f"Nueva posición del rey (definida en su atributo): {rey.posicion}")
 
         if not self.amenazas(enemigo, fila, columna):
             self[fila][columna].pieza = pieza_aux

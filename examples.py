@@ -101,7 +101,7 @@ def crear_partida(token : str, cargar : bool = False) -> None:
         else:
             jugador1.color = 0
             jugador2.color = 1
-        print("Malo de la peli: ",jugador2.nombre)
+
         respuesta = requests.post(f'{URL}/partida?contrincante={jugador2.nombre}&color={jugador1.color}',
                                   headers= {'Authorization': 'Bearer ' + (token if token else '')})
         print(f"Estado: {respuesta.status_code}.  {respuesta.text}")
@@ -122,6 +122,9 @@ def crear_partida(token : str, cargar : bool = False) -> None:
             jugador1.color = 0
             jugador2.color = 1
             partida(jugador2, jugador1, bot, en_curso=True)
+
+        else:
+            print("No se ha encontrado partida en curso")
 
     return None
 

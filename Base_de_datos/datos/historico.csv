@@ -1,3 +1,5 @@
 game_id,jugador_blanco,jugador_negro,fen,turno,ultimo_mov,resultado,fin
-JuliovsJorge,Julio,Jorge,r1bqkb1r/1pp3pp/p1n5/3Pp3/2n5/7N/PPPP1PPP/RNB1R1K1 b kq - 0 16,0,d6c4,0-1,2025-05-15T19:56:24.286450
-JuliovsJorge,Julio,Jorge,r1bqkbnr/pppp1Qp1/n6p/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 0 6,1,f3f7,1-0,2025-05-16T15:44:25.851964
+JuliovsJorge,Julio,Jorge,rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e6 0 2,0,e7e5,0-1,2025-05-18T12:02:59.244679
+JuliovsJorge,Julio,Jorge,r1bqkbnr/pppp1Qp1/n6p/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 0 7,1,f3f7,1-0,2025-05-18T12:04:14.019834
+JuliovsJorge,Julio,Jorge,rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e6 0 2,0,e7e5,0-1,2025-05-18T12:05:52.957086
+JuliovsJorge,Julio,Jorge,rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e6 0 2,0,e7e5,0-1,2025-05-18T12:08:40.315793

@@ -200,10 +200,10 @@ def partida(jugador1 : Jugador, jugador2 : Jugador, /, bot : bool = False,*, en_
 
         turno = 1 - turno
         tablero.contador += 1
-        print(tablero.traduccion_FEN(tablero.contador))
+
         if act_en_passant:
             tablero.en_passant = None
-        print("Guardando movimiento lan: ",mov_LAN)
+
         save_partida.agregar_turno(mov_LAN, tablero.traduccion_FEN(tablero.contador), tablero.turno)
 
 

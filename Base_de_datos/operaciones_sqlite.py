@@ -65,6 +65,7 @@ def insertar_usuario(nombre : str, correo : str, contraseña_hash : str, pais : 
         Elo (o nivel) del jugador. De manera predeterminada su valor es 300
     """
     conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
+    conn.execute('PRAGMA foreign_keys = ON')
     cursor = conn.cursor()
     try:
         cursor.execute('''
@@ -95,6 +96,7 @@ def modificar_usuario(nombre : str, campo : str, valor : str) -> None:
         Nuevo valor del campo
     """
     conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
+    conn.execute('PRAGMA foreign_keys = ON')
     cursor = conn.cursor()
     cursor.execute(f'''
         UPDATE usuarios
@@ -121,6 +123,7 @@ def buscar_usuario(nombre : str) -> dict:
         Devuelve todos los datos del usuario en forma de diccionario
     """
     conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
+    conn.execute('PRAGMA foreign_keys = ON')
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM usuarios WHERE nombre = ?', (nombre,))
@@ -143,6 +146,7 @@ def obtener_datos_usuario(nombre : str) -> dict:
         Devuelve los datos del usuario en forma de diccionario
     """
     conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
+    conn.execute('PRAGMA foreign_keys = ON')
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute('SELECT nombre, correo, elo, pais FROM usuarios WHERE nombre=?', (nombre,))
@@ -160,6 +164,7 @@ def eliminar_usuario(nombre : str) -> None:
         Nombre del usuario
     """
     conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
+    conn.execute('PRAGMA foreign_keys = ON')
     cursor = conn.cursor()
     cursor.execute('DELETE FROM usuarios WHERE nombre = ?', (nombre,))
     conn.commit()
@@ -187,7 +192,9 @@ def añadir_partida_y_movimientos(blancas_id : str, negras_id : str, resultado :
         Lista de movimientos LAN y su resultado en FEN
     """
     nombre_partida = f'{blancas_id}vs{negras_id}'
+    eliminar_partida_en_bd(blancas_id, nombre_partida)
     conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
+    conn.execute('PRAGMA foreign_keys = ON')
     c = conn.cursor()
     c.execute('''
       UPDATE partidas SET jugador_blanco=?, jugador_negro=?, resultado=?, duracion=?
@@ -220,6 +227,7 @@ def obtener_partida_usuario(game_id : str) -> dict:
         Retorna un diccionario de la partida con toda su informacion (excepto los movimientos)
     """
     conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
+    conn.execute('PRAGMA foreign_keys = ON')
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('''
@@ -248,6 +256,7 @@ def obtener_lista_partidas_usuario(nombre : str) -> list[dict]:
         Retorna una lista de partidas con toda su información (excepto los movimientos)
     """
     conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
+    conn.execute('PRAGMA foreign_keys = ON')
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('''
@@ -274,6 +283,7 @@ def obtener_datos_partida(game_id : str) -> list[dict]:
         Devuelve una lista de diccionarios con cada movimiento y situación del tablero en cada turno
     """
     conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
+    conn.execute('PRAGMA foreign_keys = ON')
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute('''
@@ -282,6 +292,7 @@ def obtener_datos_partida(game_id : str) -> list[dict]:
       ORDER BY numero_jugada ASC
     ''', (game_id,))
     movimientos = [{'lan': lan, 'fen': fen} for _,lan,fen in c.fetchall()]
+
     c.close()
     return movimientos
 
@@ -297,14 +308,18 @@ def crear_partida_en_bd(jugador_blanco : str, jugador_negro : str) -> None:
     jugador_negro : str
         Nombre del jugador negro
     """
-    conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
-    c = conn.cursor()
-    c.execute('''
-       INSERT INTO partidas (jugador_blanco, jugador_negro, resultado, duracion, nombre_partida)
-       VALUES (?, ?, ?, ?, ?)
-    ''', (jugador_blanco, jugador_negro, 'x-x', 0, f'{jugador_blanco}vs{jugador_negro}'))
-    conn.commit()
-    c.close()
+    try:
+        conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
+        conn.execute('PRAGMA foreign_keys = ON')
+        c = conn.cursor()
+        c.execute('''
+           INSERT INTO partidas (jugador_blanco, jugador_negro, resultado, duracion, nombre_partida)
+           VALUES (?, ?, ?, ?, ?)
+        ''', (jugador_blanco, jugador_negro, 'x-x', 0, f'{jugador_blanco}vs{jugador_negro}'))
+        conn.commit()
+    except sqlite3.IntegrityError:
+        print("Ya existe la partida")
+    conn.close()
 
     return None
 
@@ -320,12 +335,22 @@ def eliminar_partida_en_bd(nombre : str, game_id : str) -> None:
     game_id : int
         Id del juego
     """
-    conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
-    c = conn.cursor()
-    c.execute('''
-       DELETE FROM partidas WHERE nombre_partida=? and (jugador_blanco=? or jugador_negro=?)
-    ''', (game_id, nombre, nombre))
-    conn.commit()
+    try:
+        print(nombre)
+        print(game_id)
+        conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
+        conn.execute('PRAGMA foreign_keys = ON')
+        c = conn.cursor()
+        c.execute('''
+           DELETE FROM movimientos WHERE partida_id=?
+        ''', (game_id,))
+        print(obtener_datos_partida(game_id))
+        c.execute('''
+           DELETE FROM partidas WHERE nombre_partida=? and (jugador_blanco=? or jugador_negro=?)
+        ''', (game_id, nombre, nombre))
+        conn.commit()
+    except sqlite3.IntegrityError:
+        print("No existe dicha partida")
     conn.close()
 
     return None
