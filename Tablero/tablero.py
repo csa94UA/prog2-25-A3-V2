@@ -9,7 +9,7 @@ Clases:
 """
 from .casilla import Casilla
 #from Jugador import Jugador
-from typing import Union
+from typing import Union, Self, Optional
 import threading
 import itertools
 import pygame
@@ -23,48 +23,82 @@ class Tablero:
     -----------
     tablero : list[list[Casilla]]
         Matriz donde cada elemento está formado por la clase Casilla
+
     enroque : Union[list[bool,bool],None]
         Contiene la información sobre la posibilidad de que las blancas y/o las negras hagan enroque
+
     en_passant : str
         Marca el lugar concreto donde se puede hacer en passant con coordenadas de ajedrez
+
     contador : int
         Cuenta las veces que se ha hecho semimovimientos
+
+    jugadas : int
+        Cuenta las jugadas repetidas
+
     turno : int
         Marca el número de turno de la partida
 
     Métodos:
     -----------
+    __init__(self) -> None
+        Inicializa un nuevo tablero
+
+    creacion_con_FEN(cls, fen : str) -> Self
+        Perimte una nueva forma de inicializar un tablero mediante el fen
+
+    __getitem__(self, indice : int) -> Union[list["Casilla"],"Casilla"]
+        Devuelve la lista de casillas o la casilla situado en el tablero
+
+    __str__(self) -> str
+        Muestra el tablero por pantalla. Tiene en cuenta la perspectiva del jugador que tiene turno
+
     esta_en_jaque(self, jugador:Jugador,enemigo:Jugador) -> bool:
         Detecta si un jugador se encuentra en jaque o no
+
     guardar_estado(self) -> dict:
         Guanda el estado del tablero en un diccionario
+
     restaurar_estado(self, estado: dict) -> None:
         Restaura el estado del tablero a partir de un diccionario obtenido del metodo guardar_estado()
+
     obtener_casilla(self, fila : int, columna : int) -> Casilla:
         Devuelve la casilla coherente a la perspectiva del jugador actual
+
     limite(fila : int, columna : int) -> bool:
         Comprueba si se ha digitado una posicion fuera de los limites
+
     mostrar_tablero(self, color : bool) -> None:
         Representa el tablero en función de la persepctiva del jugador actual
-    traduccion_FEN(self, color : int, enroque_n : int, enroque_b : int, en_passant : Union[str,None], contador : int, turno : int) -> str:
+
+    traduccion_FEN(self, turno : int) -> str:
         Devuelve toda la información del tablero en formato FEN. Util para guardar partidas y comunicarse con otras IA
+
     casillas_intermedias(fila : int, columna : int, fila_m : int, columna_m : int) -> list[(int, int)]:
         Retorna las casillas intermedias entre dos piezas. Usado para comprobar las casillas problematicas dentro de un jaque
+
     quitar_permutaciones(self, mov : tuple, casillas_tocapelotas : list, fila : int, columna : int) -> None:
         Elimina las permutaciones que contengan a la posicoin de la pieza. Se usa para eliminar casillas intermedias
+
     jaque_in(self, fila : int, columna : int, jugador : "Jugador", enemigo : "Jugador") -> bool:
         Comprueba si el jaque es inevitable o no
+
     amenazas(self, enemigo : "Jugador", fila : int, columna : int) -> list:
         Revisa las piezas que amenazan una casilla
+
     casillas_amenazadas(self, amenazadores : list, fila : int, columna : int) -> list:
         Obtiene todas las casillas amenazadas entre la posición de cada pieza amenazadora y la posición de la pieza
         víctima. En ella se emplea la funcion casillas_intermedias (por eso su similitud), pero este tiene en cuenta
         el caso especial del caballo (que no tiene casillas intermedias)
+
+    posibilidad_matar_con_rey(self, enemigo : "Jugador", fila : int, columna : int, rey : "Rey") -> bool
+        Comprueba si la posicion (fila, columna) que contiene un enemigo (si hay) puede matarlo, es decir, que no haya
+        piezas enemigas que lo defiendan
     """
 
     def __init__(self) -> None:
         """
-        Inicializa una instacia de la clase Casilla
+        Inicializa una instacia de la clase Tablero
         """
 
         self.tablero : list[list["Casilla"]]= [[Casilla(i,j) for i in range(8)] for j in range(8)]
@@ -75,7 +109,7 @@ class Tablero:
         self.turno : int = 1 #Representa el color que tiene el turno (por defecto es el blanco)
 
     @classmethod
-    def creacion_con_FEN(cls, fen : str) -> None:
+    def creacion_con_FEN(cls, fen : str) -> Self:
         """
         Perimte inicializar la clase Tablero de otra manera pasándole la información en formato FEN
 
@@ -83,6 +117,11 @@ class Tablero:
         -----------
         fen : str
             string que contiene toda la información necesario para el tablero
+
+        Retorna:
+        -------
+        Self
+            Devuelve una nueva instancia de la case Tablero
         """
         from Partidas.aflabeto_FEN import traduccion_posicion
 
@@ -102,9 +141,10 @@ class Tablero:
                     continue
 
                 self[i][j].tranformacion_a_pieza(i, j, letra)
+                j += 1
 
 
-        self.turno = 1 if fen[1] == 'w' else 0
+        self.turno = 0 if fen[1] == 'w' else 1
         if fen[2] == '':
             self.enroque = None
         else:
@@ -115,9 +155,9 @@ class Tablero:
         else:
             self.en_passant = (fen[3],traduccion_posicion(fen[3]))
 
-        self.contador = int(fen[4])
+        self.contador = int(fen[5])
 
-        return None
+        return self
 
 
     def __getitem__(self, indice : int) -> Union[list["Casilla"],"Casilla"]:
@@ -128,12 +168,12 @@ class Tablero:
 
         Parametros:
         -----------
-        index : int
+        indice : int
             Es el índice que nos ayuda a seleccionar las casillas.
 
         Retorna:
         --------
-        Casilla
+        Union[list["Casilla"],"Casilla"]
             Retorna la casilla (o las casillas) que ha sido seleccionado
         """
         return self.tablero[indice]
@@ -144,12 +184,13 @@ class Tablero:
         """
 
         color: int = self.turno
-        filas = []
+        filas = ['  '.join(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'])]
 
         for i in range(8):
             fila = []
             for j in range(8):
                 fila.append(str(self.obtener_casilla(i, j, color)))
+                fila.append(f'  {8 - i}' if j == 7 else '')
             filas.append(' '.join(fila))
 
         return '\n'.join(filas)
@@ -237,6 +278,7 @@ class Tablero:
         -----------
         fila : int
             Fila en la que se encuentra la casilla
+
         columna : int
             Columna en la que se encuentra la casilla
 
@@ -257,6 +299,7 @@ class Tablero:
         -----------
         fila : int
             Fila en la que se encuentra la casilla
+
         columna : int
             Columna en la que se encuentra la casilla
 
@@ -289,26 +332,13 @@ class Tablero:
 
         return None
 
-    def traduccion_FEN(self, color : int, enroque_n : int, enroque_b : int, en_passant : Union[str,None], contador : int, turno : int) -> str:
+    def traduccion_FEN(self, turno : int) -> str:
         """
         Traduce la situación del tablero a formato FEN. Muy útil a la hora de guardar partidas,
         tratar con APIs de IA, comprimir la información del ajedrez, etc.
 
         Parametros:
         -----------
-        color : bool
-            Representa el turno del jugador. Si es 1 entonces es el blanco y si es 0 entonces es el negro
-        enroque_n : bool
-            Representa la posibilidad del jugador negro en hacer enroque
-        enroque_b : bool
-            Representa la posibilidad del jugador blanco en hacer enroque
-        en_passant : str
-            Muestra en que casilla (representado con coordenadas de ajedrez) se puede capturar al paso.
-            Este valor cambia en cada turno, por lo que no tiene dependencia del color.
-        contador : int
-            Cuenta la cantidad de semimovimientos realizados. Los semimovimientos son aquellos donde
-            no se han capturado ni movido peones. Si el valor llega a 50, se proclama tablas (empate).
-            Este valor se reanuda a 0 cuando se pierde la racha (creo).
         turno : int
             Representa el turno de la partida. Útil para ordenar los eventos de una partida dentro de una BD
 
@@ -335,14 +365,18 @@ class Tablero:
             fen += str(espacio) if espacio != 0 else ''
             fen += '/' if i != 7 else ''
 
-        fen += ' w ' if color else ' b '
+        fen += ' w ' if self.turno else ' b '
 
-        fen += 'KQ' if enroque_b else ''
-        fen += 'kq' if enroque_n else ''
+        enroque : str = ''
 
-        fen += f' {en_passant[0]} ' if en_passant is not None else ' - '
+        enroque += 'KQ' if self.enroque[0] else ''
+        enroque += 'kq' if self.enroque[1] else ''
 
-        fen += str(contador) + ' '
+        fen += enroque if enroque != '' else '-'
+
+        fen += ' - ' if self.en_passant is None else f' {self.en_passant[0]} '
+
+        fen +=  '0 ' #Va a ser siempre cero ya que no me ha dado tiempo a impliementar casos especiales
         fen += str(turno)
 
         return fen
@@ -357,10 +391,13 @@ class Tablero:
         -----------
         fila : int
             Fila en la que se encuentra la casilla o pieza 'víctima'
+
         columna : int
             Columna en la que se encuentra la casilla o pieza 'víctima'
+
         fila_m : int
             Fila en la que se encuentra la casilla o pieza 'agresor'
+
         columna_m : int
             Columna en la que se encuentra la casilla o pieza 'agresor'
 
@@ -397,6 +434,7 @@ class Tablero:
         -----------
         mov : tuple
             Tupla que contiene la posicion de la pieza que iterrume en medio del camino
+
         casillas_tocapelotas : list
             Son el conjunto de casillas que representan los caminos que atacan a la pieza 'victima'.
             Puede haber más de un camíno
@@ -421,10 +459,13 @@ class Tablero:
         -----------
         fila : int
             Fila en la que se encuentra la casilla o pieza 'víctima'
+
         columna : int
             Columna en la que se encuentra la casilla o pieza 'víctima'
+
         jugador : "Jugador"
             Representa el jugador que es dueño de la pieza 'vicitma'
+
         enemigo : "Jugador"
             Representa el jugador que ataca la pieza 'victima' con una o más piezas
 
@@ -473,8 +514,10 @@ class Tablero:
         -----------
         enemigo : "Jugador"
             Representa el jugador que ataca la pieza 'victima' con una o más piezas
+
         fila : int
             Fila en la que se encuentra la casilla o pieza 'víctima'
+
         columna : int
             Columna en la que se encuentra la casilla o pieza 'víctima'
 
@@ -490,9 +533,10 @@ class Tablero:
         for pieza in enemigo.piezas:
             if isinstance(pieza, Rey):
                 continue
-            if (fila,columna) in pieza.movimiento_valido(self):
-                casillas.append((pieza.posicion, pieza))
 
+            if (fila,columna) in pieza.movimiento_valido(self):
+                if not (columna == pieza.posicion[1] and str(pieza).upper() == 'P'):
+                    casillas.append((pieza.posicion, pieza))
         return casillas
 
     def casillas_amenazadas(self, amenazadores : list, fila : int, columna : int) -> list:
@@ -504,8 +548,10 @@ class Tablero:
         -----------
         amenazadores : list
             Lista de posiciones de cada pieza que amenaza a la pieza víctima
+
         fila : int
             Fila en la que se encuentra la casilla o pieza 'víctima'
+
         columna : int
             Columna en la que se encuentra la casilla o pieza 'víctima'
 
@@ -538,17 +584,23 @@ class Tablero:
         -----------
         enemigo : list
             Jugador enemigo que va a sufrir del poder del rey Ö
+
         fila : int
             Fila en la que se encuentra el rey
+
         columna : int
             Columna en la que se encuentra el rey
+
         Retorna:
         --------
         bool
             Devuelve si puede matar a dicha pieza.
         """
 
-        pieza_aux : "Pieza" = self[fila][columna].pieza
+        pieza_aux : Optional["Pieza"] = self[fila][columna].pieza
+        if pieza_aux is None:
+            return True
+
         indice : int = enemigo.piezas.index(pieza_aux)
         enemigo.piezas.remove(pieza_aux)
 

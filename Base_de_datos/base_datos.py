@@ -11,43 +11,30 @@ os.makedirs(DATA_DIR, exist_ok=True)
 
 def crear_tabla_usuarios():
     return pd.DataFrame([
-        {"id": 1, "nombre": "Vicente", "correo": "vicente@example.com", "elo": 1500, "pais": "España"},
-        {"id": 2, "nombre": "Sofía", "correo": "sofia@example.com", "elo": 1400, "pais": "España"},
-        {"id": 3, "nombre": "Julio", "correo": "julio@example.com", "elo": 1600, "pais": "España"}
+        {"id": 1, "nombre": "Julio", "correo": "julio@gmail.com", "elo": 1500, "pais": "España"},
+        {"id": 2, "nombre": "Jorge", "correo": "jorge@gmail.com", "elo": 1200, "pais": "España"}
     ])
 
-def crear_tabla_partidas():
+def crear_tabla_partidas_finalizadas():
     return pd.DataFrame([
         {"id": 1, "jugador_blanco": 1, "jugador_negro": 2, "resultado": "1-0", "duracion": 3600},
-        {"id": 2, "jugador_blanco": 3, "jugador_negro": 1, "resultado": "½-½", "duracion": 1800}
+        {"id": 2, "jugador_blanco": 2, "jugador_negro": 1, "resultado": "½-½", "duracion": 1800}
     ])
 
-def crear_tabla_movimientos():
+def crear_tabla_partidas_sin_terminar():
     return pd.DataFrame([
         {"id": 1, "partida_id": 1, "numero_jugada": 1, "movimiento_LAN": "Pe2-e4", "fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1", "centipawns": 20},
         {"id": 2, "partida_id": 1, "numero_jugada": 2, "movimiento_LAN": "Pe7-e5", "fen": "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2", "centipawns": 10},
         {"id": 3, "partida_id": 1, "numero_jugada": 3, "movimiento_LAN": "Ng1-f3", "fen": "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2", "centipawns": 30}
     ])
 
-def crear_tabla_torneos():
-    return pd.DataFrame([
-        {"id": 1, "nombre": "Torneo Internacional 2024", "fecha_inicio": "2024-06-01", "fecha_fin": "2024-06-10", "modalidad": "Clásico", "premio": 5000.00}
-    ])
-
-def crear_tabla_estadisticas():
-    return pd.DataFrame([
-        {"usuario_id": 1, "victorias": 20, "derrotas": 15, "tablas": 5, "mejores_aperturas": "Ruy López, Defensa Siciliana", "peor_apertura": "Gambito de Dama"}
-    ])
-
 # ---------------------------
 # Función para guardar CSVs
 # ---------------------------
 
-def guardar_tablas(tablas: dict):
-    for nombre, df in tablas.items():
-        ruta = os.path.join(DATA_DIR, f"{nombre}.csv")
-        df.to_csv(ruta, index=False)
-        print(f"✅ Guardado: {nombre}.csv")
+def guardar_tablas(datos: "DataFrame", nombre : str) -> None:
+    datos.to_csv(os.path.join(DATA_DIR, f"{nombre}.csv"))
+    return None
 
 # ---------------------------
 # Función para cargar CSVs si existen
@@ -55,7 +42,7 @@ def guardar_tablas(tablas: dict):
 
 def cargar_tablas():
     tablas = {}
-    for nombre in ["usuarios", "partidas", "movimientos", "torneos", "estadisticas"]:
+    for nombre in ["usuarios", "partidas_finalizadas", "partidas_sin_acabar"]:
         ruta = os.path.join(DATA_DIR, f"{nombre}.csv")
         if os.path.exists(ruta):
             tablas[nombre] = pd.read_csv(ruta)
@@ -63,6 +50,27 @@ def cargar_tablas():
         else:
             print(f"⚠️ No se encontró {nombre}.csv, se usará tabla vacía o generada.")
     return tablas
+
+def cargar_usuarios() -> pd.DataFrame:
+    if os.path.exists(f"{DATA_DIR}/usuarios.csv"):
+        return pd.read_csv(f"{DATA_DIR}/usuarios.csv")
+    # Creamos un DataFrame vacío con las columnas esperadas
+    return pd.DataFrame(columns=["id", "nombre", "email", "hash", "elo", "pais"])
+
+def guardar_usuarios(df: pd.DataFrame) -> None:
+    df.to_csv(f"{DATA_DIR}/usuarios.csv", index=False)
+
+def cargar_partidas_finalizadas() -> pd.DataFrame:
+    if os.path.exists(f"{DATA_DIR}/partidas_finalizadas.csv"):
+        return pd.read_csv(f"{DATA_DIR}/partidas_finalizadas.csv")
+
+    return pd.DataFrame(columns=["id","jugador_b","jugador_n","fen","victoria"])
+
+def cargar_patidas_sin_finalizar() -> pd.DataFrame:
+    if os.path.exists(f"{DATA_DIR}/partidas_sin_acabar.csv"):
+        return pd.read_csv(f"{DATA_DIR}/partidas_sin_acabar.csv")
+
+    return pd.DataFrame(columns=["id","jugador_b","jugador_n","fen"])
 
 # ---------------------------
 # Main
@@ -74,10 +82,8 @@ def main():
 
     # Si alguna tabla no existe, la generamos
     tablas.setdefault("usuarios", crear_tabla_usuarios())
-    tablas.setdefault("partidas", crear_tabla_partidas())
-    tablas.setdefault("movimientos", crear_tabla_movimientos())
-    tablas.setdefault("torneos", crear_tabla_torneos())
-    tablas.setdefault("estadisticas", crear_tabla_estadisticas())
+    tablas.setdefault("partidas_finalizadas", crear_tabla_partidas_finalizadas())
+    tablas.setdefault("partidas_sin_acabar", crear_tabla_partidas_sin_terminar())
 
     # Vista previa
     for nombre, df in tablas.items():

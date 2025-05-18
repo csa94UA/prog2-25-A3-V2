@@ -5,26 +5,40 @@ Este modulo proporciona funciones para la traducción del formato LAN simplifica
 simplificación de otros formatos LAN y manejo de errores.
 
 Funciones:
-    - digitar_movimiento() -> tuple:
+    - digitar_movimiento(color : int) -> None | tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]
     Piede al usuario digitar su movimiento en formato LAN simplificado y devuelve el movimiento correspondiente.
 
     - separar_datos(mov : str) -> tuple:
     Separa la entrada de datos en sus partes correspondientes
-    - traducción_LAN(mov : str) -> str:
-    Simplifica el formato LAN de entrada a nuestro formato ultrasimplificado.
+
+    traducir_movimiento_ia(mov : str) -> tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]
+        Transfomra el movimiento de la IA en formato LAN hipersimplificado al movimiento correspondiente
+
+    - transformacion_a_LAN_hipersimplificado(mov : str) -> list[str] | str | Any:
+        Simplifica el formato LAN de entrada a nuestro formato ultrasimplificado.
+
+    - traduccion_inversa(posicion : Union[tuple[int,int], int], donde : Optional[str] = None) -> str
+        Traduce una posición o posiciones a coordenadas del tablero
+
+    - traduccion_total_inversa(movimiento : tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]) -> str
+        Traduce todo el movimiento de la pieza al formato LAN hipersimplificado
 """
 
-from typing import Any
+from typing import Any, Optional, Union
+from Partidas.error_partidas import ErrorPartida
 
-def digitar_movimiento(color : int) -> None | tuple[tuple, tuple, int] | tuple[
-    tuple[int, Any], tuple[int, Any], int | Any]:
+traduccion = {'a' : 0, 'b' : 1, 'c' : 2, 'd' : 3,
+                  'e' : 4, 'f' : 5, 'g' : 6, 'h' : 7}
+
+def digitar_movimiento(color : int) -> None | tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]:
     """
     Función encargada de leer por consola el movimiento digitado por el jugador en formato LAN hipersimplificado.
 
     Parametros:
     -----------
-    color : bool -> Representa el color del jugador que digita el movimiento. Es importante para tener en cuenta su
-    persepctiva del tablero con la perspectiva que tiene el tablero dentro del código.
+    color : bool
+        Representa el color del jugador que digita el movimiento. Es importante para tener en cuenta su
+        persepctiva del tablero con la perspectiva que tiene el tablero dentro del código.
 
     Retorna:
     -----------
@@ -37,49 +51,70 @@ def digitar_movimiento(color : int) -> None | tuple[tuple, tuple, int] | tuple[
         Ahora entenderas porque no se pone (es demasiado largo).
     """
 
-    traduccion = {'a' : 0, 'b' : 1, 'c' : 2, 'd' : 3,
-                  'e' : 4, 'f' : 5, 'g' : 6, 'h' : 7}
-
     while True:
-        mov : str = input("\nDigite movimiento: \n")
+        try:
+            #Pedimos al usuario que digite un movimiento
+            mov : str = input("\nDigite movimiento (para detener partida digite parar y para rendirse digite fin): \n")
 
-        if len(mov) > 6:
-            print("\nError. Movimiento demasiado largo\n")
+            #Si se digita un movimiento muy largo se considera invalido
+            if len(mov) > 6:
+                raise ErrorPartida("Movimiento demasiado largo","digitar movimiento")
+
+        except ErrorPartida as e:
+            print(e)
             continue
 
+        #Si digita que quiere irse temporalmente de la partida o se rinde
+        if mov.upper() == 'PARAR':
+            return (),(),3
+        if mov.upper() == 'FIN':
+            return (),(),4
+
+        #Si se digitan enroques solo se devuelve su clave (2 es largo y 1 corto)
         if mov == '0-0-0':
             return (),(),2
         if mov == '0-0':
             return (),(),1
 
-        inicio, fin, especial = separar_datos(mov)
+        try:
+            #Obtenemos desglosado el movimiento
+            inicio, fin, especial = separar_datos(mov)
 
-        if not(inicio[0]  in 'abcdefgh' and inicio[1] in '12345678'):
-            print("\nError. Posicion inicial digitado incorrectamente\n")
+            #Si no se ha digitado bien la posición de origen
+            if not(inicio[0]  in 'abcdefgh' and inicio[1] in '12345678'):
+                raise ErrorPartida("Posicion inicial digitado incorrectamente","digitar movimiento")
+
+            #Si no se ha digitado bien la posición destino
+            if not (fin[0] in 'abcdefgh' and fin[1] in '12345678'):
+                raise ErrorPartida("Posicion final digitado incorrectamente", "digitar movimiento")
+
+            #Si destino y origen son iguales
+            if inicio == fin:
+                raise ErrorPartida("Posicion inicial y final son identicas", "digitar movimiento")
+
+            #Si no se digita correctamente la promoción
+            if especial is not None and (not especial[0] == '=' or len(especial) == 1):
+                raise ErrorPartida("Promocion digitado incorrectamente", "digitar movimiento")
+
+            #Si deseas promocionar a una pieza que no se puede
+            if especial is not None and especial[1] not in 'QRBNqrbn':
+                raise ErrorPartida("Intento de promoción fallida por querer trasformar a una pieza no permitida", "digitar movimiento")
+
+        except ErrorPartida as e:
+            print(e)
+            continue
+        except IndexError:
+            e = ErrorPartida("No se ha digitado movimiento","digitar movimiento")
+            print(e)
             continue
 
-        if not (fin[0] in 'abcdefgh' and fin[1] in '12345678'):
-            print("\nError. Posicion final digitado incorrectamente\n")
-            continue
-
-        if inicio == fin:
-            print("\nError. Posicion inicial y final son identicas\n")
-            continue
-
-        if especial is not None and (not especial[0] == '=' or len(especial) == 1):
-            print("\nError. Promocion digitado incorrectamente\n")
-            continue
-
-        if especial is not None and especial[1] not in 'QRBNqrbn':
-            print("\nError. Intento de promoción fallida por querer trasformar a una pieza no permitida\n")
-            continue
-
-        if color:
-            return ((8 - int(inicio[1]), traduccion[inicio[0]]), (8 - int(fin[1]), traduccion[fin[0]]),
-                    0 if especial is None else especial[1].upper())
         else:
-            return ((int(inicio[1]) - 1, 7 - traduccion[inicio[0]]), (int(fin[1]) - 1, 7 - traduccion[fin[0]]),
-                    0 if especial is None else especial[1].upper())
+            if color:
+                return ((8 - int(inicio[1]), traduccion[inicio[0]]), (8 - int(fin[1]), traduccion[fin[0]]),
+                        0 if especial is None else especial[1].upper())
+            else:
+                return ((int(inicio[1]) - 1, 7 - traduccion[inicio[0]]), (int(fin[1]) - 1, 7 - traduccion[fin[0]]),
+                        0 if especial is None else especial[1].upper())
 
 
 
@@ -102,14 +137,42 @@ def separar_datos(mov : str) -> tuple:
     else:
         return mov[0:2],mov[2:],None
 
-
-def transformacion_a_LAN_hipersimplificado(mov : str) -> str:
+def traducir_movimiento_ia(mov : str) -> tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]:
     """
-    Función que permite transformar cualquier movimiento digitado en formato LAN al formato LAN hipersimplificado
+    Traduce el movimiento de la IA a coordenadas que se pueden manejar en el programa. Funciona igual que digitar_movimiento()
+    solo que en este caso se elimina toda comprobación de entrada de datos.
+
+    Parametros:
+    -----------
+    mov : str
+        Movimiento de la IA que ya ha sido transfomrado a LAN hipersimplificado
+
+    Retorna:
+    -------
+    tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]
+        Retorna lo mismo que digitar_movimiento(). Es una tupla de esta forma (inicio,fin,especial), siendo inicio y final
+        coordenadas del tablero en numeros enteros y especial un codigo que representa un movimiento especial (enroque o promocion)
+    """
+    if mov == '0-0-0':
+        return (), (), 2
+    if mov == '0-0':
+        return (), (), 1
+
+    inicio, fin, especial = separar_datos(mov)
+
+    return ((8 - int(inicio[1]), traduccion[inicio[0]]), (8 - int(fin[1]), traduccion[fin[0]]),
+            0 if especial is None else especial[1].upper())
+
+
+def transformacion_a_LAN_hipersimplificado(mov : str) -> list[str] | str | Any:
+    """
+    Función que permite transformar cualquier movimiento digitado en formato SAN al formato LAN hipersimplificado, pero
+    ignora la posición de origen y la pieza que se mueve.
 
     Parámetros:
     ----------
-    mov : str -> Movimiento digitado por la máquina (que es quien digita en este formato)
+    mov : str
+        Movimiento digitado por la máquina (que es quien digita en este formato)
 
     Retorna:
     ---------
@@ -119,13 +182,14 @@ def transformacion_a_LAN_hipersimplificado(mov : str) -> str:
 
     mov_sep : list[str] = list(mov)
 
-    if mov == '0-0-0':
-        return mov
-    if mov == '0-0':
+    if mov == '0-0-0' or mov == '0-0':
         return mov
 
-    if '-' in mov_sep:
-        mov_sep.remove('-')
+    if mov in ['e1g1','e1h1','e8g8','e8h8']:
+        return ['0-0',mov]
+
+    if mov in ['e1c1','e1a1','e8c8','e8a8']:
+        return ['0-0-0',mov]
 
     if '+' in mov_sep:
         mov_sep.remove('+')
@@ -136,8 +200,15 @@ def transformacion_a_LAN_hipersimplificado(mov : str) -> str:
     if 'x' in mov_sep:
         mov_sep.remove('x')
 
-    if not mov_sep[0] in 'abcdefgh' or not mov_sep[1] in '12345678':
-        mov_sep.remove(mov_sep[0])
+    while True:
+        if not mov_sep[0] in 'abcdefgh' or not mov_sep[1] in '12345678':
+            mov_sep.remove(mov_sep[0])
+            continue
+
+        break
+
+    if mov_sep[-1].upper() in 'RNBQ':
+        mov_sep.insert(-1,'=')
 
     mov : str = ''
     for letra in mov_sep:
@@ -152,7 +223,6 @@ def traduccion_posicion(posicion : str) -> tuple[int,int]:
     Parámetros:
     ----------
     pos : str
-
         Posición del tablero
 
     Retorna:
@@ -161,10 +231,65 @@ def traduccion_posicion(posicion : str) -> tuple[int,int]:
         Devuelve la posición en coordenadas
     """
 
-    traduccion = {'a': 0, 'b': 1, 'c': 2, 'd': 3,
-                  'e': 4, 'f': 5, 'g': 6, 'h': 7}
-
     return traduccion[posicion[0]],int(posicion[1])
 
+def traduccion_inversa(posicion : Union[tuple[int,int], int], donde : Optional[str] = None) -> str:
+    """
+    Traduce la tupla de coordenadas de numeros enteros a coordenadas del tablero.
+
+    Parametros:
+    ----------
+    posicion : Union[tuple[int,int], int]
+        Entero o enteros que se traducirán a coordenadas del tablero
+
+    donde : Optional[str]
+        Marca que se va a traducir (fila o columna). De manera predeterminada está en None, que quiere decir que se traducirá
+        en par fila-columna (solo si hay tupla de (int,int))
+
+    Retorna:
+    -------
+    str
+        Devuelve la coordenada correpondiente del tablero
+    """
+    columnas = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+
+    if type(posicion) == int:
+        if donde == "fila":
+            return str(posicion - 1)
+
+        return columnas[posicion]
+
+    return columnas[posicion[1]] + str(8 - posicion[0])
+
+def traduccion_total_inversa(movimiento : tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]) -> str:
+    """
+    Traduce todo el movimiento de una pieza al fomrato LAN hipersimplificado. Tambien traduce su movimiento especial (enroque
+    y promociones).
+
+    Parametros:
+    ----------
+    movimiento : tuple[tuple, tuple, int] | tuple[tuple[int, Any], tuple[int, Any], int | Any]
+        Movimiento completo de la pieza
+
+    Retorna:
+    -------
+    str
+        Devuelve la traducción exacta del movimiento de la pieza
+    """
+    if str(movimiento[2]) in '12':
+        return '0-0-0' if movimiento[2] == 2 else '0-0'
+
+    inicio : str = traduccion_inversa(movimiento[0])
+    fin : str = traduccion_inversa(movimiento[1])
+    promocion : str = ''
+
+    if movimiento[2] != 0:
+        promocion = f'={movimiento[2]}'
+
+    return inicio + fin + promocion
+
 if __name__ == '__main__':
-    print(digitar_movimiento(0))
+    #print(traducir_movimiento_ia(transformacion_a_LAN_hipersimplificado(input("Movimiento: "))))
+    #print(digitar_movimiento(1))
+    print(traduccion_total_inversa(traducir_movimiento_ia(transformacion_a_LAN_hipersimplificado(input("Movimiento: ")))))
+    print(traduccion_total_inversa(digitar_movimiento(1)))

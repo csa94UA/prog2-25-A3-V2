@@ -48,7 +48,12 @@ pip install -r requirements.txt
 ```
 3. Ejecutar el servidor Flask
 ```bash
-python app.py
+python main.py
+```
+
+4. Seguidamente ejecutamos el programa de pruebas
+```
+python examples.py
 ```
 
 ## Resumen de la API
@@ -60,14 +65,18 @@ Rutas Principales
 
 * POST /signup: Registro de usuarios.
 
-* GET /signin: Inicio de sesión y generación de tokens.
+* GET /login: Inicio de sesión y generación de tokens.
 
-* GET /data: Muestra todos los datos registrados.
+* GET /perfil: Muestra datos del perfil del usuario.
 
-* POST /data/: Añadir un nuevo dato.
+* PUT /perfil: Modificar perfil del usuario.
 
-* GET /data/: Obtener un dato por ID.
+* DELETE /perfil: Eliminar perfil del usuario.
 
-* PUT /data/: Actualizar un dato por ID.
+* GET /partida/json: Obtener partida en json.
 
-* DELETE /data/: Eliminar un dato por ID.
+* POST /partida: Inicializar nueva partida.
+
+* DELETE /partida: Eliminar partida existente.
+
+* GET /partida: Obtener partidas existentes.
