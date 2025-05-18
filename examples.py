@@ -712,7 +712,8 @@ def menu_principal(token: str) -> None:
     global usuario_username,usuario_id
 
     while True:
-        print("\n--- Menú Principal ---")
+        print("\n --- YORKSHIRE CHESS ---")
+        print("\n----- Menú Principal -----")
         print("1. Menú Amigos")
         print("2. Menú Retos")
         print("3. Menú Partidas")
