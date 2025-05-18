@@ -63,6 +63,7 @@ def cargar_partida(nombre_archivo: str) -> Dict[str, Any]:
     FileNotFoundError
         Si el archivo no existe.
     """
+    nombre_archivo += ".json"
     ruta = os.path.join(PATH_PARTIDAS, nombre_archivo)
 
     if not os.path.exists(ruta):

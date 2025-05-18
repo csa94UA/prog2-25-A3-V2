@@ -59,6 +59,41 @@ def _ruta_solicitudes(username: str) -> str:
     return os.path.join(PATH_SOLICITUDES, f"{username}.json")
 
 
+def obtener_solicitudes_amistad(username: str) -> List[Dict[str, str]]:
+    """
+    Devuelve todas las solicitudes de amistad pendientes para un usuario.
+
+    Parámetros:
+    -----------
+    username : str
+        Nombre del usuario que desea consultar sus solicitudes de amistad.
+
+    Retorna:
+    --------
+    List[Dict[str, str]]
+        Lista de diccionarios que representan las solicitudes recibidas. 
+        Cada diccionario contiene al menos el username y el user_id del remitente.
+    
+    Lanza:
+    ------
+    ValueError
+        Si el usuario no existe.
+    """
+    usuario: Optional[Usuario] = Usuario.cargar_por_username(username)
+    if not usuario:
+        raise ValueError("Usuario no encontrado.")
+
+    ruta: str = _ruta_solicitudes(usuario.user_id)
+
+    if not os.path.exists(ruta):
+        return []
+
+    with open(ruta, "r", encoding="utf-8") as f:
+        solicitudes: List[Dict[str, str]] = json.load(f)
+
+    return solicitudes
+
+
 def enviar_solicitud_amistad(remitente: Usuario, destinatario_username: str) -> Dict[str, str]:
     """
     Envía una solicitud de amistad desde el usuario remitente al destinatario especificado.
@@ -178,7 +213,7 @@ def mostrar_perfil_amigo(usuario: Usuario, username_amigo: str) -> Dict[str, Uni
     if not amigo:
         raise ValueError("Usuario no encontrado.")
 
-    if amigo.user_id not in usuario.amigos:
+    if amigo.user_id not in usuario.amigos and amigo.user_id != usuario.user_id:
         raise ValueError("Este usuario no es tu amigo.")
 
     return {
@@ -339,6 +374,8 @@ def enviar_reto_a_amigo(retador_username: str, username_amigo: str) -> None:
 
     with open(ruta, "w", encoding="utf-8") as f:
         json.dump(retos, f, indent=4)
+
+    return None
 
 
 def aceptar_reto(usuario_username: str, retador_username: str) -> SesionDeJuego:

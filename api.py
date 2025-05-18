@@ -7,7 +7,7 @@ from datetime import timedelta,datetime
 from usuario.registro import registrar_usuario,iniciar_sesion
 from usuario.usuario import Usuario
 from usuario.ranking import obtener_ranking, obtener_posicion_usuario
-from usuario.friend_manager import mostrar_perfil_amigo, enviar_solicitud_amistad, aceptar_solicitud, mostrar_amigos, eliminar_amigo,enviar_reto_a_amigo,aceptar_reto,rechazar_reto,obtener_retos,enviar_mensaje,obtener_chat
+from usuario.friend_manager import mostrar_perfil_amigo, enviar_solicitud_amistad, aceptar_solicitud, mostrar_amigos, eliminar_amigo,enviar_reto_a_amigo,aceptar_reto,rechazar_reto,obtener_retos,enviar_mensaje,obtener_chat,obtener_solicitudes_amistad
 from utiles.file_menager import cargar_partida
 from juego.sesion_juego import SesionDeJuego
 from juego.usuarioIA import UsuarioIA 
@@ -66,7 +66,8 @@ def registrar_usuarioo() -> Dict[str, str]:
         acces_token = create_access_token(identity=nuevo_usuario.username)
         return jsonify({
             "mensaje": f"Usuario '{nuevo_usuario.username}' registrado correctamente.",
-            "acces_token": acces_token
+            "acces_token": acces_token,
+            "user_id":nuevo_usuario.user_id
         }), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -88,7 +89,8 @@ def iniciar_sesionn():
         access_token = create_access_token(identity=usuario.username)
         return jsonify({
             "mensaje": f"Inicio de sesión exitoso para {usuario.username}",
-            "access_token": access_token
+            "access_token": access_token,
+            "user_id":usuario.user_id
         }),201
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
@@ -117,7 +119,6 @@ def obtener_rankingg():
     
 
 @app.route("/ranking/posicion/<string:username>", methods=["GET"])
-@jwt_required()
 def obtener_posicion_usuarioo(username: str):
     """
     Endpoint que devuelve la posición de un usuario en el ranking global por ELO.
@@ -141,9 +142,9 @@ def obtener_posicion_usuarioo(username: str):
         return jsonify({"error": str(e)}), 500
     
 
-@app.route('/amigos/<string:usuario_id>', methods=['GET'])
+@app.route('/amigos', methods=['GET'])
 @jwt_required()
-def mostrar_amigoss(usuario_id: str):
+def mostrar_amigoss():
     """
     Endpoint para obtener la lista de amigos de un usuario específico.
 
@@ -159,7 +160,8 @@ def mostrar_amigoss(usuario_id: str):
     JSON con la lista de amigos o un mensaje de error.
     """
     try:
-        resultado = mostrar_amigos(usuario_id)
+        identidad = get_jwt_identity()
+        resultado = mostrar_amigos(identidad)
 
         if "error" in resultado:
             return jsonify({"error": resultado["error"]}), 404
@@ -193,7 +195,7 @@ def mostrar_perfil_amigoo(username_amigo: str):
             return jsonify({"error": "Usuario autenticado no encontrado."}), 404
 
         resultado = mostrar_perfil_amigo(usuario, username_amigo)
-        return jsonify(resultado), 200
+        return jsonify({"perfil":resultado}), 200
 
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -201,6 +203,35 @@ def mostrar_perfil_amigoo(username_amigo: str):
     except Exception as e:
         return jsonify({"error": "Error interno del servidor."}), 500
 
+
+@app.route('/amigos/solicitudes', methods=['GET'])
+@jwt_required()
+def solicitudes_amistad() -> Optional[List[Dict[str, str]]]:
+    """
+    Endpoint que devuelve todas las solicitudes de amistad pendientes
+    para el usuario autenticado usando la función obtener_solicitudes_amistad.
+
+    Requiere:
+    ---------
+    JWT token válido.
+
+    Retorna:
+    --------º
+    200 OK: Lista de solicitudes.
+    404 Not Found: Si el usuario no existe.
+    500 Internal Server Error: Error inesperado.
+    """
+    try:
+        username: str = get_jwt_identity()
+        solicitudes: List[Dict[str, str]] = obtener_solicitudes_amistad(username)
+        return jsonify({"solicitudes":solicitudes}), 200
+
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
+
+    except Exception as e:
+
+        return jsonify({"error": f"Error al obtener solicitudes: {str(e)}"}), 500
 
 @app.route("/amigos/solicitud", methods=["POST"])
 @jwt_required()
@@ -230,7 +261,7 @@ def enviar_solicitud_amistadd() -> Dict[str, Union[str, Dict]]:
 
 @app.route("/amigos/aceptar", methods=["POST"])
 @jwt_required()
-def aceptar_solicitud_endpoint() -> Dict[str, Union[str, Dict]]:
+def aceptar_solicitudd() -> Dict[str, Union[str, Dict]]:
     try:
         data = request.get_json()
         if not data or "remitente_username" not in data:
@@ -295,6 +326,8 @@ app.route("/partidas/<string:nombre_sesion>", methods=["GET"])
 @jwt_required()
 def cargar_partidaa(nombre_sesion: str) -> Dict[str, Any]:
     try:
+        if nombre_sesion in sesiones_activas:
+            nombre_sesion ="temp/"+ nombre_sesion+"_temp"
         datos_partida = cargar_partida(nombre_sesion)
         return jsonify(datos_partida), 200
     except FileNotFoundError:
@@ -323,8 +356,23 @@ def enviar_reto_a_amigoo(username_amigo: str):
     try:
         retador_username: str = get_jwt_identity()
         
-        enviar_reto_a_amigo(retador_username, username_amigo)
-        
+        sesion = enviar_reto_a_amigo(retador_username, username_amigo)
+        if sesion:
+            nombre_sesion = f"{username_amigo}_vs_{retador_username}"
+            nombre_sesion = f"partida_{nombre_sesion}"
+
+            if nombre_sesion in sesiones_activas:
+                return jsonify({"error": "Esta sesión ya está activa."}), 400
+
+            sesiones_activas[nombre_sesion] = sesion
+
+            return jsonify({
+                "mensaje": f"Reto aceptado. Partida iniciada entre {username_amigo} y {retador_username}. ",
+                "sesion_id": nombre_sesion,
+                "turno": sesion.turno,
+                "jugador_blanco": sesion.jugador_blanco.username,
+                "jugador_negro": sesion.jugador_negro.username
+            }), 200
         return jsonify({"mensaje": f"Reto enviado a {username_amigo} correctamente."}), 200
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
@@ -346,7 +394,7 @@ def rechazar_retoo(retador_username: str):
         return jsonify({"error": f"Error inesperado: {str(e)}"}), 500
     
 
-app.route("/retos/aceptar/<string:retador_username>", methods=["POST"])
+@app.route("/retos/aceptar/<string:retador_username>", methods=["POST"])
 @jwt_required()
 def aceptar_retoo(retador_username: str):
     try:
@@ -354,21 +402,15 @@ def aceptar_retoo(retador_username: str):
 
         sesion: SesionDeJuego = aceptar_reto(usuario_username, retador_username)
 
-        nombre_sesion = datetime.now().strftime("%Y%m%d_%H%M%S")
+        nombre_sesion = f"{usuario_username}_vs_{retador_username}"
         nombre_sesion = f"partida_{nombre_sesion}"
 
         if nombre_sesion in sesiones_activas:
             return jsonify({"error": "Esta sesión ya está activa."}), 400
 
         sesiones_activas[nombre_sesion] = sesion
-
-        return jsonify({
-            "mensaje": f"Reto aceptado. Partida iniciada entre {usuario_username} y {retador_username}.",
-            "sesion_id": nombre_sesion,
-            "turno": sesion.turno,
-            "jugador_blanco": sesion.jugador_blanco.username,
-            "jugador_negro": sesion.jugador_negro.username
-        }), 200
+        mensaje = "Reto aceptado. Partida iniciada entre "+usuario_username+" y "+retador_username+"."
+        return jsonify({"mensaje":mensaje}), 200
 
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400
@@ -552,7 +594,7 @@ def enviar_mensajee(receptor_username: str) -> tuple[Dict[str, str], int]:
 
 @app.route('/amigos/<string:otro_username>/chat', methods=['GET'])
 @jwt_required()
-def obtener_chat_endpoint(otro_username: str) -> tuple[Union[List[Dict[str, str]], Dict[str, str]], int]:
+def obtener_chatt(otro_username: str) -> tuple[Union[List[Dict[str, str]], Dict[str, str]], int]:
     """
     Endpoint para obtener el historial completo de mensajes con otro usuario amigo.
     El otro usuario se especifica en la URL.
@@ -584,6 +626,6 @@ def obtener_chat_endpoint(otro_username: str) -> tuple[Union[List[Dict[str, str]
 
     except Exception as e:
         return {"error": f"Error interno del servidor: {str(e)}"}, 500
-    
+
 if __name__ == "__main__":
     app.run(debug=True)
