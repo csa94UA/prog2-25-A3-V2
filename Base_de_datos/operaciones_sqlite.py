@@ -43,7 +43,7 @@ import json
 DIR_DATOS = "Base_de_datos/datos/"
 DIR_JSON = 'Base_de_datos/datos/archivos_json'
 
-def insertar_usuario(nombre : str, correo : str, contraseña_hash : str, pais : str, /, elo : int = 300) -> None:
+def insertar_usuario(nombre : str, correo : str, contraseña_hash : str, pais : str, /, elo : int = 300) -> bool:
     """
     Función encargada de registrar un nuevo usuario dentro de la base de datos.
 
@@ -63,6 +63,11 @@ def insertar_usuario(nombre : str, correo : str, contraseña_hash : str, pais : 
 
     elo : int
         Elo (o nivel) del jugador. De manera predeterminada su valor es 300
+
+    Retorna:
+    --------
+    bool
+        Marca si ha podido insertar al usuario
     """
     conn = sqlite3.connect(f'{DIR_DATOS}/DB.db')
     conn.execute('PRAGMA foreign_keys = ON')
@@ -73,12 +78,13 @@ def insertar_usuario(nombre : str, correo : str, contraseña_hash : str, pais : 
             VALUES (?, ?, ?, ?, ?)
         ''', (nombre, correo, contraseña_hash, elo, pais))
         conn.commit()
-        print("Usuario registrado correctamente.")
     except sqlite3.IntegrityError:
-        print("Error: nombre de usuario ya registrado.")
+        conn.close()
+        return False
+
     conn.close()
 
-    return None
+    return True
 
 def modificar_usuario(nombre : str, campo : str, valor : str) -> None:
     """
@@ -353,31 +359,3 @@ def eliminar_partida_en_bd(nombre : str, game_id : str) -> None:
     conn.close()
 
     return None
-
-if __name__ == '__main__':
-    datos = buscar_usuario("Julio")
-    print(datos.keys())
-    partidas = obtener_lista_partidas_usuario("Julio")
-    print(partidas)
-    print(len(partidas))
-    print(partidas[0]['nombre_partida'])
-    for i,partida in enumerate(partidas):
-        print(f"{i + 1}. Partida: {partida['nombre_partida']}")
-        print(partida.keys())
-        print("jugador_blanco: ",partida['jugador_blanco'])
-        print('Jugador_negro: ',partida['jugador_negro'])
-        print('Duracion: ', partida['duracion'])
-        print('Nombre partida: ', partida['nombre_partida'])
-    movimiento = obtener_datos_partida("JuliovsJorge")
-    print(movimiento)
-    partida = obtener_partida_usuario("JuliovsJorge")
-    datos: dict = {
-        'jugador_blanco': partida['jugador_blanco'],
-        'jugador_negro': partida['jugador_negro'],
-        'duracion': partida['duracion'],
-        'resultado': partida['resultado'],
-        'movimientos': movimiento
-    }
-    with open(f'{DIR_JSON}/{partida['nombre_partida']}.json', 'w') as escritura:
-        json.dump(datos, escritura, indent=4)
-    #eliminar_partida("Julio","JuliovsJulio")

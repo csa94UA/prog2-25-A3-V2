@@ -136,7 +136,7 @@ class GuardarPartida:
 
         return None
 
-    def agregar_turno(self, mov_LAN: str, fen: str, turno: int) -> None:
+    def agregar_turno(self, mov_LAN: str, fen: str, turno: int, detencion : bool = False) -> None:
         """
         Agrega nueva infomración de la partida tras terminar el turno
 
@@ -150,8 +150,12 @@ class GuardarPartida:
 
         turno : int
             Turno de la partida
+
+        detencion : bool
+            Marca si se ha producido una partada en la partida. Si es así, no se añade a .json
         """
-        self += (mov_LAN, fen)
+        if not detencion:
+            self += (mov_LAN, fen)
         upsert_en_curso(self.game_id, self.blancas_id, self.negras_id, fen=fen, turno=turno, ultimo_mov=mov_LAN)
 
     def finalizar(self, resultado: str) -> None:

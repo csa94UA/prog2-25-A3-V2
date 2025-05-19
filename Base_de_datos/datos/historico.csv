@@ -1,8 +1,4 @@
 game_id,jugador_blanco,jugador_negro,fen,turno,ultimo_mov,resultado,fin
-JuliovsJorge,Julio,Jorge,rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e6 0 2,0,e7e5,0-1,2025-05-18T12:02:59.244679
-JuliovsJorge,Julio,Jorge,r1bqkbnr/pppp1Qp1/n6p/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 0 7,1,f3f7,1-0,2025-05-18T12:04:14.019834
-JuliovsJorge,Julio,Jorge,rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e6 0 2,0,e7e5,0-1,2025-05-18T12:05:52.957086
-JuliovsJorge,Julio,Jorge,rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e6 0 2,0,e7e5,0-1,2025-05-18T12:08:40.315793
-JuliovsJorge,Julio,Jorge,rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e6 0 2,0,e7e5,0-1,2025-05-18T12:14:30.656472
-JuliovsJorge,Julio,Jorge,r1bqkbnr/pppp1Qp1/n6p/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 0 7,1,f3f7,1-0,2025-05-18T12:15:04.854340
-JuliovsJorge,Julio,Jorge,rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e6 0 2,0,e7e5,0-1,2025-05-18T12:17:52.809881
+JorgevsJulio,Jorge,Julio,2kr1bnr/pp3ppp/3qP1b1/2pp3Q/1nB1P3/N3B2N/PPP2PPP/R4RK1 w - - 0 19,1,Se rinde,1-0,2025-05-19T20:28:51.865417
+JuliovsCarlos,Julio,Carlos,rnbqkbnr/ppp1p1pp/P2P4/8/8/8/1PPP1P1P/RNBQ1KNR w KQkq - 0 13,1,Se rinde,1-0,2025-05-19T20:37:31.574922
+JuliovsJorge,Julio,Jorge,r1bqkbnr/pppp1Qp1/n6p/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 0 7,1,f3f7,1-0,2025-05-19T20:38:37.889532

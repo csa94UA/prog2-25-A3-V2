@@ -132,6 +132,3 @@ def visualizar_y_seleccionar_partidas() -> None:
     visualizar_partida_antigua(partidas[indice])
 
     return None
-
-if __name__ == '__main__':
-    visualizar_y_seleccionar_partidas()

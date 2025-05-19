@@ -287,9 +287,3 @@ def traduccion_total_inversa(movimiento : tuple[tuple, tuple, int] | tuple[tuple
         promocion = f'={movimiento[2]}'
 
     return inicio + fin + promocion
-
-if __name__ == '__main__':
-    #print(traducir_movimiento_ia(transformacion_a_LAN_hipersimplificado(input("Movimiento: "))))
-    #print(digitar_movimiento(1))
-    print(traduccion_total_inversa(traducir_movimiento_ia(transformacion_a_LAN_hipersimplificado(input("Movimiento: ")))))
-    print(traduccion_total_inversa(digitar_movimiento(1)))

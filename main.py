@@ -72,9 +72,8 @@ def singup() -> tuple[str,int]:
         return "Faltan campos", 400
 
     hashed = hashlib.sha256(contraseña.encode()).hexdigest()
-    try:
-        insertar_usuario(nombre, correo, hashed, pais)
-    except sqlite3.IntegrityError:
+    intento : bool = insertar_usuario(nombre, correo, hashed, pais)
+    if not intento:
         return "Usuario ya existe", 409
 
     return f"Usuario {nombre} registrado", 200
@@ -236,7 +235,7 @@ def crear_partida() -> tuple[str,int]:
     """
     Inicializa una nueva partida en la base de datos
 
-    Se obtiene el nombre del usuario con su token y se obtienen los parametros 'contrincante' y 'color' a traves de la petición
+    Se obtiene el nombre del usuario con su token y se obtienen los parametros 'contrincante1', 'contrincante2' y 'color' a traves de la petición
     de requests.args(). Seguidamente se crea el id del juego y se crea en la base de datos.
 
     Retorna:
@@ -244,15 +243,16 @@ def crear_partida() -> tuple[str,int]:
     tuple[str,int]
         Devuelve el par (respuesta,codigo).
     """
-    contrincante = request.args.get('contrincante', '')
+    contrincante1 = request.args.get('contrincante1', '')
+    contrincante2 = request.args.get('contrincante2', '')
     color = request.args.get('color', '')
-    usuario = get_jwt_identity()
+    get_jwt_identity()
 
-    if not contrincante:
-        return 'Falta contrincante', 400
+    if not all([contrincante1,contrincante2]):
+        return 'Falta/n contrincante/s', 400
 
-    jugador_blanco = usuario if color else contrincante
-    jugador_negro = contrincante if color else usuario
+    jugador_blanco = contrincante1 if int(color) == 1 else contrincante2
+    jugador_negro = contrincante2 if int(color) == 1 else contrincante1
 
     crear_partida_en_bd(jugador_blanco, jugador_negro)
 

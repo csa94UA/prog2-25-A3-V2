@@ -137,12 +137,20 @@ def partida(jugador1 : Jugador, jugador2 : Jugador, /, bot : bool = False,*, en_
 
         # Si el jugador quiere salir de la partida
         if type(movimiento[2]) == int and movimiento[2] == 3:
-            print(f"{jugador_actual.nombre} decide detener temporalmente la partida")
-            jugador_actual = None
-            break
+            if tablero.contador != 0:
+                print(f"{jugador_actual.nombre} decide detener temporalmente la partida")
+                tablero.turno = 1 - tablero.turno
+                save_partida.agregar_turno(mov_LAN if mov_LAN else 'None', tablero.traduccion_FEN(tablero.contador), tablero.turno, detencion=True)
+                jugador_actual = None
+                break
+            else:
+                print("No se puede detener partida en el primer turno")
+                continue
 
         if type(movimiento[2]) == int and movimiento[2] == 4:
             print(f"{jugador_actual.nombre} decide rendirse")
+            tablero.turno = 1 - tablero.turno
+            save_partida.agregar_turno('Se rinde', tablero.traduccion_FEN(tablero.contador), tablero.turno)
             jugador_actual = enemigo
             break
 
@@ -965,18 +973,3 @@ def comprobar_tablas(tablero : "Tablero", jugador_actual : "Jugador", enemigo : 
                 return False
 
         return False
-
-if __name__ == "__main__":
-    """
-    jug1 = Jugador("StockFish",1000)
-    jug2 = Jugador("StockFish",2300)
-    partida(jug1, jug2, True, en_curso=True)
-    """
-    jug1 = Jugador("Jorgis",1412)
-    jug2 = Jugador("Carlitos",1032)
-    partida(jug1, jug2, en_curso=False)
-    """
-    print(Tablero.creacion_con_FEN('rnbqk2r/pp3ppp/5n2/3p4/1b2p3/2N3P1/PP1PPPBP/R1BQK1NR b KQkq - 0 14'))
-    stockfish.set_fen_position("rnbqk2r/pp3ppp/5n2/3p4/1b2p3/2N3P1/PP1PPPBP/R1BQK1NR b KQkq - 0 14")
-    print("Mejor movimiento:", stockfish.get_best_move())
-    """

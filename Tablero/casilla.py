@@ -141,11 +141,3 @@ class Casilla:
         return (f"{type(self).__name__}(Posición -> ({self.fila},{self.columna}), "
             f"Ocupado -> {self.ocupado}, Pieza -> {pieza}, "
             f"Amenazado -> {self.amenazado})")
-
-if __name__ == "__main__":
-    from Piezas import Caballo, Alfil, Rey, Torre, Reina, Pieza, Peon
-    casilla = Casilla(1,2)
-    pieza = Rey((1,2),0)
-    casilla.conquistado(pieza)
-    print(repr(casilla))
-    print(casilla)

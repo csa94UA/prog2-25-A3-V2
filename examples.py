@@ -102,11 +102,11 @@ def crear_partida(token : str, cargar : bool = False) -> None:
             jugador1.color = 0
             jugador2.color = 1
 
-        respuesta = requests.post(f'{URL}/partida?contrincante={jugador2.nombre}&color={jugador1.color}',
+        respuesta = requests.post(f'{URL}/partida?contrincante1={jugador1.nombre}&contrincante2={jugador2.nombre}&color={jugador1.color}',
                                   headers= {'Authorization': 'Bearer ' + (token if token else '')})
         print(f"Estado: {respuesta.status_code}.  {respuesta.text}")
         if respuesta.status_code == 200:
-            partida(jugador1, jugador2, bot)
+            partida(jugador1 if jugador1.color else jugador2, jugador2 if jugador1.color else jugador1, bot)
     else:
         pd = load_en_curso()
 

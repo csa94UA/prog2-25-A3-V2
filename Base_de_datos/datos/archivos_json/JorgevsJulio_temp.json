@@ -1,0 +1,89 @@
+{
+    "jugador_blanco": "Jorge",
+    "jugador_negro": "Julio",
+    "fecha_inicio": "2025-05-19T20:21:04.209182",
+    "fecha_fin": "2025-05-19T20:28:51.850820",
+    "resultado": "1-0",
+    "movimientos": [
+        {
+            "lan": "e2e4",
+            "fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e3 0 1"
+        },
+        {
+            "lan": "d7d5",
+            "fen": "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR b KQkq d6 0 2"
+        },
+        {
+            "lan": "d2d4",
+            "fen": "rnbqkbnr/ppp1pppp/8/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq d3 0 3"
+        },
+        {
+            "lan": "d8d6",
+            "fen": "rnb1kbnr/ppp1pppp/3q4/3p4/3PP3/8/PPP2PPP/RNBQKBNR b KQkq - 0 4"
+        },
+        {
+            "lan": "d1h5",
+            "fen": "rnb1kbnr/ppp1pppp/3q4/3p3Q/3PP3/8/PPP2PPP/RNB1KBNR w KQkq - 0 5"
+        },
+        {
+            "lan": "c8f5",
+            "fen": "rn2kbnr/ppp1pppp/3q4/3p1b1Q/3PP3/8/PPP2PPP/RNB1KBNR b KQkq - 0 6"
+        },
+        {
+            "lan": "b1a3",
+            "fen": "rn2kbnr/ppp1pppp/3q4/3p1b1Q/3PP3/N7/PPP2PPP/R1B1KBNR w KQkq - 0 7"
+        },
+        {
+            "lan": "b8a6",
+            "fen": "r3kbnr/ppp1pppp/n2q4/3p1b1Q/3PP3/N7/PPP2PPP/R1B1KBNR b KQkq - 0 8"
+        },
+        {
+            "lan": "c1e3",
+            "fen": "r3kbnr/ppp1pppp/n2q4/3p1b1Q/3PP3/N3B3/PPP2PPP/R3KBNR w KQkq - 0 9"
+        },
+        {
+            "lan": "0-0-0",
+            "fen": "2kr1bnr/ppp1pppp/n2q4/3p1b1Q/3PP3/N3B3/PPP2PPP/R3KBNR b KQ - 0 10"
+        },
+        {
+            "lan": "f1c4",
+            "fen": "2kr1bnr/ppp1pppp/n2q4/3p1b1Q/2BPP3/N3B3/PPP2PPP/R3K1NR w KQ - 0 11"
+        },
+        {
+            "lan": "e7e5",
+            "fen": "2kr1bnr/ppp2ppp/n2q4/3ppb1Q/2BPP3/N3B3/PPP2PPP/R3K1NR b KQ e6 0 12"
+        },
+        {
+            "lan": "d4e5",
+            "fen": "2kr1bnr/ppp2ppp/n2q4/3pPb1Q/2B1P3/N3B3/PPP2PPP/R3K1NR w KQ - 0 13"
+        },
+        {
+            "lan": "f5g6",
+            "fen": "2kr1bnr/ppp2ppp/n2q2b1/3pP2Q/2B1P3/N3B3/PPP2PPP/R3K1NR b KQ - 0 14"
+        },
+        {
+            "lan": "g1h3",
+            "fen": "2kr1bnr/ppp2ppp/n2q2b1/3pP2Q/2B1P3/N3B2N/PPP2PPP/R3K2R w KQ - 0 15"
+        },
+        {
+            "lan": "a6b4",
+            "fen": "2kr1bnr/ppp2ppp/3q2b1/3pP2Q/1nB1P3/N3B2N/PPP2PPP/R3K2R b KQ - 0 16"
+        },
+        {
+            "lan": "0-0",
+            "fen": "2kr1bnr/ppp2ppp/3q2b1/3pP2Q/1nB1P3/N3B2N/PPP2PPP/R4RK1 w - - 0 17"
+        },
+        {
+            "lan": "c7c5",
+            "fen": "2kr1bnr/pp3ppp/3q2b1/2ppP2Q/1nB1P3/N3B2N/PPP2PPP/R4RK1 b - c6 0 18"
+        },
+        {
+            "lan": "e5e6",
+            "fen": "2kr1bnr/pp3ppp/3qP1b1/2pp3Q/1nB1P3/N3B2N/PPP2PPP/R4RK1 w - - 0 19"
+        },
+        {
+            "lan": "Se rinde",
+            "fen": "2kr1bnr/pp3ppp/3qP1b1/2pp3Q/1nB1P3/N3B2N/PPP2PPP/R4RK1 w - - 0 19"
+        }
+    ]
+}

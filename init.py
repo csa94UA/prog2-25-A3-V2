@@ -34,7 +34,11 @@ def inicializar_bd() -> None:
     crear_tabla_movimientos()
 
     insertar_usuario("Julio","julio.srp@gmail.com",hashlib.sha256("123".encode()).hexdigest(), "España")
-    insertar_usuario("Jorge", "susybaka@gmail.com", hashlib.sha256("69".encode()).hexdigest(), "Cataluña")
+    insertar_usuario("Jorge", "jorge@gmail.com", hashlib.sha256("18".encode()).hexdigest(), "Argentina")
+    insertar_usuario("Carlos", "carlos@gmail.com", hashlib.sha256("1".encode()).hexdigest(), "España")
+    insertar_usuario("Pepe", "pepe@gmail.com", hashlib.sha256("2".encode()).hexdigest(), "Mexico")
+    insertar_usuario("Eliminar", "eliminar@gmail.com", hashlib.sha256("0".encode()).hexdigest(), "Colombia")
+    insertar_usuario("StockFish", "eliminar@gmail.com", hashlib.sha256("8453110845213".encode()).hexdigest(), "None")
 
     return None
 
