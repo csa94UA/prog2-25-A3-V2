@@ -1,5 +1,3 @@
-from Piezas.Pieza import Pieza
-
 """
 Modulo para la gestión y uso de un peon
 
@@ -12,6 +10,8 @@ Clases:
     - Peon
 """
 
+from Piezas.Pieza import Pieza
+
 class Peon(Pieza):
     """
     Clase que representa un peon concreto
@@ -20,28 +20,44 @@ class Peon(Pieza):
     -----------
     posicion : list[int,int]
         Posicíon concreta del peon
+
     color : bool
         Color del peon (1 es blanco y 0 es negro)
+
     capturado : bool
         Marca si está capturada el peon
+
     valor : int
         Valor del peon
+
     movimientos : list[(int,int)]
         Lista de movimientos válidos del peon
+
     movido : bool
         Si ya se ha movido (para los movimientos especiales)
 
     Métodos:
     -----------
+    __init__(self, posicion : tuple[int,int], color : int) -> None
+        Inicializa un nuevo peon
+
     transformar() -> bool:
         Comprueba si el peon ha llegado al otro extremo del tablero para transformarse
+
     en_passant() -> (int,int)
         Devuelve la posición que debe hacer para capturar en passant
+
     mover_doble() -> (int,int):
-        Devuelve la posición si no se ha movido aún y le permite avanzar
-        dos veces hacia delante.
+        Devuelve la posición si no se ha movido aún y le permite avanzar dos veces hacia delante.
+
     movimiento_valido() -> list[(int,int)]
         Devuelve el conjunto de posiciones validas que puede tener.
+
+    __str__(self) -> str
+        Devuelve la representación del Peon (teniendo en cuenta su color)
+
+    __repr__(self) -> str
+        Muesta información técnica del Peon
     """
 
     def __init__(self, posicion : tuple[int,int], color : int) -> None:
@@ -51,6 +67,7 @@ class Peon(Pieza):
         -----------
         posicion : list[int,int]
             Posicíon concreta del peon
+
         color : bool
             Color del peon (1 es blanco y 0 es negro)
         """
@@ -60,10 +77,12 @@ class Peon(Pieza):
     def movimiento_valido(self,tablero : "Tablero",detectando_ataque:bool=False) -> list[tuple[int,int]]:
         """
         Comprueba todos los movimientos válidos del peon
+
         Parametros:
         -----------
         tabelro : list[list[int]]
             Tablero en sí
+
         Retorna:
         --------
         list[tuple(int,int)]
@@ -90,9 +109,11 @@ class Peon(Pieza):
             movimientos.append((fila + color, columna - 1))
 
         return movimientos
+
     def transformacion(self) -> bool:
         """
         Comprueba si tiene la posibilidad de transformarse
+
         Retorna:
         --------
         bool
@@ -104,21 +125,6 @@ class Peon(Pieza):
 
         return False
 
-    def __repr__(self):
-        """
-        Metodo especial para mostrar toda la información de la clase
-
-        Retorna:
-        --------
-        str
-            Retorna un str con toda la información
-        """
-        return (f"{type(self).__name__}(Posición -> {self.posicion}, "
-                f"Color -> {self.color}, Capturado -> {self.capturado}, "
-                f"Valor -> {self.valor}, Movido -> {self.movido}, "
-                f"Movimientos -> {self.movimientos})")
-
-
     def mover_doble(self, tablero : "Tablero", color : int) -> bool:
         """
         Comprueba si puede dar un segundo paso
@@ -127,6 +133,9 @@ class Peon(Pieza):
         -----------
         tabelro : Tablero
             Tablero en sí
+
+        color : int
+            Color del peon que marca el sentido de su movimiento
         Retorna:
         --------
         bool
@@ -149,6 +158,9 @@ class Peon(Pieza):
         -----------
         tabelro : Tablero
             Tablero en sí
+
+        color : int
+            Color del peon que marca el sentido de su movimiento
         Retorna:
         --------
         bool
@@ -166,3 +178,28 @@ class Peon(Pieza):
             return True
 
         return False
+
+    def __str__(self) -> str:
+        """
+        Método dunder que devuelve la representación de la pieza, teniendo en cuenta su color
+
+        Retorna:
+        --------
+        str
+            Devuelve su representación
+        """
+        return 'P' if self.color else 'p'
+
+    def __repr__(self):
+        """
+        Metodo especial para mostrar toda la información de la clase
+
+        Retorna:
+        --------
+        str
+            Retorna un str con toda la información
+        """
+        return (f"{type(self).__name__}(Posición -> {self.posicion}, "
+                f"Color -> {self.color}, Capturado -> {self.capturado}, "
+                f"Valor -> {self.valor}, Movido -> {self.movido}, "
+                f"Movimientos -> {self.movimientos})")

@@ -19,28 +19,43 @@ class Reina(Pieza):
     -----------
     posicion : list[int,int]
         Posicíon concreta de la reina
+
     color : bool
         Color de la reina (1 es blanco y 0 es negro)
+
     capturado : bool
         Marca si está capturado la reina
+
     valor : int
         Valor de la reina
+
     movimientos : list[(int,int)]
         Lista de movimientos válidos de la reina
 
     Métodos:
     -----------
+    __init__(self, posicion : tuple[int,int], color : int) -> None
+        Inicializa una nueva Reina
+
     movimiento_valido() -> list[(int,int)]
         Devuelve el conjunto de posiciones validas que puede tener.
+
+    __str__(self) -> str
+        Devuelve la representación de la Reina (teniendo en cuenta su color)
+
+    __repr__(self) -> str
+        Muesta información técnica de la Reina
     """
 
     def __init__(self, posicion: tuple[int,int], color: int) -> None:
         """
         Inicializa una instacia de la clase Reina
+
         Parámetros:
         -----------
         posicion : list[int,int]
             Posicíon concreta de la reina
+
         color : bool
             Color de la reina (1 es blanco y 0 es negro)
         """
@@ -49,10 +64,12 @@ class Reina(Pieza):
     def movimiento_valido(self, tablero: "Tablero") -> list[(int,int)]:
         """
         Comprueba todos los movimientos válidos del alfil
+
         Parametros:
         -----------
         tabelro : list[list[int]]
             Tablero en sí
+
         Retorna:
         --------
         list[tuple(int,int)]
@@ -173,6 +190,17 @@ class Reina(Pieza):
             movimientos.append((fila, j))
 
         return movimientos
+
+    def __str__(self) -> str:
+        """
+        Método dunder que devuelve la representación de la pieza, teniendo en cuenta su color
+
+        Retorna:
+        --------
+        str
+            Devuelve su representación
+        """
+        return 'Q' if self.color else 'q'
 
     def __repr__(self):
         """

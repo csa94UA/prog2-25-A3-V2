@@ -22,32 +22,49 @@ class Torre(Pieza):
     -----------
     posicion : list[int,int]
         Posicíon concreta de la torre
+
     color : bool
         Color de la torre (1 es blanco y 0 es negro)
+
     capturado : bool
         Marca si está capturada la torre
+
     valor : int
         Valor de la torre
+
     movimientos : list[(int,int)]
         Lista de movimientos válidos de la torre
+
     movido : bool
         Si ya se ha movido (para los movimientos especiales)
 
     Métodos:
     -----------
+    __init__(self, posicion: tuple[int,int], color: int) -> None
+        Inicializa una nueva Torre
+
     movimiento_valido() -> list[(int,int)]
         Devuelve el conjunto de posiciones validas que puede tener.
+
     enroque() -> bool
         Devuelve True si es posible hacer el enroque.
+
+    __str__(self) -> str
+        Devuelve la representación de la Torre (teniendo en cuenta su color)
+
+    __repr__(self) -> str
+        Muesta información técnica de la Torre
     """
 
     def __init__(self, posicion: tuple[int,int], color: int) -> None:
         """
         Inicializa una instacia de la clase Torre
+
         Parámetros:
         -----------
         posicion : list[int,int]
             Posicíon concreta de la torre
+
         color : bool
             Color de la torre (1 es blanco y 0 es negro)
         """
@@ -57,10 +74,12 @@ class Torre(Pieza):
     def movimiento_valido(self, tablero: "Tablero") -> list[(int,int)]:
         """
         Comprueba todos los movimientos válidos de la torre
+
         Parametros:
         -----------
         tabelro : list[list[int]]
             Tablero en sí
+
         Retorna:
         --------
         list[tuple(int,int)]
@@ -146,6 +165,17 @@ class Torre(Pieza):
         #    return True
 
         return False
+
+    def __str__(self) -> str:
+        """
+        Método dunder que devuelve la representación de la pieza, teniendo en cuenta su color
+
+        Retorna:
+        --------
+        str
+            Devuelve su representación
+        """
+        return 'R' if self.color else 'r'
 
     def __repr__(self):
         """

@@ -20,21 +20,35 @@ class Pieza(ABC):
     -----------
     posicion : tuple[int,int]
         Posicíon concreta de una pieza
+
     color : bool
         Color de la pieza (1 es blanco y 0 es negro)
+
     capturado : bool
         Marca si está capturada la pieza
+
     valor : int
         Valor de la pieza (según la subclase a la que pertenezca)
+
     movimientos : list[tuple(int,int)]
         Lista de movimientos válidos de la pieza (según su subclase)
 
     Métodos:
     -----------
-    movimiento_valido():
+    __init__(self, posicion: tuple[int,int], color: int) -> None
+        Inicializa una nueva Pieza
+
+    movimiento_valido(self, tablero: "Tablero"):
         Es un metodo abstracto. Obtiene todos los movimientos posibles de una pieza.
-    mover(tuple(int,int)) -> bool:
-        Desplaza la pieza desde su posición hasta el destino.
+
+    mover(self, destino: tuple[int], tablero: "Tablero", jugador : "Jugador", enemigo : "Jugador", especial : Union[str,int]) -> bool:
+        Desplaza la pieza desde su posición hasta el destino haciendo todas las comprobaciones necesarias.
+
+    __str__(self)
+        Metodo abstracto. Devuelve la representación de la pieza.
+
+     __repr__(self) -> str
+        Retorna información tecnica acerca de la pieza. Util para trazas y análisis
     """
 
     def __init__(self, posicion: tuple[int,int], color: int) -> None:
@@ -45,6 +59,7 @@ class Pieza(ABC):
         -----------
         posicion : tuple[int,int]
             Posicíon concreta de una pieza
+
         color : bool
             Color de la pieza (1 es blanco y 0 es negro)
         """
@@ -66,26 +81,30 @@ class Pieza(ABC):
     def mover(self, destino: tuple[int], tablero: "Tablero", jugador : "Jugador", enemigo : "Jugador", especial : Union[str,int]) -> bool:
         from Tablero import Tablero
         from Jugador import Jugador
+        from Partidas.aflabeto_FEN import traduccion_inversa
         """
-        Desplaza la pieza desde su posición hasta el destino.
+        Desplaza la pieza desde su posición hasta el destino. En ella comprueba todos los casos (autojaque, promoción
+        incorrecta, jaque no evitado, etc).
 
         Parámetros:
         -----------
         destino : tuple(int,int)
             Posición dsetino de la pieza
+        
         Retorna:
         --------
         bool
             Si la pieza ha logrado llegar a su destino
         """
-        pos_rey = jugador.encontrar_rey()
+        x = destino[0]
+        y = destino[1]
 
-        if especial.isalpha() and not destino[0] in [0,7]:
+        if especial.isalpha() and not x in [0,7]:
             print("Error. No se encuentra en el otro lado del tablero")
             return False
 
-        if especial == '0' and tablero[self.posicion[0]][self.posicion[1]].representacion() in ['P','p'] and \
-                destino[0] in [0,7]:
+        if especial == '0' and str(tablero[self.posicion[0]][self.posicion[1]]) in ['P','p'] and \
+                x in [0,7]:
             print("Error. No has digitado una promoción siendo peón.")
             return False
 
@@ -93,30 +112,55 @@ class Pieza(ABC):
 
         if destino is not tuple() and not destino in self.movimiento_valido(tablero):
             print("Error. La posición desitno no está dentro de los movimientos validos de la pieza")
-            print(destino,'\n', self.movimiento_valido(tablero))
             return False
+
         tablero_antiguo = tablero.guardar_estado()
-        x = destino[0]
-        y = destino[1]
 
         pos_ant_pieza : tuple[int,int] = self.posicion
         self.posicion = (x, y)
         tablero[pos_ant_pieza[0]][pos_ant_pieza[1]].pieza = None
-        
-        pieza_enemgio = tablero[x][y].pieza
-        tablero[x][y].pieza = self
-        if tablero.esta_en_jaque(jugador,enemigo):
-            print("Error. Tu movimiento provoca o no impide un jaque")
-            tablero.restaurar_estado(tablero_antiguo)
-            return False
 
-        
+        pieza_enemgio = tablero[x][y].pieza
+        if pieza_enemgio is not None:
+            indice = enemigo.piezas.index(pieza_enemgio)
+
+        tablero[x][y].pieza = self
 
         if pieza_enemgio is not None and pieza_enemgio.posicion == self.posicion:
             enemigo.piezas.remove(pieza_enemgio)
+
+        if tablero.amenazas(enemigo,*jugador.encontrar_rey()):
+            print("Error. Tu movimiento provoca o no impide un jaque")
+            tablero.restaurar_estado(tablero_antiguo)
+            if pieza_enemgio is not None and pieza_enemgio not in enemigo.piezas:
+                enemigo.piezas.insert(indice,pieza_enemgio)
+            return False
+
+        if tablero.en_passant is not None and self.posicion == tablero.en_passant[1] and str(self) in ['P','p']:
+            peon_enemigo = tablero[x + 1 if self.posicion else x - 1][y].pieza
+
+            if peon_enemigo is not None and str(peon_enemigo) in ['P','p'] and peon_enemigo.color != self.color:
+                tablero[x + 1 if self.posicion else x - 1][y].pieza = None
+                enemigo.piezas.remove(peon_enemigo)
+
+        if abs(pos_ant_pieza[0] - self.posicion[0]) == 2 and str(tablero[self.posicion[0]][self.posicion[1]]) in ['P','p']:
+            en_passant : tuple[int,int] = (pos_ant_pieza[0] - 1 if self.color else pos_ant_pieza[0] + 1, self.posicion[1])
+            tablero.en_passant = [traduccion_inversa(en_passant),en_passant]
+            return True
+
+        tablero.en_passant = None
+
         return True
+
+    @abstractmethod
+    def __str__(self):
+        """
+        Método abstracto que se espera ser definido por las subclases.
+        Debe devolver la representación en string de la pieza en sí (teniendo en cuenta su color)
+        """
+        pass
     
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Metodo especial para mostrar toda la información de la clase
 
@@ -125,6 +169,6 @@ class Pieza(ABC):
         str
             Retorna un str con toda la información
         """
-        return (f"{type(self).__name__}(Posición -> {self.posicion}, "
-                f"Color -> {self.color}, Capturado -> {self.capturado}, "
-                f"Valor -> {self.valor}, Movimientos -> {self.movimientos})")
+        return (f"{type(self).__name__}(Posición = {self.posicion}, "
+                f"Color = {self.color}, Capturado = {self.capturado}, "
+                f"Valor = {self.valor}, Movimientos = {self.movimientos})")

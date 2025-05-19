@@ -21,30 +21,45 @@ class Rey(Pieza):
     -----------
     posicion : list[int,int]
         Posicíon concreta del rey
+
     color : bool
         Color del rey (1 es blanco y 0 es negro)
+
     capturado : bool
         Marca si está capturada el rey
+
     valor : int
         Valor del rey
+
     movimientos : list[(int,int)]
         Lista de movimientos válidos del rey
+
     movido : bool
         Si ya se ha movido (para los movimientos especiales)
+
     turnos : int
         Marca la cantidad de movimientos restantes que tiene el rey.
         Solo se activa cuando no quedan piezas activas de su color
 
     Métodos:
     -----------
+    __init__(self, posicion: tuple[int,int], color: int, enemigo : Union["Jugador",None]=None) -> None
+        Inicializa un nuevo Rey
+
     movimiento_valido() -> list[(int,int)]
         Devuelve el conjunto de posiciones validas que puede tener.
+
     filtro_movimientos() -> list[(int,int)]
         Retorna las nuevas posiciones teniendo en cuenta si la casilla era amenazada por una pieza enemiga
+
     enroque() -> bool
         Devuelve True si es posible hacer el enroque.
-    jaque_mate() -> bool
-        Comprueba si es jaque mate
+
+    __str__(self) -> str
+        Devuelve la representación del Rey (teniendo en cuenta su color)
+
+    __repr__(self) -> str
+        Muesta información técnica del Rey
     """
 
     def __init__(self, posicion: tuple[int,int], color: int, enemigo : Union["Jugador",None]=None) -> None:
@@ -55,8 +70,10 @@ class Rey(Pieza):
         -----------
         posicion : list[int,int]
             Posicíon concreta del rey
+
         color : bool
             Color del rey (1 es blanco y 0 es negro)
+
         enemigo : Jugador
             Es el enemgio del rey. Es necesario para evaluar las posiciones que amenaza
             el contrincante
@@ -74,6 +91,7 @@ class Rey(Pieza):
         -----------
         tabelro : list[list[int]]
             Tablero en sí
+
         Retorna:
         --------
         list[tuple(int,int)]
@@ -105,8 +123,10 @@ class Rey(Pieza):
         -----------
         mavimientos : list
             lista de movimientos posibles
+
         tablero : Tablero
             Tablero en sí
+
         Retorna:
         --------
         list[tuple(int,int)]
@@ -116,7 +136,7 @@ class Rey(Pieza):
         casillas : list = []
 
         for fila, columna in movimientos:
-            if not tablero.amenazas(self.enemigo, fila, columna):
+            if not tablero.amenazas(self.enemigo, fila, columna) and tablero.posibilidad_matar_con_rey(self.enemigo, fila, columna, self):
                 casillas.append((fila,columna))
 
         return casillas
@@ -136,6 +156,17 @@ class Rey(Pieza):
             return False
 
         return True
+
+    def __str__(self) -> str:
+        """
+        Método dunder que devuelve la representación de la pieza, teniendo en cuenta su color
+
+        Retorna:
+        --------
+        str
+            Devuelve su representación
+        """
+        return 'K' if self.color else 'k'
 
     def __repr__(self):
         """
