@@ -68,9 +68,9 @@ class ValidadorMovimiento:
                 pieza = self.tablero.casillas[fila][col]
                 if pieza and pieza.color != color:
                     movimientos = pieza.obtener_movimientos_validos(
-                        (fila, col), self.tablero, evitar_jaque=False, noatacando=True
+                        (fila, col), self.tablero, noatacando=True
                     )
-                    if rey_pos in movimientos:
+                    if rey_pos in movimientos and self.movimiento_es_legal((fila,col),rey_pos,pieza.color):
                         return True
 
         return False
@@ -99,14 +99,13 @@ class ValidadorMovimiento:
         if (
             pieza is None or
             pieza.color != color or
-            destino not in pieza.obtener_movimientos_validos(origen, self.tablero, evitar_jaque=True)
+            destino not in pieza.obtener_movimientos_validos(origen, self.tablero)
         ):
             return False
 
-        copia_tablero = self.tablero.guardar_estado()
-        self.tablero.mover_pieza_tests((origen, destino))
+        self.tablero.hacer_movimiento(origen,destino)
         es_legal = not self.esta_en_jaque(color)
-        self.tablero.restaurar_estado(copia_tablero)
+        self.tablero.deshacer_ultimo_movimiento()
         return es_legal
 
     def _encontrar_rey(self, color: str) -> Optional[Tuple[int, int]]:
@@ -129,45 +128,3 @@ class ValidadorMovimiento:
                 if pieza and pieza.color == color and pieza.__class__.__name__ == "Rey":
                     return (fila, col)
         return None
-
-    def filtrar_movimientos_legales(
-        self,
-        origen: Tuple[int, int],
-        movimientos: List[Tuple[int, int]],
-        evitar_jaque: bool = True
-    ) -> List[Tuple[int, int]]:
-        """
-        Filtra una lista de movimientos posibles, dejando solo aquellos que no dejan al rey en jaque.
-
-        Parámetros:
-        -----------
-        origen : Tuple[int, int]
-            Posición actual de la pieza.
-        movimientos : List[Tuple[int, int]]
-            Lista de posibles destinos.
-        evitar_jaque : bool
-            Si es True, se filtrarán los movimientos que dejan en jaque al rey.
-
-        Retorna:
-        --------
-        List[Tuple[int, int]]
-            Lista de movimientos legales.
-        """
-        if not evitar_jaque:
-            return movimientos
-
-        pieza = self.tablero.casillas[origen[0]][origen[1]]
-        if not pieza:
-            return []
-
-        color = pieza.color
-        movimientos_legales = []
-        copia_tablero = self.tablero.guardar_estado()
-
-        for destino in movimientos:
-            self.tablero.mover_pieza_tests((origen, destino))
-            if not self.esta_en_jaque(color):
-                movimientos_legales.append(destino)
-            self.tablero.restaurar_estado(copia_tablero)
-
-        return movimientos_legales

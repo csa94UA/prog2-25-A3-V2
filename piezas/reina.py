@@ -4,7 +4,6 @@ Define la clase Reina, una pieza que combina movimientos de alfil y torre.
 
 from typing import List, Tuple
 from piezas.pieza_base import Pieza
-from juego.validador_movimiento import ValidadorMovimiento
 
 
 class Reina(Pieza):
@@ -42,7 +41,6 @@ class Reina(Pieza):
         self,
         posicion: Tuple[int, int],
         tablero,
-        evitar_jaque: bool = True,
         noatacando: bool = False
     ) -> List[Tuple[int, int]]:
         """
@@ -54,8 +52,6 @@ class Reina(Pieza):
             La posición actual de la reina.
         tablero : Tablero
             Referencia al estado del tablero.
-        evitar_jaque : bool
-            Si True, se filtran los movimientos que dejarían al rey en jaque.
         noatacando : bool
             Si True, se omiten los movimientos de ataque (usado internamente para ver amenazas).
 
@@ -87,12 +83,5 @@ class Reina(Pieza):
                     break  # Aliado bloqueando
                 nueva_fila += df
                 nueva_columna += dc
-
-        if evitar_jaque:
-            resguardo = tablero.guardar_estado()
-            validador = ValidadorMovimiento(tablero)
-            movimientos_legales = validador.filtrar_movimientos_legales(posicion, movimientos_potenciales, True)
-            tablero.restaurar_estado(resguardo)
-            return movimientos_legales
 
         return movimientos_potenciales

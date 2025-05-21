@@ -8,7 +8,6 @@ Clases:
 
 from typing import List, Tuple
 from piezas.pieza_base import Pieza
-from juego.validador_movimiento import ValidadorMovimiento
 
 
 class Alfil(Pieza):
@@ -22,8 +21,8 @@ class Alfil(Pieza):
     --------
     simbolo() -> str:
         Retorna el símbolo unicode que representa al alfil según su color.
-    obtener_movimientos_validos(posicion, tablero, evitar_jaque=True, noatacando=False) -> List[Tuple[int, int]]:
-        Devuelve una lista de movimientos válidos considerando reglas del juego y jaque.
+    obtener_movimientos_validos(posicion, tablero, noatacando=False) -> List[Tuple[int, int]]:
+        Devuelve una lista de movimientos válidos considerando reglas del juego 
     """
 
     def __init__(self, color: str) -> None:
@@ -53,7 +52,6 @@ class Alfil(Pieza):
         self,
         posicion: Tuple[int, int],
         tablero,
-        evitar_jaque: bool = True,
         noatacando: bool = False
     ) -> List[Tuple[int, int]]:
         """
@@ -67,8 +65,6 @@ class Alfil(Pieza):
             Posición actual del alfil en el tablero.
         tablero : Tablero
             Referencia al tablero actual del juego.
-        evitar_jaque : bool
-            Si True, filtra movimientos que dejen al rey en jaque.
         noatacando : bool
             Ignorado por el alfil, pero aceptado para compatibilidad con otras piezas.
 
@@ -94,12 +90,5 @@ class Alfil(Pieza):
                     break
                 nueva_fila += df
                 nueva_columna += dc
-
-        if evitar_jaque:
-            resguardo = tablero.guardar_estado()
-            validador = ValidadorMovimiento(tablero)
-            movimientos_legales = validador.filtrar_movimientos_legales(posicion, movimientos_potenciales, evitar_jaque=True)
-            tablero.restaurar_estado(resguardo)
-            return movimientos_legales
 
         return movimientos_potenciales

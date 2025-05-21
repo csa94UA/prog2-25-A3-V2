@@ -8,7 +8,6 @@ Clases:
 
 from piezas.pieza_base import Pieza
 from piezas.torre import Torre
-from juego.validador_movimiento import ValidadorMovimiento
 
 class Rey(Pieza):
     """
@@ -26,12 +25,8 @@ class Rey(Pieza):
     --------
     simbolo() -> str:
         Retorna el símbolo unicode del rey según su color.
-    obtener_movimientos_validos(posicion, tablero, evitar_jaque=True, noatacando=False) -> list:
-        Calcula movimientos legales del rey, filtrando movimientos que dejan en jaque.
-    _movimientos_enroque(posicion, tablero) -> list:
-        Calcula movimientos legales de enroque.
-    _pasa_por_jaque(tablero, origen, casillas_enroque) -> bool:
-        Verifica si alguna casilla por donde pasa el rey en el enroque está en jaque.
+    obtener_movimientos_validos(posicion, tablero, noatacando=False) -> list:
+        Calcula movimientos legales del rey.
     """
 
     def __init__(self, color):
@@ -58,7 +53,7 @@ class Rey(Pieza):
         """
         return '♔' if self.color == 'blanco' else '♚'
 
-    def obtener_movimientos_validos(self, posicion, tablero, evitar_jaque=True, noatacando=False):
+    def obtener_movimientos_validos(self, posicion, tablero, noatacando=False):
         """
         Calcula los movimientos legales del rey desde la posición actual.
 
@@ -71,8 +66,6 @@ class Rey(Pieza):
             Posición actual del rey.
         tablero : objeto Tablero
             Estado actual del tablero.
-        evitar_jaque : bool
-            Si True, filtra movimientos que dejarían al rey en jaque.
         noatacando : bool
             Parámetro para compatibilidad, evita que el rey considere enroque
             en ciertos contextos.
@@ -101,7 +94,7 @@ class Rey(Pieza):
                     movimientos_potenciales.append((nueva_fila, nueva_columna))
 
         # Enroque (solo si el rey no se ha movido, no está en jaque y no se ignora)
-        if not evitar_jaque and not noatacando and not self.se_ha_movido:
+        if not noatacando and not self.se_ha_movido:
             fila_rey = 7 if self.color == 'blanco' else 0
 
             # Enroque corto (torre en columna 7)
@@ -116,9 +109,4 @@ class Rey(Pieza):
                 if all(tablero.casillas[fila_rey][c] is None for c in [1, 2, 3]):
                     movimientos_potenciales.append((fila_rey, 2))
 
-        resguardo = tablero.guardar_estado()
-        validador = ValidadorMovimiento(tablero)
-        movimientos_legales = validador.filtrar_movimientos_legales(posicion, movimientos_potenciales, evitar_jaque)
-        tablero.restaurar_estado(resguardo)
-
-        return movimientos_legales
+        return movimientos_potenciales

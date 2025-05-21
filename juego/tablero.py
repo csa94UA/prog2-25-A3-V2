@@ -17,6 +17,7 @@ from piezas.alfil import Alfil
 from piezas.reina import Reina
 from piezas.rey import Rey
 from piezas.pieza_base import Pieza
+from juego.validador_movimiento import ValidadorMovimiento
 
 class Tablero:
     """
@@ -53,7 +54,8 @@ class Tablero:
         self.casillas: List[List[Optional[object]]] = [[None for _ in range(8)] for _ in range(8)]
         self.ultimo_movimiento: Optional[Tuple[Tuple[int, int], Tuple[int, int], object]] = None
         self.colocar_piezas_iniciales()
-        self.historial_movimientos = []  # Stack de cambios
+        self.historial_movimientos = []  
+        self.validador: ValidadorMovimiento = ValidadorMovimiento(self)
 
     def colocar_piezas_iniciales(self) -> None:
         """
@@ -117,9 +119,9 @@ class Tablero:
             return {"exito": False, "error": "No hay pieza en la casilla de origen."}
 
         movimientos_validos = pieza.obtener_movimientos_validos(
-            (fila_origen, col_origen), self, evitar_jaque=False
+            (fila_origen, col_origen), self
         )
-        if (fila_destino, col_destino) not in movimientos_validos:
+        if (fila_destino, col_destino) not in movimientos_validos or self.validador.movimiento_es_legal((fila_origen,col_origen),(fila_destino,col_destino),pieza.color):
             return {"exito": False, "error": "Movimiento no válido para la pieza."}
 
         # Enroque
@@ -263,87 +265,7 @@ class Tablero:
         tablero_str.append("")
         return tablero_str
 
-    def guardar_estado(self) -> Dict[str, object]:
-        """
-        Devuelve una copia segura del estado actual del tablero, clonando manualmente cada pieza.
 
-        Retorna:
-        --------
-        Dict[str, object]
-            Diccionario con la copia de las casillas y del último movimiento.
-        """
-        estado_casillas = []
-        for fila in self.casillas:
-            nueva_fila = [pieza.clonar() if pieza else None for pieza in fila]
-            estado_casillas.append(nueva_fila)
-
-        estado_movimiento = None
-        if self.ultimo_movimiento:
-            origen, destino, pieza = self.ultimo_movimiento
-            estado_movimiento = (origen, destino, pieza.clonar() if pieza else None)
-
-        return {
-            "casillas": estado_casillas,
-            "ultimo_movimiento": estado_movimiento
-        }
-
-    def restaurar_estado(self, estado: Dict[str, object]) -> None:
-        """
-        Restaura el estado del tablero a partir del diccionario dado.
-
-        Parámetros:
-        -----------
-        estado : Dict[str, object]
-            Diccionario que contiene la información del estado anterior del tablero.
-        """
-        self.casillas = estado["casillas"]
-        self.ultimo_movimiento = estado["ultimo_movimiento"]
-
-    def mover_pieza_tests(
-        self, origenydestino: Tuple[Tuple[int, int], Tuple[int, int]]
-    ) -> bool:
-        """
-        Mueve una pieza de forma directa, sin validaciones, útil para pruebas internas.
-
-        Parámetros:
-        -----------
-        origenydestino : Tuple[Tuple[int, int], Tuple[int, int]]
-            Coordenadas de origen y destino.
-
-        Retorna:
-        --------
-        bool
-            True si la pieza fue movida, False si no había pieza en la casilla de origen.
-        """
-        origen, destino = origenydestino
-        fila_origen, col_origen = origen
-        fila_destino, col_destino = destino
-
-        pieza = self.casillas[fila_origen][col_origen]
-        if pieza is None:
-            return False
-        if isinstance(pieza, Rey):
-            if abs(col_destino - col_origen) == 2:
-                fila = fila_origen
-                if col_destino == 6:
-                    torre = self.casillas[fila][7]
-                    self.casillas[fila][5] = torre
-                    self.casillas[fila][7] = None
-                elif col_destino == 2:
-                    torre = self.casillas[fila][0]
-                    self.casillas[fila][3] = torre
-                    self.casillas[fila][0] = None
-
-        if isinstance(pieza, Peon) and col_origen != col_destino and self.casillas[fila_destino][col_destino] is None:
-            fila_captura = fila_origen
-            self.casillas[fila_captura][col_destino] = None
-
-        self.casillas[fila_origen][col_origen] = None
-        self.casillas[fila_destino][col_destino] = pieza
-        
-
-        return True
-    
     def hacer_movimiento(self, origen: Tuple[int, int], destino: Tuple[int, int]) -> None:
         """
         Realiza un movimiento de una pieza en el tablero y guarda la información necesaria 
@@ -366,7 +288,7 @@ class Tablero:
         self.casillas[fila_d][col_d] = pieza_origen
         self.casillas[fila_o][col_o] = None
 
-    def deshacer_último_movimiento(self) -> None:
+    def deshacer_ultimo_movimiento(self) -> None:
         """
         Revierte el último movimiento realizado en el tablero.
         Si no hay movimientos para deshacer, no hace nada.

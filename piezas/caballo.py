@@ -8,7 +8,6 @@ Clases:
 
 from typing import List, Tuple
 from piezas.pieza_base import Pieza
-from juego.validador_movimiento import ValidadorMovimiento
 
 
 class Caballo(Pieza):
@@ -22,8 +21,8 @@ class Caballo(Pieza):
     --------
     simbolo() -> str:
         Retorna el símbolo unicode que representa al caballo según su color.
-    obtener_movimientos_validos(posicion, tablero, evitar_jaque=True, noatacando=False) -> List[Tuple[int, int]]:
-        Devuelve una lista de movimientos válidos considerando las reglas del juego y jaque.
+    obtener_movimientos_validos(posicion, tablero, noatacando=False) -> List[Tuple[int, int]]:
+        Devuelve una lista de movimientos válidos considerando las reglas del juego.
     """
 
     def __init__(self, color: str) -> None:
@@ -53,7 +52,6 @@ class Caballo(Pieza):
         self,
         posicion: Tuple[int, int],
         tablero,
-        evitar_jaque: bool = True,
         noatacando: bool = False
     ) -> List[Tuple[int, int]]:
         """
@@ -68,8 +66,6 @@ class Caballo(Pieza):
             Posición actual del caballo en el tablero.
         tablero : Tablero
             Referencia al tablero actual del juego.
-        evitar_jaque : bool
-            Si True, filtra movimientos que dejen al rey en jaque.
         noatacando : bool
             Ignorado por el caballo, aceptado para mantener compatibilidad con otras piezas.
 
@@ -93,14 +89,5 @@ class Caballo(Pieza):
                 casilla = tablero.casillas[nueva_fila][nueva_columna]
                 if casilla is None or self.es_oponente(casilla):
                     movimientos_potenciales.append((nueva_fila, nueva_columna))
-
-        if evitar_jaque:
-            resguardo = tablero.guardar_estado()
-            validador = ValidadorMovimiento(tablero)
-            movimientos_legales = validador.filtrar_movimientos_legales(
-                posicion, movimientos_potenciales, evitar_jaque=True
-            )
-            tablero.restaurar_estado(resguardo)
-            return movimientos_legales
 
         return movimientos_potenciales

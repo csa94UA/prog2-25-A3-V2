@@ -8,7 +8,6 @@ Clases:
 
 from typing import List, Tuple
 from piezas.pieza_base import Pieza
-from juego.validador_movimiento import ValidadorMovimiento
 
 
 class Peon(Pieza):
@@ -46,7 +45,6 @@ class Peon(Pieza):
         self,
         posicion: Tuple[int, int],
         tablero,
-        evitar_jaque: bool = True,
         noatacando: bool = False
     ) -> List[Tuple[int, int]]:
         """
@@ -58,8 +56,6 @@ class Peon(Pieza):
             Posición actual del peón en el tablero.
         tablero : Tablero
             Objeto que contiene el estado del tablero y el último movimiento realizado.
-        evitar_jaque : bool
-            Si True, se filtran movimientos que dejen al rey propio en jaque.
         noatacando : bool
             Si True, se omiten los movimientos hacia adelante (usado para validación de jaque).
 
@@ -100,13 +96,6 @@ class Peon(Pieza):
                         and self.es_oponente(pieza_movida)
                     ):
                         movimientos_potenciales.append((fila + direccion, nueva_columna))
-
-        if evitar_jaque:
-            resguardo = tablero.guardar_estado()
-            validador = ValidadorMovimiento(tablero)
-            movimientos_legales = validador.filtrar_movimientos_legales(posicion, movimientos_potenciales, True)
-            tablero.restaurar_estado(resguardo)
-            return movimientos_legales
 
         return movimientos_potenciales
 

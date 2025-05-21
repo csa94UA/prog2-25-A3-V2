@@ -7,7 +7,6 @@ Clases:
 """
 
 from piezas.pieza_base import Pieza
-from juego.validador_movimiento import ValidadorMovimiento
 
 class Torre(Pieza):
     """
@@ -25,9 +24,8 @@ class Torre(Pieza):
     --------
     simbolo() -> str:
         Retorna el símbolo unicode de la torre según su color.
-    obtener_movimientos_validos(posicion, tablero, evitar_jaque=True, noatacando=False) -> list:
-        Calcula los movimientos válidos para la torre desde la posición dada,
-        filtrando movimientos que dejarían en jaque si `evitar_jaque` es True.
+    obtener_movimientos_validos(posicion, tablero, noatacando=False) -> list:
+        Calcula los movimientos válidos para la torre desde la posición dada.
     """
 
     def __init__(self, color):
@@ -54,7 +52,7 @@ class Torre(Pieza):
         """
         return '♖' if self.color == 'blanco' else '♜'
 
-    def obtener_movimientos_validos(self, posicion, tablero, evitar_jaque=True, noatacando=False):
+    def obtener_movimientos_validos(self, posicion, tablero, noatacando=False):
         """
         Calcula los movimientos válidos de la torre desde su posición actual.
 
@@ -67,8 +65,6 @@ class Torre(Pieza):
             Coordenadas actuales de la torre.
         tablero : objeto Tablero
             Referencia al estado actual del tablero.
-        evitar_jaque : bool
-            Indica si se deben filtrar movimientos que dejan al rey en jaque.
         noatacando : bool
             Ignorado en esta pieza, para compatibilidad con otras.
 
@@ -95,11 +91,4 @@ class Torre(Pieza):
                 nueva_fila += df
                 nueva_columna += dc
 
-        if evitar_jaque:
-            resguardo = tablero.guardar_estado()
-            validador = ValidadorMovimiento(tablero)
-            movimientos_legales = validador.filtrar_movimientos_legales(posicion, movimientos_potenciales, evitar_jaque)
-            tablero.restaurar_estado(resguardo)
-            return movimientos_legales
-        
         return movimientos_potenciales

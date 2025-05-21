@@ -26,7 +26,7 @@ class Pieza(ABC):
 
     Métodos abstractos:
     -------------------
-    obtener_movimientos_validos(posicion, tablero, evitar_jaque=True, noatacando=False) -> List[Tuple[int, int]]:
+    obtener_movimientos_validos(posicion, tablero, noatacando=False) -> List[Tuple[int, int]]:
         Devuelve una lista de posiciones válidas a las que esta pieza puede moverse.
     simbolo() -> str:
         Devuelve un símbolo textual para representar la pieza en consola/tablero.
@@ -48,7 +48,6 @@ class Pieza(ABC):
         self,
         posicion: Tuple[int, int],
         tablero: List[List[Optional['Pieza']]],
-        evitar_jaque: bool = True,
         noatacando: bool = False
     ) -> List[Tuple[int, int]]:
         """
@@ -60,8 +59,6 @@ class Pieza(ABC):
             Coordenadas actuales de la pieza en el tablero (fila, columna).
         tablero : List[List[Optional[Pieza]]]
             Matriz 8x8 que representa el tablero actual.
-        evitar_jaque : bool, opcional
-            Si es True, filtra los movimientos que dejarían al rey en jaque.
         noatacando : bool, opcional
             Variable con única función permitir obtener los verdaderos movimientos ofensivos (el peon no captura hacia delante pero si se mueve en esa dirección).
 
