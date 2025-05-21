@@ -9,7 +9,7 @@ Clases:
 - ValidadorMovimiento
 """
 
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
 
 
 class ValidadorMovimiento:

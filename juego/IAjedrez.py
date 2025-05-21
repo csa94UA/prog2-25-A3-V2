@@ -14,7 +14,7 @@ PSQT_PEON = [
     [ 5,  5, 10, 25, 25, 10,  5,  5],
     [10, 10, 20, 30, 30, 20, 10, 10],
     [50, 50, 50, 50, 50, 50, 50, 50],
-    [ 0,  0,  0,  0,  0,  0,  0,  0]
+    [ 100,  100,  100,  100,  100,  100,  100,  100] # un incentivo para que la ia lleve el peon hasta el final y este se convierta en una dama (no elige si es ia, simplemente se convierte en dama)
 ]
 
 PSQT_CABALLO = [
@@ -147,7 +147,7 @@ class IADeAjedrez:
                 pieza = tablero.casillas[fila][col]
                 if pieza and pieza.color == color:
                     legales = pieza.obtener_movimientos_validos(
-                        (fila, col), tablero, evitar_jaque=True
+                        (fila, col), tablero
                     )
                     for movimiento in legales:
                         movimientos.append(((fila,col),movimiento))
@@ -164,6 +164,9 @@ class IADeAjedrez:
 
         return valor
 
+    def valor_pieza_en(casilla: tuple[int, int],tablero:Tablero) -> int:
+        pieza = tablero.casillas[casilla[0]][casilla[1]]
+        return pieza.valor if pieza else 0
 
     def alfa_beta(self, tablero:Tablero, profundidad:int, alfa:float, beta:float, maximizando:bool)->float:  
         """
@@ -199,13 +202,13 @@ class IADeAjedrez:
 
         color = self.color if maximizando else self.color_enemigo
         movimientos = self.generar_movimientos(tablero, color)
-        movimientos.sort(key=lambda mov: tablero.casillas[mov[1][0]][mov[1][1]] is not None, reverse=True) # ordeno movimientos para primero los que pueden eliminar algo para podar mejor los movimientos
+        movimientos.sort(key=lambda mov: self.valor_pieza_en(mov[1]), reverse=True) # ordeno movimientos para primero los que pueden eliminar algo de mayor valor para podar mejor los movimientos
         mejor_valor = -INF if maximizando else INF
         
         for origen, movimiento in movimientos:
             tablero.hacer_movimiento(origen, movimiento)
             valor = self.alfa_beta(tablero, profundidad - 1, alfa, beta, not maximizando)
-            tablero.deshacer_último_movimiento()
+            tablero.deshacer_ultimo_movimiento()
             
             if maximizando:
                 mejor_valor = max(mejor_valor, valor)
@@ -254,7 +257,7 @@ class IADeAjedrez:
 
             valor = self.alfa_beta(tablero,profundidad - 1, -INF, INF, False)
 
-            tablero.deshacer_último_movimiento()
+            tablero.deshacer_ultimo_movimiento()
 
             if valor > mejor_valor:
                 mejor_valor = valor
