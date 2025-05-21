@@ -524,7 +524,7 @@ def estado_partidaa(sesion_id: str):
             "jugador_blanco": sesion.jugador_blanco.username,
             "jugador_negro": sesion.jugador_negro.username,
             "turno_actual": sesion.turno_actual,
-            "tablero": sesion.tablero.obtener_tablero_como_texto(),
+            "tablero": str(sesion.tablero),
             "estado": "terminado" if sesion.terminado else "en curso"
         }), 200
 

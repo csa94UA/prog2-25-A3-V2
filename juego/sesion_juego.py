@@ -145,7 +145,7 @@ class SesionDeJuego:
                 "temp_guardado": temp_result,
                 "alerta": mensaje,
                 "movimiento":f"({origen},{destino})",
-                "tablero":self.tablero.obtener_tablero_como_texto()
+                "tablero":str(self.tablero)
             }
         else:
             return {
@@ -154,7 +154,7 @@ class SesionDeJuego:
                 "ganador": self.ganador,
                 "archivo": nombre_archivo,
                 "movimiento":f"({origen},{destino})",
-                "tablero":self.tablero.obtener_tablero_como_texto()
+                "tablero":str(self.tablero)
             }
 
     def _oponente(self) -> str:
@@ -278,7 +278,7 @@ class SesionDeJuego:
             "ganador": self.ganador,
             "elo_blanco": self.jugador_blanco.elo,
             "elo_negro": self.jugador_negro.elo,
-            "tablero":self.tablero.obtener_tablero_como_texto()
+            "tablero":str(self.tablero)
         }
 
     def rendirse(self, color_que_se_rinde: str) -> Dict[str, Any]:

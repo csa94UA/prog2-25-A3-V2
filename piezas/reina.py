@@ -66,8 +66,8 @@ class Reina(Pieza):
         # Todas las direcciones posibles: diagonales, verticales y horizontales
         direcciones = [
             (-1, -1), (-1, 0), (-1, 1),
-            (0, -1),          (0, 1),
-            (1, -1),  (1, 0), (1, 1)
+            ( 0, -1),          ( 0, 1),
+            ( 1, -1), ( 1, 0), ( 1, 1)
         ]
 
         for df, dc in direcciones:

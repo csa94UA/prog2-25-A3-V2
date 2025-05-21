@@ -82,8 +82,8 @@ class Rey(Pieza):
         # Movimientos normales del rey (una casilla en cualquier dirección)
         direcciones = [
             (-1, -1), (-1, 0), (-1, 1),
-            (0, -1),           (0, 1),
-            (1, -1),  (1, 0),  (1, 1)
+            ( 0, -1),          ( 0, 1),
+            ( 1, -1), ( 1, 0), ( 1, 1)
         ]
 
         for df, dc in direcciones:
@@ -93,7 +93,6 @@ class Rey(Pieza):
                 if casilla is None or self.es_oponente(casilla):
                     movimientos_potenciales.append((nueva_fila, nueva_columna))
 
-        # Enroque (solo si el rey no se ha movido, no está en jaque y no se ignora)
         if not noatacando and not self.se_ha_movido:
             fila_rey = 7 if self.color == 'blanco' else 0
 

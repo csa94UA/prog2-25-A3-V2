@@ -40,8 +40,6 @@ class Tablero:
         Realiza la promoción de un peón (sin implementar).
     interpretar_entrada(entrada: str) -> Optional[Tuple[Tuple[int, int], Tuple[int, int]]]:
         Convierte una entrada en notación algebraica a coordenadas internas.
-    obtener_tablero_como_texto() -> List[str]:
-        Devuelve una representación textual del tablero.
     guardar_estado() -> Dict[str, Any]:
         Retorna una copia del estado actual del tablero.
     restaurar_estado(estado: Dict[str, Any]) -> None:
@@ -56,6 +54,28 @@ class Tablero:
         self.colocar_piezas_iniciales()
         self.historial_movimientos = []  
         self.validador: ValidadorMovimiento = ValidadorMovimiento(self)
+
+
+    def __str__(self) -> str:
+        """
+        Devuelve una representación visual del tablero en forma de cadena de texto imprimible.
+
+        Retorna:
+        --------
+        str
+            Cadena que representa visualmente el tablero de ajedrez.
+        """
+        lineas: list[str] = ["  a b c d e f g h"]
+        for fila in range(8):
+            linea = f"{8 - fila} "
+            for col in range(8):
+                pieza = self.casillas[fila][col]
+                linea += pieza.simbolo() + " " if pieza else ". "
+            linea += f"{8 - fila}"
+            lineas.append(linea)
+        lineas.append("  a b c d e f g h")
+        return '\n'.join(lineas)
+
 
     def colocar_piezas_iniciales(self) -> None:
         """
@@ -243,28 +263,7 @@ class Tablero:
             return ((fila1, col1), (fila2, col2))
         except Exception:
             return None
-
-    def obtener_tablero_como_texto(self) -> List[str]:
-        """
-        Genera una representación visual del tablero en forma de texto.
-
-        Retorna:
-        --------
-        List[str]
-            Lista de líneas que representan el tablero.
-        """
-        tablero_str = ["  a b c d e f g h"]
-        for fila in range(8):
-            linea = f"{8 - fila} "
-            for col in range(8):
-                pieza = self.casillas[fila][col]
-                linea += pieza.simbolo() + " " if pieza else ". "
-            linea += f"{8 - fila}"
-            tablero_str.append(linea)
-        tablero_str.append("  a b c d e f g h")
-        tablero_str.append("")
-        return tablero_str
-
+        
 
     def hacer_movimiento(self, origen: Tuple[int, int], destino: Tuple[int, int]) -> None:
         """

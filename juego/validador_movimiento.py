@@ -30,8 +30,7 @@ class ValidadorMovimiento:
         Determina si el rey del color dado está en jaque.
     movimiento_es_legal(origen: Tuple[int, int], destino: Tuple[int, int], color: str) -> bool:
         Verifica si el movimiento es legal.
-    filtrar_movimientos_legales(origen: Tuple[int, int], movimientos: List[Tuple[int, int]], evitar_jaque: bool = True) -> List[Tuple[int, int]]:
-        Filtra los movimientos que no dejan al rey en jaque.
+
     """
 
     def __init__(self, tablero) -> None:
