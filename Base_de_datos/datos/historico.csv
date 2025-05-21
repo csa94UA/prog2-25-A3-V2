@@ -1,4 +1,0 @@
-game_id,jugador_blanco,jugador_negro,fen,turno,ultimo_mov,resultado,fin
-JorgevsJulio,Jorge,Julio,2kr1bnr/pp3ppp/3qP1b1/2pp3Q/1nB1P3/N3B2N/PPP2PPP/R4RK1 w - - 0 19,1,Se rinde,1-0,2025-05-19T20:28:51.865417
-JuliovsCarlos,Julio,Carlos,rnbqkbnr/ppp1p1pp/P2P4/8/8/8/1PPP1P1P/RNBQ1KNR w KQkq - 0 13,1,Se rinde,1-0,2025-05-19T20:37:31.574922
-JuliovsJorge,Julio,Jorge,r1bqkbnr/pppp1Qp1/n6p/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 0 7,1,f3f7,1-0,2025-05-19T20:38:37.889532
