@@ -319,7 +319,8 @@ class SesionDeJuego:
         """
         try:
             datos = self.obtener_datos_partida(include_final=True)
-            nombre_archivo = guardar_partida(datos, temporal=True)
+            nombre_archivo = f"{self.jugador_blanco.username}_vs_{self.jugador_negro.username}"
+            nombre_archivo = guardar_partida(datos,nombre_archivo=nombre_archivo, temporal=True)
             self.archivos_temporales.append(nombre_archivo)
             return {"msg": "Estado temporal guardado correctamente.", "archivo": nombre_archivo}
         except Exception as e:
@@ -342,7 +343,7 @@ class SesionDeJuego:
         Parámetros:
         -----------
         nombre_archivo : str
-            Nombre del archivo de la partida guardada (ej. partida_temp_A_vs_B.json)
+            Nombre del archivo de la partida guardada (ej. partida_A_vs_B_temp.json)
 
         Retorna:
         --------

@@ -11,25 +11,19 @@
 
 ## Profesor
 [//]: # (Dejad a quien corresponda)
-[Miguel A. Teruel](https://github.com/materuel-ua) / [Cristina Cachero](https://github.com/ccacheroc)
+[Miguel A. Teruel](https://github.com/materuel-ua)
 
 ## Requisitos
 [//]: # (Indicad aquí los requisitos de vuestra aplicación, así como el alumno responsable de cada uno de ellos)
-* Diseño y Programación del Juego [Sofía] 
+* Diseño y Programación del Juego [Mohammed Alí] 
 
-  * Movimientos especiales como en pasant y enroque. 
+* Compatibilidad con Base de Datos y Algoritmos [Carlos] 
 
-  * Seleccionar Color 
+* API y contacto con servidor [Mohammed Alí] 
 
-* Compatibilidad con Base de Datos y Algoritmos [Julio] 
+* Optimización de Algoritmos y creación de IA básica [Mohammed Alí] 
 
-* Hosting y Base de Datos [Vicente] 
-
-* Diseño de los Algoritmos [Mohammed Alí] 
-
-* Entrenamiento y Optimización de Algoritmos [Carlos] 
-
-* Sistema de Puntuación y de Clasificación (para Ranking y entrenamiento de IA) [Carlos] 
+* Interacción con una IA avanzada  [Carlos] 
 
 ## Instrucciones de instalación y ejecución
 [//]: # (Indicad aquí qué habría que hacer para ejecutar vuestra aplicación)
@@ -42,17 +36,17 @@ cd <directorio>
 
 2. Crear entorno virtual e instalar las librerías necesarias con el archivo requirements.txt
 ```bash
-python3 -m venv <entonrno_virtual>
+python3 -m venv <entorno_virtual>
 source venv/bin/activate
 pip install -r requirements.txt
 ```
 3. Ejecutar el servidor Flask
 ```bash
-python main.py
+python api.py
 ```
 
 4. Seguidamente ejecutamos el programa de pruebas
-```
+```bash
 python examples.py
 ```
 
@@ -60,6 +54,7 @@ python examples.py
 [//]: # (Cuando tengáis la API, añadiréis aquí la descripción de las diferentes llamadas.)
 [//]: # (Para la evaluación por pares, indicaréis aquí las diferentes opciones de vuestro menú textual, especificando para qué sirve cada una de ellas)
 La API Flask ofrece funcionalidades para gestionar partidas de ajedrez, movimientos y autenticación de usuarios.
+
 
 Rutas Principales
 
