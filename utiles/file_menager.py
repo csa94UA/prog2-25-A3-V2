@@ -1,7 +1,7 @@
 import os
 import json
 from datetime import datetime
-from typing import Any, Dict, List,Optional
+from typing import Any, Dict, Optional
 
 # Directorio donde se almacenan las partidas
 from config import PATH_PARTIDAS,PATH_PARTIDAS_TEMP

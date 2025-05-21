@@ -65,15 +65,23 @@ class Tablero:
         str
             Cadena que representa visualmente el tablero de ajedrez.
         """
-        lineas: list[str] = ["  a b c d e f g h"]
+        lineas: list[str] = []
+        lineas.append("    a   b   c   d   e   f   g   h")
+        lineas.append("  ╔" + "═══╦" * 7 + "═══╗")
+
         for fila in range(8):
-            linea = f"{8 - fila} "
+            linea = f"{8 - fila} ║ "
             for col in range(8):
                 pieza = self.casillas[fila][col]
-                linea += pieza.simbolo() + " " if pieza else ". "
+                linea += (pieza.simbolo() if pieza else ".") + " ║ "
             linea += f"{8 - fila}"
             lineas.append(linea)
-        lineas.append("  a b c d e f g h")
+            if fila < 7:
+                lineas.append("  ╠" + "═══╬" * 7 + "═══╣")
+
+        lineas.append("  ╚" + "═══╩" * 7 + "═══╝")
+        lineas.append("    a   b   c   d   e   f   g   h")
+
         return '\n'.join(lineas)
 
 

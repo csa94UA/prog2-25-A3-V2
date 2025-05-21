@@ -58,12 +58,17 @@ def menu_registro() -> str:
     Retorna el access token si el inicio de sesión o registro fue exitoso.
     """
     while True:
-        print("\n--- MENÚ DE REGISTRO ---")
-        print("1. Registrar usuario")
-        print("2. Iniciar sesión")
-        print("3. Ver ranking")
-        print("4. Salir")
-        
+        print("""
+╔════════════════════════════════════╗
+║          MENÚ DE REGISTRO          ║
+╠════════════════════════════════════╣
+║ 1. Registrar usuario               ║
+║ 2. Iniciar sesión                  ║
+║ 3. Ver ranking                     ║
+║ 4. Salir                           ║
+╚════════════════════════════════════╝
+        """)
+
         opcion: str = input("Selecciona una opción: ")
 
         if opcion == "1":
@@ -113,15 +118,21 @@ def menu_registro() -> str:
 
 def menu_amigos(token: str) -> None:
     while True:
-        print("\n--- MENÚ DE AMIGOS ---")
-        print("1. Mostrar amigos")
-        print("2. Ver perfil de amigo")
-        print("3. Enviar solicitud de amistad")
-        print("4. Ver solicitudes pendientes")
-        print("5. Aceptar solicitud")
-        print("6. Eliminar amigo")
-        print("7. Chat con amigo")
-        print("8. Volver al menú principal")
+        print("""
+╔════════════════════════════════════════════╗
+║              MENÚ DE AMIGOS                ║
+╠════════════════════════════════════════════╣
+║ 1. Mostrar amigos                          ║
+║ 2. Ver perfil de amigo                     ║
+║ 3. Enviar solicitud de amistad             ║
+║ 4. Ver solicitudes pendientes              ║
+║ 5. Aceptar solicitud                       ║
+║ 6. Eliminar amigo                          ║
+║ 7. Chat con amigo                          ║
+║ 8. Volver al menú principal                ║
+╚════════════════════════════════════════════╝
+        """)
+
         opcion = solicitar_parametro("Selecciona una opción",str)
 
         if opcion == "1":
@@ -156,10 +167,16 @@ def mostrar_amigos(token: str) -> None:
         print("No tienes amigos aún.")
         return
 
-    print("\n--- Lista de amigos ---")
-    for i, amigo in enumerate(amigos):
-        print(f"{i + 1}. {amigo}")
+    print("""
+╔══════════════════════════════╗
+║        LISTA DE AMIGOS       ║
+╠══════════════════════════════╣
+    """)
 
+    for i, amigo in enumerate(amigos):
+        print(f"  {i + 1}. {amigo}")
+
+    print("╚══════════════════════════════╝")
 
 def ver_perfil_amigo(token: str) -> None:
     amigos = obtener_amigos(token)
@@ -167,10 +184,16 @@ def ver_perfil_amigo(token: str) -> None:
         print("No tienes amigos para ver su perfil.")
         return
 
-    print("\n--- Lista de amigos ---")
-    for i, amigo in enumerate(amigos):
-        print(f"{i + 1}. {amigo}")
+    print("""
+╔══════════════════════════════╗
+║        LISTA DE AMIGOS       ║
+╠══════════════════════════════╣
+    """)
 
+    for i, amigo in enumerate(amigos):
+        print(f"  {i + 1}. {amigo}")
+
+    print("╚══════════════════════════════╝")
     idx = solicitar_parametro("Selecciona el número del amigo",int) - 1
     if idx < 0 or idx >= len(amigos):
         print("Selección inválida.")
@@ -181,10 +204,15 @@ def ver_perfil_amigo(token: str) -> None:
     headers = {"Authorization": f"Bearer {token}"}
     response = requests.get(url, headers=headers)
     datos = response.json().get("perfil")
-    print("\n=== Perfil del Usuario ===")
-    print(f"Nombre de usuario : {datos["username"]}")
-    print(f"Puntos ELO        : {datos["elo"]}")
-    print(f"Partidas jugadas  : {datos["partidas_jugadas"]}")
+    print("""
+╔════════════════════════════════╗
+║        PERFIL DEL USUARIO      ║
+╠════════════════════════════════╣
+    """)
+    print(f"  Nombre de usuario : {datos['username']}")
+    print(f"  Puntos ELO        : {datos['elo']}")
+    print(f"  Partidas jugadas  : {datos['partidas_jugadas']}")
+    print("╚════════════════════════════════╝")
 
 
 def enviar_solicitud(token: str) -> None:
@@ -202,9 +230,16 @@ def ver_solicitudes(token: str) -> None:
         print("No tienes solicitudes pendientes.")
         return
 
-    print("\n--- Solicitudes recibidas ---")
+    print("""
+╔════════════════════════════════╗
+║      SOLICITUDES RECIBIDAS     ║
+╠════════════════════════════════╣
+    """)
+
     for i, s in enumerate(solicitudes):
-        print(f"{i + 1}. {s['remitente']}")
+        print(f"  {i + 1}. {s['remitente']}")
+
+    print("╚════════════════════════════════╝")
 
 
 def aceptar_solicitud(token: str) -> None:
@@ -213,9 +248,17 @@ def aceptar_solicitud(token: str) -> None:
         print("No tienes solicitudes para aceptar.")
         return
 
-    print("\n--- Solicitudes recibidas ---")
+    print("""
+╔════════════════════════════════╗
+║      SOLICITUDES RECIBIDAS     ║
+╠════════════════════════════════╣
+    """)
+
     for i, s in enumerate(solicitudes):
-        print(f"{i + 1}. {s['remitente']}")
+        print(f"  {i + 1}. {s['remitente']}")
+
+    print("╚════════════════════════════════╝")
+
 
     idx = solicitar_parametro("Selecciona el número de la solicitud a aceptar",int) - 1
     if idx < 0 or idx >= len(solicitudes):
@@ -236,10 +279,16 @@ def eliminar_amigo(token: str) -> None:
         print("No tienes amigos para eliminar.")
         return
 
-    print("\n--- Lista de amigos ---")
-    for i, amigo in enumerate(amigos):
-        print(f"{i + 1}. {amigo}")
+    print("""
+╔══════════════════════════════╗
+║        LISTA DE AMIGOS       ║
+╠══════════════════════════════╣
+    """)
 
+    for i, amigo in enumerate(amigos):
+        print(f"  {i + 1}. {amigo}")
+
+    print("╚══════════════════════════════╝")
     idx = solicitar_parametro("Selecciona el número del amigo a eliminar",int) - 1
     if idx < 0 or idx >= len(amigos):
         print("Selección inválida.")
@@ -259,9 +308,16 @@ def chat_amigo(token: str) -> None:
         print("No tienes amigos para chatear.")
         return
 
-    print("\n--- Lista de amigos ---")
+    print("""
+╔══════════════════════════════╗
+║        LISTA DE AMIGOS       ║
+╠══════════════════════════════╣
+    """)
+
     for i, amigo in enumerate(amigos):
-        print(f"{i + 1}. {amigo}")
+        print(f"  {i + 1}. {amigo}")
+
+    print("╚══════════════════════════════╝")
 
     idx = solicitar_parametro("Selecciona el número del amigo",int) - 1
     if idx < 0 or idx >= len(amigos):
@@ -275,9 +331,20 @@ def chat_amigo(token: str) -> None:
     response = requests.get(url_historial, headers=headers)
     mensajes = response.json()
 
-    print("\n--- Historial de chat ---")
+    print("""
+╔════════════════════════════════════════════════════════╗
+║                  HISTORIAL DE CHAT                     ║
+╠════════════════════════════════════════════════════════╣
+    """)
+
     for msg in mensajes:
-        print(f"[{msg['timestamp']}] {msg['emisor']} -> {msg['contenido']}")
+        timestamp = msg['timestamp']
+        emisor = msg['emisor']
+        contenido = msg['contenido']
+        print(f"[{timestamp}] {emisor:<15} → {contenido}")
+
+    print("╚════════════════════════════════════════════════════════╝")
+
 
     while True:
         nuevo = solicitar_parametro("Escribe un mensaje (o no escribas nada para terminar) ",str)
@@ -311,12 +378,17 @@ def obtener_solicitudes(token: str) -> list:
 
 def menu_retos(token):
     while True:
-        print("\n--- Menú de Retos ---")
-        print("1. Ver retos")
-        print("2. Enviar reto a amigo")
-        print("3. Aceptar reto")
-        print("4. Rechazar reto")
-        print("5. Volver al menú principal")
+        print("""
+╔══════════════════════════════════╗
+║          MENÚ DE RETOS           ║
+╠══════════════════════════════════╣
+║ 1. Ver retos                     ║
+║ 2. Enviar reto a amigo o IA      ║
+║ 3. Aceptar reto                  ║
+║ 4. Rechazar reto                 ║
+║ 5. Volver al menú principal      ║
+╚══════════════════════════════════╝
+""")
 
         opcion = solicitar_parametro("Elige una opción",str)
 
@@ -339,9 +411,17 @@ def ver_retos(token):
     if response.ok:
         retos = response.json()["retos"]
         if retos:
-            print("\nRetos recibidos:")
+            print("""
+╔══════════════════════════════╗
+║       RETOS RECIBIDOS        ║
+╠══════════════════════════════╣
+            """)
+
             for i, reto in enumerate(retos):
-                print(f"{i + 1}. De: {reto['retador']}")
+                print(f"  {i + 1}. De: {reto['retador']}")
+
+            print("╚══════════════════════════════╝")
+
         else:
             print("No tienes retos pendientes.")
     else:
@@ -352,22 +432,34 @@ def enviar_reto(token):
 
     amigos = obtener_amigos(token)
 
-    if not amigos:
+    IAS_existentes = ["IAMohammed(1)", "IAJulio(2)", "IAVicente(3)","IASofia(4)", "IACarlos(5)"]
+
+    if not amigos and not IAS_existentes:
         print("No tienes amigos disponibles para retar.")
         return
 
-    print("\nAmigos disponibles:")
-    for i, amigo in enumerate(amigos):
-        print(f"{i + 1}. {amigo}")
+    opciones_disponibles = amigos + IAS_existentes
 
-    idx = solicitar_parametro("Selecciona el número del amigo a retar",int) - 1
-    if idx < 0 or idx >= len(amigos):
+    print("""
+╔════════════════════════════════════════════════╗
+║      OPCIONES DISPONIBLES PARA RETAR           ║
+╠════════════════════════════════════════════════╣
+    """)
+
+    for i, nombre in enumerate(opciones_disponibles):
+        tipo = "IA" if nombre in IAS_existentes else "Amigo"
+        print(f"  {i + 1}. {nombre:<20} ({tipo})")
+
+    print("╚════════════════════════════════════════════════╝")
+
+    idx = solicitar_parametro("Selecciona el número del jugador o IA a retar", int) - 1
+    if idx < 0 or idx >= len(opciones_disponibles):
         print("Selección inválida.")
         return
 
-    username_amigo = amigos[idx]
+    username_objetivo = opciones_disponibles[idx]
 
-    resp = requests.post(f"{BASE_URL}/retos/enviar/{username_amigo}", headers={"Authorization": f"Bearer {token}"})
+    resp = requests.post(f"{BASE_URL}/retos/enviar/{username_objetivo}", headers={"Authorization": f"Bearer {token}"})
     print(resp.json().get("mensaje", resp.json().get("error", "Error desconocido")))
 
 
@@ -382,9 +474,17 @@ def aceptar_reto(token):
         print("No tienes retos pendientes.")
         return
 
-    print("\nRetos disponibles:")
+    print("""
+╔════════════════════════════════╗
+║        RETOS DISPONIBLES       ║
+╠════════════════════════════════╣
+    """)
+
     for i, reto in enumerate(retos):
-        print(f"{i + 1}. De: {reto['retador']}")
+        print(f"  {i + 1}. De: {reto['retador']}")
+
+    print("╚════════════════════════════════╝")
+
 
     idx = solicitar_parametro("Selecciona el número del reto a aceptar",int) - 1
     if idx < 0 or idx >= len(retos):
@@ -411,9 +511,17 @@ def rechazar_reto(token):
         print("No tienes retos pendientes.")
         return
 
-    print("\nRetos disponibles:")
+    print("""
+╔════════════════════════════════╗
+║        RETOS DISPONIBLES       ║
+╠════════════════════════════════╣
+    """)
+
     for i, reto in enumerate(retos):
-        print(f"{i + 1}. De: {reto['retador']}")
+        print(f"  {i + 1}. De: {reto['retador']}")
+
+    print("╚════════════════════════════════╝")
+
 
     idx = solicitar_parametro("Selecciona el número del reto a rechazar",int) - 1
     if idx < 0 or idx >= len(retos):
@@ -432,13 +540,18 @@ def menu_partidas(token: str) -> None:
     Permite ver historial, ver una partida (reproduce), ver estado y jugar turno.
     """
     while True:
-        print("\n--- MENÚ PARTIDAS ---")
-        print("1. Mostrar historial de partidas")
-        print("2. Ver una partida")
-        print("3. Ver estado de una partida activa")
-        print("4. Jugar un turno en una partida activa")
-        print("5. Rendirse de una partida")
-        print("6. Volver al menú principal")
+        print("""
+╔════════════════════════════════════════════════════╗
+║                 MENÚ DE PARTIDAS                   ║
+╠════════════════════════════════════════════════════╣
+║ 1. Mostrar historial de partidas                   ║
+║ 2. Ver una partida                                 ║
+║ 3. Ver estado de una partida activa                ║
+║ 4. Jugar un turno en una partida activa            ║
+║ 5. Rendirse de una partida                         ║
+║ 6. Volver al menú principal                        ║
+╚════════════════════════════════════════════════════╝
+        """)
 
         opcion = solicitar_parametro("Selecciona una opción",str)
 
@@ -466,10 +579,34 @@ def obtener_partidas_activas(token: str) -> list[dict]:
 
 
 def mostrar_historial(token: str) -> None:
+    """
+    Muestra el historial de partidas finalizadas del usuario autenticado.
+    
+    Parámetros:
+    -----------
+    token : str
+        Token JWT del usuario autenticado.
+    """
     url = f"{BASE_URL}/partidas"
     headers = {"Authorization": f"Bearer {token}"}
     response = requests.get(url, headers=headers)
-    print(response.json())
+    data = response.json()
+
+    usuario = data.get("usuario")
+    partidas = data.get("partidas", [])
+
+    print(f"\n╔══════════════════════════════════╗")
+    print(f"║ Historial de {usuario:<20}║")    
+    print(f"╠══════════════════════════════════╣")
+
+    if not partidas:
+        print("║   No hay partidas finalizadas.   ║")
+    else:
+        for i, archivo in enumerate(partidas, start=1):
+            print(f"║ {i:>2}. {archivo:<26}║")
+
+    print("╚══════════════════════════════════╝")
+
 
 
 def ver_una_partida(token: str) -> None:
@@ -482,16 +619,30 @@ def ver_una_partida(token: str) -> None:
 
     partidas_totales = []
 
-    print("\n--- Partidas activas ---")
+    print("""
+╔══════════════════════════════════════════════╗
+║               PARTIDAS ACTIVAS               ║
+╠══════════════════════════════════════════════╣
+    """)
+
     for i, partida in enumerate(partidas_activas):
-        print(f"{i+1}: Contra {partida['oponente']} | Turno: {partida['turno']} [ACTIVA]")
+        print(f"  {i + 1}: Contra {partida['oponente']:<15} | Turno: {partida['turno']} [ACTIVA]")
         partidas_totales.append(partida['sesion_id'])
 
     offset = len(partidas_activas)
-    print("\n--- Partidas finalizadas ---")
+
+    print("""
+╔══════════════════════════════════════════════╗
+║             PARTIDAS FINALIZADAS             ║
+╠══════════════════════════════════════════════╣
+    """)
+
     for j, nombre_archivo in enumerate(historial):
-        print(f"{offset + j+1}: Archivo: {nombre_archivo} [TERMINADA]")
+        print(f"  {offset + j + 1}: Archivo: {nombre_archivo} [TERMINADA]")
         partidas_totales.append(nombre_archivo)
+
+    print("╚══════════════════════════════════════════════╝")
+
 
     if not partidas_totales:
         print("No tienes partidas para visualizar.")
@@ -520,10 +671,16 @@ def ver_estado_partida(token: str) -> None:
         print("No tienes partidas activas.")
         return
 
-    print("\n--- Partidas activas ---")
-    for i, partida in enumerate(partidas):
-        print(f"{i+1}: Contra {partida['oponente']} | Turno: {partida['turno']}")
+    print("""
+╔══════════════════════════════════════════════╗
+║               PARTIDAS ACTIVAS               ║
+╠══════════════════════════════════════════════╣
+    """)
 
+    for i, partida in enumerate(partidas):
+        print(f"  {i + 1}: Contra {partida['oponente']:<15} | Turno: {partida['turno']} [ACTIVA]")
+
+    print("╚══════════════════════════════════════════════╝")
     indice = solicitar_parametro("Selecciona el número de la partida para ver su estado",int)-1
     if 0 <= indice < len(partidas):
         sesion_id = partidas[indice]['sesion_id']
@@ -537,9 +694,8 @@ def ver_estado_partida(token: str) -> None:
         else:
             print(f"\nTurno: {datos['turno_actual']}")
             print(f"Estado: {datos['estado']}")
-            print("Tablero:\n")
-            for fila in  datos["tablero"]:
-                print(fila)
+            print(datos["tablero"])
+
     else:
         print("Selección inválida.")
 
@@ -550,9 +706,15 @@ def jugar_turno(token: str) -> None:
         print("No tienes partidas activas.")
         return
 
-    print("\n--- Partidas activas ---")
+    print("""
+╔══════════════════════════════════════════════╗
+║               PARTIDAS ACTIVAS               ║
+╠══════════════════════════════════════════════╣
+    """)
+
     for i, partida in enumerate(partidas):
-        print(f"{i+1}: Contra {partida['oponente']} | Turno: {partida['turno']}")
+        print(f"  {i + 1}: Contra {partida['oponente']:<15} | Turno: {partida['turno']} [ACTIVA]")
+    print("╚══════════════════════════════════════════════╝")
 
     indice = solicitar_parametro("Selecciona el número de la partida para jugar tu turno",int)-1
     if 0 <= indice < len(partidas):
@@ -596,9 +758,15 @@ def rendirse(token: str) -> None:
         print("No tienes partidas activas.")
         return
 
-    print("\n--- Partidas activas ---")
+    print("""
+╔══════════════════════════════════════════════╗
+║               PARTIDAS ACTIVAS               ║
+╠══════════════════════════════════════════════╣
+    """)
+
     for i, partida in enumerate(partidas):
-        print(f"{i+1}: Contra {partida['oponente']} | Turno: {partida['turno']}")
+        print(f"  {i + 1}: Contra {partida['oponente']:<15} | Turno: {partida['turno']} [ACTIVA]")
+    print("╚══════════════════════════════════════════════╝")
 
     indice = solicitar_parametro("Selecciona el número de la partida para jugar tu turno")-1
     if 0 <= indice < len(partidas):
@@ -636,13 +804,20 @@ def crear_tablero_vacio() -> List[List[Optional[str]]]:
 
 
 def imprimir_tablero(tablero: List[List[str]]) -> None:
-    """Imprime el tablero de forma legible con letras de columna y números de fila."""
-    print("\n  a b c d e f g h")
+    print("\n    a   b   c   d   e   f   g   h")
+    print("  ╔" + "═══╦" * 7 + "═══╗")
+
     for i in range(8):
         fila = tablero[i]
-        print(f"{8 - i} " + " ".join(fila)+f"{8 - i}")
-    print("\n  a b c d e f g h")
-    print()
+        fila_str = " ║ ".join(fila)
+        print(f"{8 - i} ║ {fila_str} ║ {8 - i}")
+        if i < 7:
+            print("  ╠" + "═══╬" * 7 + "═══╣")
+        else:
+            print("  ╚" + "═══╩" * 7 + "═══╝")
+
+    print("    a   b   c   d   e   f   g   h\n")
+
 
 
 def mover_pieza_en_tablero(tablero: List[List[str]], origen: Tuple[int, int], destino: Tuple[int, int], pieza: str, color: str) -> None:
@@ -712,15 +887,23 @@ def menu_principal(token: str) -> None:
     global usuario_username,usuario_id
 
     while True:
-        print("\n --- YORKSHIRE CHESS ---")
-        print("\n----- Menú Principal -----")
-        print("1. Menú Amigos")
-        print("2. Menú Retos")
-        print("3. Menú Partidas")
-        print("4. Ver mi perfil")
-        print("5. Ranking")
-        print("6. Posición de un usuario")
-        print("7. Salir")
+        print("""
+╔════════════════════════════════════════════════════════════════╗
+║                     ╔═══════════════════╗                      ║
+║                     ║  YORKSHIRE CHESS  ║                      ║
+║                     ╚═══════════════════╝                      ║
+╠════════════════════════════════════════════════════════════════╣
+║                         MENÚ PRINCIPAL                         ║
+╠════════════════════════════════════════════════════════════════╣
+║ 1. Menú Amigos                                                 ║
+║ 2. Menú Retos                                                  ║
+║ 3. Menú Partidas                                               ║
+║ 4. Ver mi perfil                                               ║
+║ 5. Ranking                                                     ║
+║ 6. Posición de un usuario                                      ║
+║ 7. Salir                                                       ║
+╚════════════════════════════════════════════════════════════════╝
+        """)
 
         opcion = solicitar_parametro("Selecciona una opción",str)
 
@@ -757,9 +940,18 @@ def ranking():
     datos = response.json()
 
     if response.status_code == 200:
-        print("\n--- Ranking ---")
+        print("""
+╔════════════════════════════╗
+║         RANKING            ║
+╠════╦════════════════╦══════╣
+║ Nº ║ Usuario        ║  ELO ║
+╠════╬════════════════╬══════╣""")
+
         for i, jugador in enumerate(datos, start=1):
-            print(f"{i}. {jugador['username']} (ELO: {jugador['elo']})")
+            print(f"║ {i:<2} ║ {jugador['username']:<14} ║ {jugador['elo']:<4} ║")
+
+        print("╚════╩════════════════╩══════╝")
+
     else:
         print(f"Error: {datos.get('error', 'Error al obtener el ranking.')}")
 
@@ -800,10 +992,15 @@ def ver_perfil(token: str,usuario_username:str) -> None:
         if r.status_code == 200:
             datos = r.json().get("perfil")
             
-            print("\n=== Perfil del Usuario ===")
-            print(f"Nombre de usuario : {datos["username"]}")
-            print(f"Puntos ELO        : {datos["elo"]}")
-            print(f"Partidas jugadas  : {datos["partidas_jugadas"]}")
+            print("""
+╔════════════════════════════════╗
+║        PERFIL DEL USUARIO      ║
+╠════════════════════════════════╣
+            """)
+            print(f"  Nombre de usuario : {datos['username']}")
+            print(f"  Puntos ELO        : {datos['elo']}")
+            print(f"  Partidas jugadas  : {datos['partidas_jugadas']}")
+            print("╚════════════════════════════════╝")
         else:
             print("Error al obtener perfil:", r.json().get("error", r.text))
     except Exception as e:
