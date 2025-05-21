@@ -344,7 +344,10 @@ def enviar_reto_a_amigo(retador_username: str, username_amigo: str) -> None:
         raise ValueError("No puedes retarte a ti mismo.")
 
     retador: Optional[Usuario] = Usuario.cargar_por_username(retador_username)
-    amigo: Optional[Usuario] = Usuario.cargar_por_username(username_amigo)
+    try:
+        amigo: Optional[Usuario] = Usuario.cargar_por_username(username_amigo)
+    except:
+        amigo: Optional[UsuarioIA] = UsuarioIA.cargar_por_username(username_amigo)
 
     if not retador or not amigo:
         raise ValueError("El usuario no existe.")

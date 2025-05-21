@@ -163,7 +163,7 @@ class IADeAjedrez:
         valor += (self.movilidad(tablero, self.color) - self.movilidad(tablero, self.color_enemigo)) * 10
 
         return valor
-
+    @staticmethod
     def valor_pieza_en(casilla: tuple[int, int],tablero:Tablero) -> int:
         pieza = tablero.casillas[casilla[0]][casilla[1]]
         return pieza.valor if pieza else 0
@@ -202,7 +202,7 @@ class IADeAjedrez:
 
         color = self.color if maximizando else self.color_enemigo
         movimientos = self.generar_movimientos(tablero, color)
-        movimientos.sort(key=lambda mov: self.valor_pieza_en(mov[1]), reverse=True) # ordeno movimientos para primero los que pueden eliminar algo de mayor valor para podar mejor los movimientos
+        movimientos.sort(key=lambda mov: IADeAjedrez.valor_pieza_en(mov[1],tablero), reverse=True) # ordeno movimientos para primero los que pueden eliminar algo de mayor valor para podar mejor los movimientos
         mejor_valor = -INF if maximizando else INF
         
         for origen, movimiento in movimientos:

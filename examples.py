@@ -494,7 +494,6 @@ def aceptar_reto(token):
     retador_username = retos[idx]["retador"]
 
     resp = requests.post(f"{BASE_URL}/retos/aceptar/{retador_username}", headers={"Authorization": f"Bearer {token}"})
-    print(resp.ok)
 
     datos = resp.json()
     print(datos.get("mensaje",datos.get("error", "Error desconocido")))
@@ -595,17 +594,25 @@ def mostrar_historial(token: str) -> None:
     usuario = data.get("usuario")
     partidas = data.get("partidas", [])
 
-    print(f"\n╔══════════════════════════════════╗")
-    print(f"║ Historial de {usuario:<20}║")    
-    print(f"╠══════════════════════════════════╣")
+    print(f"\n╔════════════════════════════════════════════════════════════╗")
+    print(f"║ Historial de {usuario:<40}║")    
+    print(f"╠════╦════════════╦══════════════════════╦════════════════╣")
+    print(f"║ No ║   Fecha    ║     Jugador Blanco    ║ Jugador Negro  ║ Ganador       ║")
+    print(f"╠════╬════════════╬══════════════════════╬════════════════╬═══════════════╣")
 
     if not partidas:
-        print("║   No hay partidas finalizadas.   ║")
+        print("║                      No hay partidas finalizadas.                      ║")
     else:
-        for i, archivo in enumerate(partidas, start=1):
-            print(f"║ {i:>2}. {archivo:<26}║")
+        for i, partida in enumerate(partidas, start=1):
+            fecha = partida.get("fecha", "N/A")
+            blanco = partida.get("jugador_blanco", "N/A")
+            negro = partida.get("jugador_negro", "N/A")
+            ganador = partida.get("ganador", "empate")
 
-    print("╚══════════════════════════════════╝")
+            print(f"║ {i:<2} ║ {fecha:<10} ║ {blanco:<20} ║ {negro:<14} ║ {ganador:<13} ║")
+
+    print(f"╚════════╩════════════╩══════════════════════╩════════════════╩═══════════════╝")
+
 
 
 
@@ -615,7 +622,7 @@ def ver_una_partida(token: str) -> None:
     url_historial = f"{BASE_URL}/partidas"
     headers = {"Authorization": f"Bearer {token}"}
     response_historial = requests.get(url_historial, headers=headers)
-    historial = response_historial.json() if response_historial.ok else []
+    historial = response_historial.json()["partidas"] if response_historial.ok else []
 
     partidas_totales = []
 
@@ -672,15 +679,15 @@ def ver_estado_partida(token: str) -> None:
         return
 
     print("""
-╔══════════════════════════════════════════════╗
-║               PARTIDAS ACTIVAS               ║
-╠══════════════════════════════════════════════╣
+╔═════════════════════════════════════════════════╗
+║                PARTIDAS ACTIVAS                 ║
+╠═════════════════════════════════════════════════╣
     """)
 
     for i, partida in enumerate(partidas):
         print(f"  {i + 1}: Contra {partida['oponente']:<15} | Turno: {partida['turno']} [ACTIVA]")
 
-    print("╚══════════════════════════════════════════════╝")
+    print("╚═════════════════════════════════════════════════╝")
     indice = solicitar_parametro("Selecciona el número de la partida para ver su estado",int)-1
     if 0 <= indice < len(partidas):
         sesion_id = partidas[indice]['sesion_id']
@@ -707,24 +714,25 @@ def jugar_turno(token: str) -> None:
         return
 
     print("""
-╔══════════════════════════════════════════════╗
-║               PARTIDAS ACTIVAS               ║
-╠══════════════════════════════════════════════╣
+╔═════════════════════════════════════════════════╗
+║                PARTIDAS ACTIVAS                 ║
+╠═════════════════════════════════════════════════╣
     """)
 
     for i, partida in enumerate(partidas):
         print(f"  {i + 1}: Contra {partida['oponente']:<15} | Turno: {partida['turno']} [ACTIVA]")
-    print("╚══════════════════════════════════════════════╝")
+
+    print("╚═════════════════════════════════════════════════╝")
 
     indice = solicitar_parametro("Selecciona el número de la partida para jugar tu turno",int)-1
     if 0 <= indice < len(partidas):
         sesion_id = partidas[indice]['sesion_id']
-        origen = solicitar_parametro("Posición de origen (ej: e2)",str).split()
-        destino = solicitar_parametro("Posición de destino (ej: e4)",str).split()
+        origen = solicitar_parametro("Posición de origen (ej: e2)",str).strip()
+        destino = solicitar_parametro("Posición de destino (ej: e4)",str).strip()
         promocion = input("\nPromoción (dama, torre, alfil, caballo) o deja vacío: ")
         datos: Dict[str, Any] = {
-            "origen": [int(origen[0]), int(origen[1])],
-            "destino": [int(destino[0]), int(destino[1])]
+            "origen": origen,
+            "destino": destino
         }
 
         if promocion:
@@ -759,16 +767,16 @@ def rendirse(token: str) -> None:
         return
 
     print("""
-╔══════════════════════════════════════════════╗
-║               PARTIDAS ACTIVAS               ║
-╠══════════════════════════════════════════════╣
+╔═════════════════════════════════════════════════╗
+║                PARTIDAS ACTIVAS                 ║
+╠═════════════════════════════════════════════════╣
     """)
 
     for i, partida in enumerate(partidas):
         print(f"  {i + 1}: Contra {partida['oponente']:<15} | Turno: {partida['turno']} [ACTIVA]")
-    print("╚══════════════════════════════════════════════╝")
 
-    indice = solicitar_parametro("Selecciona el número de la partida para jugar tu turno")-1
+    print("╚═════════════════════════════════════════════════╝")
+    indice = solicitar_parametro("Selecciona el número de la partida para jugar tu turno",int)-1
     if 0 <= indice < len(partidas):
         sesion_id = partidas[indice]['sesion_id']
         datos: Dict[str, bool] = {
@@ -914,7 +922,7 @@ def menu_principal(token: str) -> None:
         elif opcion == "3":
             menu_partidas(token)
         elif opcion == "4":
-            ver_perfil(token,usuario_username)
+            ver_mi_perfil(token)
         elif opcion == "5":
             ranking()
         elif opcion == "6":
@@ -981,20 +989,19 @@ def salir(token: str) -> None:
         print("Error:", e)
 
 
-def ver_perfil(token: str,usuario_username:str) -> None:
+def ver_mi_perfil(token: str) -> None:
     """
-    Muestra el perfil del usuario (usando el endpoint perfil amigo).
+    Muestra el perfil del usuario autenticado.
     """
-    url = f"{BASE_URL}/amigos/perfil/{usuario_username}"
+    url = f"{BASE_URL}/perfil"
     headers = {"Authorization": f"Bearer {token}"}
     try:
         r = requests.get(url, headers=headers)
         if r.status_code == 200:
             datos = r.json().get("perfil")
-            
             print("""
 ╔════════════════════════════════╗
-║        PERFIL DEL USUARIO      ║
+║        MI PERFIL               ║
 ╠════════════════════════════════╣
             """)
             print(f"  Nombre de usuario : {datos['username']}")

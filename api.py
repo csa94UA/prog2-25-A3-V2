@@ -10,7 +10,8 @@ from usuario.ranking import obtener_ranking, obtener_posicion_usuario
 from usuario.friend_manager import mostrar_perfil_amigo, enviar_solicitud_amistad, aceptar_solicitud, mostrar_amigos, eliminar_amigo,enviar_reto_a_amigo,aceptar_reto,rechazar_reto,obtener_retos,enviar_mensaje,obtener_chat,obtener_solicitudes_amistad
 from utiles.file_menager import cargar_partida
 from juego.sesion_juego import SesionDeJuego
-from juego.usuarioIA import UsuarioIA 
+from juego.usuarioIA import UsuarioIA
+from juego.tablero import Tablero 
 from config import JWT_PASSWORD
 
 app = Flask(__name__)
@@ -204,6 +205,34 @@ def mostrar_perfil_amigoo(username_amigo: str):
         return jsonify({"error": "Error interno del servidor."}), 500
 
 
+@app.route("/perfil", methods=["GET"])
+@jwt_required()
+def perfil_usuario_autenticado():
+    """
+    Endpoint para obtener el perfil del usuario autenticado.
+
+    Retorna:
+    --------
+    JSON con los datos del perfil o mensaje de error.
+    """
+    try:
+        identidad = get_jwt_identity()
+        usuario: Optional[Usuario] = Usuario.cargar_por_username(identidad)
+
+        if not usuario:
+            return jsonify({"error": "Usuario autenticado no encontrado."}), 404
+
+        perfil = {
+            "username": usuario.username,
+            "elo": usuario.elo,
+            "partidas_jugadas": usuario.partidas_jugadas
+        }
+        return jsonify({"perfil": perfil}), 200
+
+    except Exception as e:
+        return jsonify({"error": "Error interno del servidor."}), 500
+    
+
 @app.route('/amigos/solicitudes', methods=['GET'])
 @jwt_required()
 def solicitudes_amistad() -> Optional[List[Dict[str, str]]]:
@@ -369,7 +398,7 @@ def enviar_reto_a_amigoo(username_amigo: str):
             return jsonify({
                 "mensaje": f"Reto aceptado. Partida iniciada entre {username_amigo} y {retador_username}. ",
                 "sesion_id": nombre_sesion,
-                "turno": sesion.turno,
+                "turno": sesion.turno_actual,
                 "jugador_blanco": sesion.jugador_blanco.username,
                 "jugador_negro": sesion.jugador_negro.username
             }), 200
@@ -468,12 +497,11 @@ def jugar_turnoo(sesion_id: str):
 
         if "origen" not in datos or "destino" not in datos:
             return jsonify({"error": "Debes especificar origen y destino del movimiento."}), 400
-
-        origen: Tuple[int, int] = tuple(datos["origen"])
-        destino: Tuple[int, int] = tuple(datos["destino"])
+        origenydestino = f"{datos['origen']} {datos['destino']}"
+        entrada = Tablero.interpretar_entrada(origenydestino)
         promocion: str = datos.get("promocion")
 
-        resultado_usuario = sesion.jugar_turno((origen, destino), promocion)
+        resultado_usuario = sesion.jugar_turno(entrada, promocion)
 
         if resultado_usuario.get("estado") == "terminado":
             return jsonify(resultado_usuario), 200

@@ -40,10 +40,6 @@ class Tablero:
         Realiza la promoción de un peón (sin implementar).
     interpretar_entrada(entrada: str) -> Optional[Tuple[Tuple[int, int], Tuple[int, int]]]:
         Convierte una entrada en notación algebraica a coordenadas internas.
-    guardar_estado() -> Dict[str, Any]:
-        Retorna una copia del estado actual del tablero.
-    restaurar_estado(estado: Dict[str, Any]) -> None:
-        Restaura el estado del tablero desde una copia previamente guardada.
     mover_pieza_tests(origenydestino: Tuple[Tuple[int, int], Tuple[int, int]]) -> bool:
         Mueve una pieza sin validación para pruebas internas.
     """
@@ -149,7 +145,7 @@ class Tablero:
         movimientos_validos = pieza.obtener_movimientos_validos(
             (fila_origen, col_origen), self
         )
-        if (fila_destino, col_destino) not in movimientos_validos or self.validador.movimiento_es_legal((fila_origen,col_origen),(fila_destino,col_destino),pieza.color):
+        if (fila_destino, col_destino) not in movimientos_validos or not self.validador.movimiento_es_legal((fila_origen,col_origen),(fila_destino,col_destino),pieza.color):
             return {"exito": False, "error": "Movimiento no válido para la pieza."}
 
         # Enroque
@@ -237,40 +233,6 @@ class Tablero:
             return "Opción no válida. Elige dama, torre, alfil o caballo."
 
         return True
-
-
-    def interpretar_entrada(self, entrada: str) -> Optional[Tuple[Tuple[int, int], Tuple[int, int]]]:
-        """
-        Convierte una cadena en notación algebraica (ej. 'e2 e4') a coordenadas internas.
-
-        Parámetros:
-        -----------
-        entrada : str
-            Movimiento en formato algebraico.
-
-        Retorna:
-        --------
-        Optional[Tuple[Tuple[int, int], Tuple[int, int]]]
-            Tupla con coordenadas de origen y destino, o None si hay error de formato.
-        """
-        try:
-            origen_str, destino_str = entrada.strip().lower().split()
-            columnas = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}
-
-            if len(origen_str) != 2 or len(destino_str) != 2:
-                return None
-
-            col1 = columnas.get(origen_str[0])
-            fila1 = 8 - int(origen_str[1])
-            col2 = columnas.get(destino_str[0])
-            fila2 = 8 - int(destino_str[1])
-
-            if None in (col1, col2) or not (0 <= fila1 < 8) or not (0 <= fila2 < 8):
-                return None
-
-            return ((fila1, col1), (fila2, col2))
-        except Exception:
-            return None
         
 
     def hacer_movimiento(self, origen: Tuple[int, int], destino: Tuple[int, int]) -> None:
@@ -376,3 +338,38 @@ class Tablero:
                         self.casillas[x][y] = None
                 else:
                     self.casillas[x][y] = None
+
+
+    @staticmethod
+    def interpretar_entrada(entrada: str) -> Optional[Tuple[Tuple[int, int], Tuple[int, int]]]:
+        """
+        Convierte una cadena en notación algebraica (ej. 'e2 e4') a coordenadas internas.
+
+        Parámetros:
+        -----------
+        entrada : str
+            Movimiento en formato algebraico.
+
+        Retorna:
+        --------
+        Optional[Tuple[Tuple[int, int], Tuple[int, int]]]
+            Tupla con coordenadas de origen y destino, o None si hay error de formato.
+        """
+        try:
+            origen_str, destino_str = entrada.strip().lower().split()
+            columnas = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}
+
+            if len(origen_str) != 2 or len(destino_str) != 2:
+                return None
+
+            col1 = columnas.get(origen_str[0])
+            fila1 = 8 - int(origen_str[1])
+            col2 = columnas.get(destino_str[0])
+            fila2 = 8 - int(destino_str[1])
+
+            if None in (col1, col2) or not (0 <= fila1 < 8) or not (0 <= fila2 < 8):
+                return None
+
+            return ((fila1, col1), (fila2, col2))
+        except Exception:
+            return None

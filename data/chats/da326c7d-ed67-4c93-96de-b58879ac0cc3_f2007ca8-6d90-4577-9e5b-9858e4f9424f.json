@@ -2,7 +2,7 @@
     {
         "emisor": "Void",
         "receptor": "Loyd",
-        "contenido": "En el día de hoy,",
+        "contenido": "En el d\u00eda de hoy,",
         "timestamp": "20250518_155314"
     },
     {
@@ -14,7 +14,7 @@
     {
         "emisor": "Loyd",
         "receptor": "Void",
-        "contenido": "el Ejército Rojo,",
+        "contenido": "el Ej\u00e9rcito Rojo,",
         "timestamp": "20250518_162127"
     },
     {
@@ -32,7 +32,7 @@
     {
         "emisor": "Loyd",
         "receptor": "Void",
-        "contenido": "sus últimos",
+        "contenido": "sus \u00faltimos",
         "timestamp": "20250518_162220"
     },
     {
@@ -56,7 +56,7 @@
     {
         "emisor": "Loyd",
         "receptor": "Void",
-        "contenido": "El Generalísimo.",
+        "contenido": "El General\u00edsimo.",
         "timestamp": "20250518_162442"
     },
     {
@@ -64,5 +64,11 @@
         "receptor": "Void",
         "contenido": "1939",
         "timestamp": "20250518_162503"
+    },
+    {
+        "emisor": "Void",
+        "receptor": "Loyd",
+        "contenido": "100 humanos destrozar\u00edan al gorila, es mas yo creo que unos 20 ganarian al gorila",
+        "timestamp": "20250521_231400"
     }
 ]

@@ -83,14 +83,17 @@ class SesionDeJuego:
         if isinstance(jugador_actual, UsuarioIA):
             entrada = jugador_actual.elegir_movimiento(self.tablero, self.turno_actual)
 
-        if entrada == "abandono" or entrada == None:
+        if entrada == "abandono" or (entrada == None and isinstance(jugador_actual, UsuarioIA)):
             return self.rendirse(self.turno_actual)
 
         origen, destino = entrada
         pieza = self.tablero.casillas[origen[0]][origen[1]]
 
-        if not pieza or pieza.color != self.turno_actual:
-            return {"error": "Movimiento inválido: no es tu turno o no hay pieza."}
+        if not pieza :
+            return {"error": "Movimiento inválido: no hay pieza."}
+        
+        if pieza.color != self.turno_actual:
+            return {"error": "Movimiento inválido: no es tu turno."}
 
         if not self.validador.movimiento_es_legal(origen, destino, self.turno_actual):
             return {"error": "Movimiento ilegal."}
@@ -115,7 +118,6 @@ class SesionDeJuego:
             "captura": pieza_destino.__class__.__name__ if pieza_destino else None
         })
 
-        resguardo = self.tablero.guardar_estado()
         estado_finalizado = False
         mensaje: Optional[str] = None
 
@@ -135,7 +137,6 @@ class SesionDeJuego:
             mensaje = "¡Tablas por ahogado!"
 
         if not estado_finalizado:
-            self.tablero.restaurar_estado(resguardo)
             temp_result = self.guardar_estado_temporal()
             self.turno_actual = self._oponente()
             return {
@@ -186,11 +187,12 @@ class SesionDeJuego:
             for col in range(8):
                 pieza = self.tablero.casillas[fila][col]
                 if pieza and pieza.color == color:
-                    legales = pieza.obtener_movimientos_validos(
-                        (fila, col), self.tablero, evitar_jaque=True
-                    )
-                    if legales:
-                        return True
+                    for legal in pieza.obtener_movimientos_validos(
+                        (fila, col), self.tablero
+                    ):
+                        
+                        if self.validador.movimiento_es_legal((fila,col),legal,color):
+                            return True
         return False
 
     def obtener_datos_partida(self, include_final: bool = True) -> Dict[str, Any]:
@@ -318,7 +320,7 @@ class SesionDeJuego:
             Mensaje de éxito o error al guardar el estado temporal.
         """
         try:
-            datos = self.obtener_datos_partida(include_final=True)
+            datos = self.obtener_datos_partida()
             nombre_archivo = f"{self.jugador_blanco.username}_vs_{self.jugador_negro.username}"
             nombre_archivo = guardar_partida(datos,nombre_archivo=nombre_archivo, temporal=True)
             self.archivos_temporales.append(nombre_archivo)
