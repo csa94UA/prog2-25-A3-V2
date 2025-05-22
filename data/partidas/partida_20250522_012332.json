@@ -4,8 +4,8 @@
         "username": "Void(blanco)"
     },
     "jugador_negro": {
-        "user_id": "a8c424f8-3a10-45a7-9bb0-f78584516721",
-        "username": "IAJulio(2)(negro)"
+        "user_id": "3b6fa3ba-7393-4526-bac4-fc403456142a",
+        "username": "IAMohammed(1)(negro)"
     },
     "ganador": "negro",
     "movimientos": [
@@ -28,7 +28,7 @@
                 4
             ],
             "destino": [
-                3,
+                2,
                 4
             ],
             "pieza": "Peon",
@@ -36,7 +36,9 @@
             "captura": null
         }
     ],
-    "fecha": "2025-05-21 22:55:54.683193",
+    "fecha": "2025-05-22 01:23:32.425982",
+    "turno_actual": "blanco",
+    "terminado": true,
     "tablero_final": [
         [
             {
@@ -108,7 +110,10 @@
             null,
             null,
             null,
-            null,
+            {
+                "tipo": "Peon",
+                "color": "negro"
+            },
             null,
             null,
             null
@@ -118,10 +123,7 @@
             null,
             null,
             null,
-            {
-                "tipo": "Peon",
-                "color": "negro"
-            },
+            null,
             null,
             null,
             null

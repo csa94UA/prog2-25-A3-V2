@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity,get_jwt
 from typing import Dict,Optional,Union,Any,List,Tuple
 from datetime import timedelta
-
+import os
 
 from usuario.registro import registrar_usuario,iniciar_sesion
 from usuario.usuario import Usuario
@@ -12,7 +12,7 @@ from utiles.file_menager import cargar_partida
 from juego.sesion_juego import SesionDeJuego
 from juego.usuarioIA import UsuarioIA
 from juego.tablero import Tablero 
-from config import JWT_PASSWORD
+from config import JWT_PASSWORD,PATH_PARTIDAS_TEMP
 
 app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = JWT_PASSWORD
@@ -64,10 +64,10 @@ def registrar_usuarioo() -> Dict[str, str]:
 
     try:
         nuevo_usuario: Optional[Usuario] = registrar_usuario(username, password)
-        acces_token = create_access_token(identity=nuevo_usuario.username)
+        access_token = create_access_token(identity=nuevo_usuario.username)
         return jsonify({
             "mensaje": f"Usuario '{nuevo_usuario.username}' registrado correctamente.",
-            "acces_token": acces_token,
+            "access_token": access_token,
             "user_id":nuevo_usuario.user_id
         }), 201
     except ValueError as e:
@@ -225,12 +225,12 @@ def perfil_usuario_autenticado():
         perfil = {
             "username": usuario.username,
             "elo": usuario.elo,
-            "partidas_jugadas": usuario.partidas_jugadas
+            "partidas_jugadas": len(usuario.historial),
         }
         return jsonify({"perfil": perfil}), 200
 
     except Exception as e:
-        return jsonify({"error": "Error interno del servidor."}), 500
+        return jsonify({"error": "Error en el servidor"}), 500
     
 
 @app.route('/amigos/solicitudes', methods=['GET'])
@@ -351,12 +351,10 @@ def mostrar_historiall() -> Dict[str, Any]:
         return jsonify({"error": f"Error inesperado: {str(e)}"}), 500
     
 
-app.route("/partidas/<string:nombre_sesion>", methods=["GET"])
+@app.route("/partidas/<string:nombre_sesion>", methods=["GET"])
 @jwt_required()
 def cargar_partidaa(nombre_sesion: str) -> Dict[str, Any]:
     try:
-        if nombre_sesion in sesiones_activas:
-            nombre_sesion ="temp/"+ nombre_sesion+"_temp"
         datos_partida = cargar_partida(nombre_sesion)
         return jsonify(datos_partida), 200
     except FileNotFoundError:
@@ -655,5 +653,22 @@ def obtener_chatt(otro_username: str) -> tuple[Union[List[Dict[str, str]], Dict[
     except Exception as e:
         return {"error": f"Error interno del servidor: {str(e)}"}, 500
 
+
+
+def cargar_partidas_temp_al_iniciar():
+    if not os.path.exists(PATH_PARTIDAS_TEMP):
+        return
+    archivos = [f for f in os.listdir(PATH_PARTIDAS_TEMP) if f.endswith(".json")]
+    for nombre_archivo in archivos:
+        try:
+            sesion = SesionDeJuego.cargar_desde_guardado(nombre_archivo)
+            nombre_sesion = f"{sesion.jugador_blanco.username}_vs_{sesion.jugador_negro.username}_temp"
+            sesiones_activas[nombre_sesion] = sesion
+            print(f"[INFO] Partida temporal '{nombre_archivo}' cargada como '{nombre_sesion}'.")
+        except Exception as e:
+            print(f"[ERROR] No se pudo cargar la partida temporal '{nombre_archivo}': {e}")
+
+
 if __name__ == "__main__":
+    cargar_partidas_temp_al_iniciar()
     app.run(debug=True)

@@ -97,12 +97,12 @@ class Usuario:
                 # Asumimos que tendrá toda esta información la partida
                 historial.append({
                     "fecha": datos.get("fecha"),
+                    "nombre_archivo": archivo,
                     "jugador_blanco": datos["jugador_blanco"]["username"],
                     "jugador_negro": datos["jugador_negro"]["username"],
                     "ganador": datos.get("ganador", "empate")  # Si no hay key 'ganador', asumimos empate
                 })
             except Exception as e:
-                # En caso de error al cargar una partida, se registra el error en el historial
                 historial.append({
                     "archivo": archivo,
                     "error": str(e)

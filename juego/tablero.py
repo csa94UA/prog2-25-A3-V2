@@ -316,28 +316,23 @@ class Tablero:
         correspondientes en las posiciones indicadas por la lista. Si un elemento es None, 
         deja la casilla vacía (None).
         """
-        for x, fila in enumerate(lista):
-            for y, dicc in enumerate(fila):
-                if dicc is not None:
-                    tipo: str = dicc["tipo"]
-                    color: str = dicc["color"]
-                    if tipo == "peon":
-                        self.casillas[x][y] = Peon(color)
-                    elif tipo == "torre":
-                        self.casillas[x][y] = Torre(color)
-                    elif tipo == "caballo":
-                        self.casillas[x][y] = Caballo(color)
-                    elif tipo == "alfil":
-                        self.casillas[x][y] = Alfil(color)
-                    elif tipo == "dama":
-                        self.casillas[x][y] = Reina(color)
-                    elif tipo == "rey":
-                        self.casillas[x][y] = Rey(color)
-                    else:
-                        # En caso de que llegue un tipo desconocido
-                        self.casillas[x][y] = None
+        clase_pieza = {
+            "Rey": Rey,
+            "Reina": Reina,
+            "Torre": Torre,
+            "Alfil": Alfil,
+            "Caballo": Caballo,
+            "Peon": Peon
+        }
+
+        for i, fila in enumerate(lista):
+            for j, celda in enumerate(fila):
+                if celda is None:
+                    self.casillas[i][j] = None
                 else:
-                    self.casillas[x][y] = None
+                    tipo = celda["tipo"]
+                    color = celda["color"]
+                    self.casillas[i][j] = clase_pieza[tipo](color)
 
 
     @staticmethod

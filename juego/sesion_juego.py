@@ -194,20 +194,9 @@ class SesionDeJuego:
                         if self.validador.movimiento_es_legal((fila,col),legal,color):
                             return True
         return False
-
     def obtener_datos_partida(self, include_final: bool = True) -> Dict[str, Any]:
         """
         Obtiene los datos completos de la partida para guardado o análisis.
-
-        Parámetros:
-        -----------
-        include_final : bool, opcional
-            Indica si incluir el estado final del tablero (por defecto True).
-
-        Retorna:
-        --------
-        dict
-            Diccionario con información de la partida.
         """
         datos = {
             "jugador_blanco": {
@@ -221,6 +210,8 @@ class SesionDeJuego:
             "ganador": self.ganador,
             "movimientos": self.movimientos,
             "fecha": str(datetime.now()),
+            "turno_actual": self.turno_actual,
+            "terminado": self.terminado
         }
 
         if include_final:
@@ -366,7 +357,10 @@ class SesionDeJuego:
 
         # Cargar jugadores (Usuario o UsuarioIA)
         jugador_blanco = Usuario.cargar(datos["jugador_blanco"]["user_id"])
-        jugador_negro = Usuario.cargar(datos["jugador_negro"]["user_id"])
+        try:
+            jugador_negro = Usuario.cargar(datos["jugador_negro"]["user_id"])
+        except:
+            jugador_negro = UsuarioIA.cargar(datos["jugador_negro"]["user_id"])
 
         # Crear la instancia sin iniciar desde cero
         instancia = cls(jugador_blanco, jugador_negro)

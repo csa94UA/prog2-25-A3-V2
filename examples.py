@@ -85,7 +85,7 @@ def menu_registro() -> str:
             usuario_id = datos["user_id"]
             if response.status_code == 201:
                 print(datos["mensaje"])
-                return datos["acces_token"]
+                return datos["access_token"]
             else:
                 print(f"Error: {datos.get('error', 'Error desconocido.')}")
 
@@ -594,14 +594,14 @@ def mostrar_historial(token: str) -> None:
     usuario = data.get("usuario")
     partidas = data.get("partidas", [])
 
-    print(f"\n╔════════════════════════════════════════════════════════════╗")
-    print(f"║ Historial de {usuario:<40}║")    
-    print(f"╠════╦════════════╦══════════════════════╦════════════════╣")
+    print(f"\n╔══════════════════════════════════════════════════════════════════════════╗")
+    print(f"║ Historial de {usuario:<60}║")                                                
+    print(f"╠════╦════════════╦═══════════════════════╦════════════════╦═══════════════╣")
     print(f"║ No ║   Fecha    ║     Jugador Blanco    ║ Jugador Negro  ║ Ganador       ║")
-    print(f"╠════╬════════════╬══════════════════════╬════════════════╬═══════════════╣")
-
+    print(f"╠════╬════════════╬═══════════════════════╬════════════════╬═══════════════╣")
+    
     if not partidas:
-        print("║                      No hay partidas finalizadas.                      ║")
+        print("║                       No hay partidas finalizadas.                       ║")
     else:
         for i, partida in enumerate(partidas, start=1):
             fecha = partida.get("fecha", "N/A")
@@ -609,64 +609,49 @@ def mostrar_historial(token: str) -> None:
             negro = partida.get("jugador_negro", "N/A")
             ganador = partida.get("ganador", "empate")
 
-            print(f"║ {i:<2} ║ {fecha:<10} ║ {blanco:<20} ║ {negro:<14} ║ {ganador:<13} ║")
+            print(f"║ {str(i)[:2]:<2} ║ {fecha[:10]:<10} ║ {blanco[:21]:<21} ║ {negro[:14]:<14} ║ {ganador[:13]:<13} ║")
 
-    print(f"╚════════╩════════════╩══════════════════════╩════════════════╩═══════════════╝")
+    print(f"╚════╩════════════╩═══════════════════════╩════════════════╩═══════════════╝")
 
 
 
 
 def ver_una_partida(token: str) -> None:
-    partidas_activas = obtener_partidas_activas(token)
-
     url_historial = f"{BASE_URL}/partidas"
     headers = {"Authorization": f"Bearer {token}"}
     response_historial = requests.get(url_historial, headers=headers)
     historial = response_historial.json()["partidas"] if response_historial.ok else []
-
-    partidas_totales = []
-
-    print("""
-╔══════════════════════════════════════════════╗
-║               PARTIDAS ACTIVAS               ║
-╠══════════════════════════════════════════════╣
-    """)
-
-    for i, partida in enumerate(partidas_activas):
-        print(f"  {i + 1}: Contra {partida['oponente']:<15} | Turno: {partida['turno']} [ACTIVA]")
-        partidas_totales.append(partida['sesion_id'])
-
-    offset = len(partidas_activas)
+    if not historial:
+        print("No tienes partidas finalizadas para visualizar.")
+        return
 
     print("""
 ╔══════════════════════════════════════════════╗
-║             PARTIDAS FINALIZADAS             ║
+║           PARTIDAS FINALIZADAS               ║
 ╠══════════════════════════════════════════════╣
     """)
 
     for j, nombre_archivo in enumerate(historial):
-        print(f"  {offset + j + 1}: Archivo: {nombre_archivo} [TERMINADA]")
-        partidas_totales.append(nombre_archivo)
+        print(f"  {j + 1}: Archivo: {nombre_archivo['nombre_archivo']} [TERMINADA]")
 
     print("╚══════════════════════════════════════════════╝")
 
-
-    if not partidas_totales:
-        print("No tienes partidas para visualizar.")
-        return
-
-    indice = solicitar_parametro("Selecciona el número de la partida que quieres ver",int)-1
-    if 0 <= indice < len(partidas_totales):
-        sesion_id = partidas_totales[indice]
-        url = f"{BASE_URL}/partidas/{sesion_id}"
+    indice = solicitar_parametro("Selecciona el número de la partida que quieres ver", int) - 1
+    if 0 <= indice < len(historial):
+        nombre_archivo = historial[indice]
+        print(f"Reproduciendo partida: {nombre_archivo['nombre_archivo']}")
+        url = f"{BASE_URL}/partidas/{nombre_archivo['nombre_archivo']}"
         headers = {"Authorization": f"Bearer {token}"}
         response = requests.get(url, headers=headers)
+        print(response.text)
         datos = response.json()
 
         if 'error' in datos:
             print(datos['error'])
+        elif "movimientos" in datos:
+            reproducir_partida(datos, nombre_archivo)
         else:
-            reproducir_partida(datos,sesion_id)
+            print("No se pudo reproducir la partida seleccionada.")
     else:
         print("Selección inválida.")
 
@@ -811,6 +796,27 @@ def crear_tablero_vacio() -> List[List[Optional[str]]]:
     return [["." for _ in range(8)] for _ in range(8)]
 
 
+def colocar_piezas_iniciales_en_tablero(tablero: list[list[str]]) -> None:
+    """Coloca las piezas de ajedrez en su posición inicial usando símbolos Unicode."""
+    # Piezas blancas
+    piezas_blancas = ["Torre", "Caballo", "Alfil", "Reina", "Rey", "Alfil", "Caballo", "Torre"]
+    piezas_negras = ["Torre", "Caballo", "Alfil", "Reina", "Rey", "Alfil", "Caballo", "Torre"]
+
+    # Fila 1 blancas
+    for col, pieza in enumerate(piezas_blancas):
+        tablero[7][col] = obtener_simbolo_unicode(pieza, "blanco")
+    # Fila 2 blancas
+    for col in range(8):
+        tablero[6][col] = obtener_simbolo_unicode("Peon", "blanco")
+    # Fila 7 negras
+    for col in range(8):
+        tablero[1][col] = obtener_simbolo_unicode("Peon", "negro")
+    # Fila 8 negras
+    for col, pieza in enumerate(piezas_negras):
+        tablero[0][col] = obtener_simbolo_unicode(pieza, "negro")
+
+
+
 def imprimir_tablero(tablero: List[List[str]]) -> None:
     print("\n    a   b   c   d   e   f   g   h")
     print("  ╔" + "═══╦" * 7 + "═══╗")
@@ -869,6 +875,7 @@ def reproducir_partida(datos: Dict[str, Any], nombre_archivo: str, velocidad: fl
     print(f"Ganador: {datos['ganador']}\n")
 
     tablero = crear_tablero_vacio()
+    colocar_piezas_iniciales_en_tablero(tablero)
 
     for idx, mov in enumerate(movimientos):
         origen = tuple(mov["origen"])
